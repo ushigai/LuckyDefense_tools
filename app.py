@@ -57,7 +57,6 @@ def load_artifacts() -> Dict[str, Dict[str, Any]]:
         if name in index:
             raise ValueError(f"duplicate artifact name: {name!r}")
         index[name] = a
-
     return index
 
 def load_enemies() -> Dict[str, Dict[str, Any]]:
