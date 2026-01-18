@@ -68,6 +68,7 @@ def load_enemies() -> Dict[str, Dict[str, Any]]:
         out[str(e["name"])] = e
     return out
 
+
 ARTIFACTS_DB = load_artifacts()
 CHAR_DB = load_characters()
 ENEMY_DB = load_enemies()
@@ -125,7 +126,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     char_lv = int(member.get("charLv", 1))
     guildBlessing = int(common.get("guildBlessing", 0))
     guildBuff_atk = 0.02 if 1 <= guildBlessing else 0
-    guildBuff_boss = 0.05 if 2 <= guildBlessing else 0 # 現状検証不可能？
+    guildBuff_boss = 0.05 if 2 <= guildBlessing else 0
     unitLevelSumBuff = float(common.get("unitLevelSumBuff", 0)) / 100
     atkBuffPct = float(common.get("atkBuffPct", 0)) / 100
     speedBuffPct = float(common.get("speedBuffPct", 0)) / 100
