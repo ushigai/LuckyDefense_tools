@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DPS Calculator</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    .metric { font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+    .row-card { background: rgba(255,255,255,.85); }
+
+    /* notice accordion */
+    .notice-accordion .accordion-button {
+      background: rgba(var(--bs-danger-rgb), .08);
+    }
+    .notice-accordion .accordion-button:focus {
+      box-shadow: 0 0 0 .25rem rgba(var(--bs-danger-rgb), .15);
+    }
+  </style>
+</head>
+
+<body class="bg-body-tertiary">
+  <nav class="navbar navbar-expand-lg bg-white border-bottom">
+    <div class="container py-1">
+      <a class="navbar-brand fw-semibold" href="#">
+        <i class="bi bi-speedometer2 me-1"></i>DPS Calculator
+      </a>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+
+    <!-- ✅ 注意文（ヘッダー直下 / 編成&合計の上） -->
+    <div class="card shadow-sm border-0 rounded-4 mb-3">
+      <div class="card-body p-0">
+        <div class="accordion notice-accordion" id="noticeAccordion">
+          <div class="accordion-item border-0">
+            <h2 class="accordion-header" id="noticeHeading">
+              <button class="accordion-button collapsed rounded-4 text-danger fw-semibold"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#noticePanel"
+                      aria-expanded="false" aria-controls="noticePanel">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>注意
+              </button>
+            </h2>
+            <div id="noticePanel" class="accordion-collapse collapse" aria-labelledby="noticeHeading"
+                 data-bs-parent="#noticeAccordion">
+              <div class="accordion-body pt-2">
+                <ul class="mb-0">
+                  <li>DPS算出のロジック</li>
+                    <ul class="mb-0">
+                      <li>緑字攻撃力=白字攻撃力*(力のポーション+ユニットレベル合計バフ)*神話強化*(マネガン+攻撃力バフ)*ギルド加護</li>
+                      <li>ダメージ=大剣*爆弾*スキル倍率*秘伝書*(バットor魔法使いの帽子)*(白字攻撃力 + 緑字攻撃力)</li>
+                      <li>仮想敵はボス2体で常に気絶中</li>
+                      <li>キャラのモーションフレーム数は反映していなく全て基本攻撃と同じ速度で発動している</li>
+                    </ul>
+                  <li>【実装予定】各キャラの基本攻撃/スキル/究極や物理/魔法、単体/複数など区分別ダメージ割合</li>
+                  <li>実装予定の機能</li>
+                    <ul class="mb-0">
+                      <li>洗剤の反映</li>
+                      <li>ペットバフとペットレベル合計バフの反映</li>
+                      <li>各キャラの基本攻撃/スキル/究極や物理/魔法、単体/複数など区分別ダメージ割合</li>
+                      <li>計算結果の画像出力機能</li>
+                    </ul>
+                  <li></li>
+                  <li></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div><!-- /accordion -->
+      </div><!-- /card-body -->
+    </div><!-- /card -->
+
+    <div class="row g-3 align-items-stretch">
+      <!-- Left: Party -->
+      <div class="col-12 col-lg-7">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="fw-semibold">
+                <i class="bi bi-people-fill me-1"></i>編成（複数キャラ）
+              </div>
+              <button id="btnAddMember" class="btn btn-outline-dark rounded-3">
+                <i class="bi bi-plus-lg me-1"></i>追加
+              </button>
+            </div>
+
+            <div class="row g-2 align-items-center mb-2">
+              <div class="col-8 text-secondary small">キャラ / 設定</div>
+              <div class="col-4 text-secondary small text-end">DPS / share</div>
+            </div>
+
+            <div id="partyList" class="vstack gap-2"></div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Total -->
+      <div class="col-12 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body p-4 d-flex flex-column justify-content-between">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="fw-semibold">
+                <i class="bi bi-calculator me-1"></i>ダメージ合計
+              </div>
+              <div id="calcStatus" class="text-secondary small"></div>
+            </div>
+
+            <div class="mt-3">
+              <label class="form-label text-secondary small mb-1" for="enemy">仮想敵</label>
+              <select id="enemy" class="form-select rounded-3">
+                <option value="" selected>読み込み中…</option>
+              </select>
+            </div>
+
+            <div class="mt-3">
+              <div class="text-secondary small mb-1">合計（各キャラDPSの加算）</div>
+              <div class="display-5 fw-semibold metric">
+                <span id="totalValue">—</span>
+              </div>
+            </div>
+            <div class="mt-2">
+              <div class="d-flex justify-content-between small text-secondary">
+                <span><i class="bi bi-droplet-half me-1"></i>仮想敵HP削り</span>
+                <span id="enemyHpText">HP: —</span>
+              </div>
+
+              <div class="progress rounded-3" style="height: 10px;">
+                <div id="enemyHpBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+              </div>
+
+              <div class="mt-1 small">
+                <span class="fw-semibold" id="enemyHpPct">—</span>
+                <span class="text-secondary" id="enemyHpDetail"></span>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button id="btnCalc" class="btn btn-dark btn-lg w-100 rounded-3">
+                <i class="bi bi-cpu me-1"></i>計算する
+              </button>
+
+              <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" id="autoRecalc" checked>
+                <label class="form-check-label" for="autoRecalc">変更時に自動再計算</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Common Options（カテゴリ別アコーディオン） -->
+    <div class="card shadow-sm border-0 rounded-4 mt-3">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="fw-semibold">
+            <i class="bi bi-sliders2 me-1"></i>オプション（共通）
+          </div>
+        </div>
+
+        <div class="accordion" id="commonOptionsAccordion">
+
+          <!-- 主要バフ -->
+          <div class="accordion-item border-0">
+            <h2 class="accordion-header" id="optMainHeading">
+              <button class="accordion-button rounded-3" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#optMainPanel"
+                      aria-expanded="true" aria-controls="optMainPanel">
+                <i class="bi bi-lightning-charge me-2"></i>主要バフ
+              </button>
+            </h2>
+            <div id="optMainPanel" class="accordion-collapse collapse show" data-bs-parent="#commonOptionsAccordion">
+              <div class="accordion-body pt-3">
+                <div class="row g-3">
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="allRelicLv">全遺物レベル</label>
+                    <select id="allRelicLv" class="form-select rounded-3"></select>
+                    <div class="form-text">下段の遺物レベルと自動同期</div>
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="mythEnhanceLv">神話強化Lv</label>
+                    <input id="mythEnhanceLv" type="number" class="form-control rounded-3" value="1" step="1" min="0">
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="atkBuffPct">攻撃力バフ%</label>
+                    <input id="atkBuffPct" type="number" class="form-control rounded-3" value="0" step="1">
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="manaRegenBuffPct">マナ回復速度バフ%</label>
+                    <select id="manaRegenBuffPct" class="form-select rounded-3">
+                      <option value="0" selected>0</option>
+                      <option value="100">100</option>
+                      <option value="200">200</option>
+                      <option value="300">300</option>
+                      <option value="400">400</option>
+                      <option value="500">500</option>
+                      <option value="600">600</option>
+                      <option value="700">700</option>
+                    </select>
+                  </div>
+
+                  <!-- 既存項目（リストに無かったけど残す） -->
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="speedBuffPct">速度バフ（%）</label>
+                    <input id="speedBuffPct" type="number" class="form-control rounded-3" value="0" step="1">
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="defDown">防御力減少値</label>
+                    <input id="defDown" type="number" class="form-control rounded-3" value="190" step="1">
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="coins">コイン枚数</label>
+                    <input id="coins" type="number" class="form-control rounded-3" value="300000" step="1000" min="0">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 遺物レベル -->
+          <div class="accordion-item border-0 mt-2">
+            <h2 class="accordion-header" id="optRelicHeading">
+              <button class="accordion-button collapsed rounded-3" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#optRelicPanel"
+                      aria-expanded="false" aria-controls="optRelicPanel">
+                <i class="bi bi-gem me-2"></i>遺物レベル
+              </button>
+            </h2>
+            <div id="optRelicPanel" class="accordion-collapse collapse" data-bs-parent="#commonOptionsAccordion">
+              <div class="accordion-body pt-3">
+                <div class="row g-3">
+                  <!-- 1..11 は JS で流し込み -->
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="moneyGunLv">マネーガン</label>
+                    <select id="moneyGunLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="powerPotionLv">力のポーション</label>
+                    <select id="powerPotionLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="fairyBowLv">妖精の弓</label>
+                    <select id="fairyBowLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="greatSwordLv">大剣</label>
+                    <select id="greatSwordLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="secretBookLv">秘伝書</label>
+                    <select id="secretBookLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="fruitCandyLv">フルーツ飴</label>
+                    <select id="fruitCandyLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="batLv">バット</label>
+                    <select id="batLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="wizardHatLv">魔法使いの帽子</label>
+                    <select id="wizardHatLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="bombLv">爆弾</label>
+                    <select id="bombLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="oldBookLv">古びた本</label>
+                    <select id="oldBookLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="sageYogurtLv">賢者のヨーグルト</label>
+                    <select id="sageYogurtLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="magicGauntletLv">マジック籠手</label>
+                    <select id="magicGauntletLv" class="form-select rounded-3 relic-lv"></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ペット編成 -->
+          <div class="accordion-item border-0 mt-2">
+            <h2 class="accordion-header" id="optPetHeading">
+              <button class="accordion-button collapsed rounded-3" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#optPetPanel"
+                      aria-expanded="false" aria-controls="optPetPanel">
+                <i class="bi bi-heart-pulse me-2"></i>ペット編成（未実装）
+              </button>
+            </h2>
+            <div id="optPetPanel" class="accordion-collapse collapse" data-bs-parent="#commonOptionsAccordion">
+              <div class="accordion-body pt-3">
+                <div class="row g-3">
+                  <div class="col-12 col-md-4">
+                    <label class="form-label text-secondary small" for="pet1">ペット1</label>
+                    <select id="pet1" class="form-select rounded-3">
+                      <option value="hoge" selected>hoge</option>
+                      <option value="fuga">fuga</option>
+                      <option value="piyo">piyo</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label text-secondary small" for="pet2">ペット2</label>
+                    <select id="pet2" class="form-select rounded-3">
+                      <option value="hoge" selected>hoge</option>
+                      <option value="fuga">fuga</option>
+                      <option value="piyo">piyo</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label text-secondary small" for="pet3">ペット3</label>
+                    <select id="pet3" class="form-select rounded-3">
+                      <option value="hoge" selected>hoge</option>
+                      <option value="fuga">fuga</option>
+                      <option value="piyo">piyo</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- その他バフ -->
+          <div class="accordion-item border-0 mt-2">
+            <h2 class="accordion-header" id="optOtherHeading">
+              <button class="accordion-button collapsed rounded-3" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#optOtherPanel"
+                      aria-expanded="false" aria-controls="optOtherPanel">
+                <i class="bi bi-stars me-2"></i>その他バフ
+              </button>
+            </h2>
+            <div id="optOtherPanel" class="accordion-collapse collapse" data-bs-parent="#commonOptionsAccordion">
+              <div class="accordion-body pt-3">
+                <div class="row g-3">
+                  <div class="col-12 col-md-4">
+                    <label class="form-label text-secondary small" for="guildBlessing">ギルド加護</label>
+                    <select id="guildBlessing" class="form-select rounded-3">
+                      <option value="0">ギルド加入無しorギルドレベル7未満</option>
+                      <option value="1" selected>ギルドレベル7~9</option>
+                      <option value="2">ギルドレベル10</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label text-secondary small" for="unitLevelSumBuff">ユニット合計レベル</label>
+                    <select id="unitLevelSumBuff" class="form-select rounded-3"></select>
+                    <div class="form-text">攻撃力0~25%増加</div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label text-secondary small" for="petLevelSum">ペットレベル合計（未実装）</label>
+                    <select id="petLevelSum" class="form-select rounded-3">
+                      <option value="hoge" selected>hoge</option>
+                      <option value="fuga">fuga</option>
+                      <option value="piyo">piyo</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 詳細設定 -->
+          <div class="accordion-item border-0 mt-2">
+            <h2 class="accordion-header" id="optDetailHeading">
+              <button class="accordion-button collapsed rounded-3" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#optDetailPanel"
+                      aria-expanded="false" aria-controls="optDetailPanel">
+                <i class="bi bi-wrench-adjustable-circle me-2"></i>詳細設定
+              </button>
+            </h2>
+            <div id="optDetailPanel" class="accordion-collapse collapse" data-bs-parent="#commonOptionsAccordion">
+              <div class="accordion-body pt-3">
+                <div class="row g-3">
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="durationSec">計測秒数</label>
+                    <select id="durationSec" class="form-select rounded-3">
+                      <option value="30">30</option>
+                      <option value="60" selected>60</option>
+                      <option value="120">120</option>
+                      <option value="300">300</option>
+                      <option value="600">600</option>
+                      <option value="1800">1800</option>
+                      <option value="3600">3600</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="trials">試行回数（trials）</label>
+                    <select id="trials" class="form-select rounded-3">
+                      <option value="1">1</option>
+                      <option value="3" selected>3</option>
+                      <option value="10">10</option>
+                      <option value="30">30</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="seed">SEED値</label>
+                    <input id="seed" type="number" class="form-control rounded-3" value="1" step="1">
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="multiplier">乗算係数</label>
+                    <input id="multiplier" type="number" class="form-control rounded-3"
+                          value="1" step="0.01" min="0">
+                    <div class="form-text">例: 1.00（通常） / 0.50（半分） / 2.00（2倍）</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /accordion -->
+
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="card shadow-sm border-0 rounded-4 mt-3">
+      <div class="card-body p-4">
+        <div class="fw-semibold mb-2"><i class="bi bi-receipt me-1"></i>計算ログ</div>
+        <pre id="log" class="bg-body rounded-3 p-3 mb-0 small" style="min-height: 140px; overflow:auto;">—</pre>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
+

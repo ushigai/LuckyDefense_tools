@@ -1,0 +1,6 @@
+services:
+  dps-tool:
+    build: .
+    ports:
+      - "8080:8000"
+    restart: unless-stopped
