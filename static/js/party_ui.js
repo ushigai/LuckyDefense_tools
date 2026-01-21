@@ -43,10 +43,10 @@ export function addMember(recalcFn, {
             </select>
           </div>
 
-          <div class="col-6 col-lg-3">
+          <div class="col-6 col-lg-3 member-treasure-wrap">
             <label class="form-label text-secondary small mb-1">専用財宝レベル</label>
             <select class="form-select member-treasurelv rounded-3">
-              ${levelOptions(15, treasureLv)}
+              ${levelOptions(11, treasureLv)}
             </select>
           </div>
 
@@ -67,6 +67,32 @@ export function addMember(recalcFn, {
     </div>
   `;
 
+  function getSelectedCharacterObj() {
+    const chId = row.querySelector(".member-character").value;
+    return state.CHARACTERS.find(c => String(c.id) === String(chId));
+  }
+
+  function updateTreasureVisibility() {
+    const ch = getSelectedCharacterObj();
+    const isMythic = (ch?.rarity === "mythic");
+    const wrap = row.querySelector(".member-treasure-wrap");
+    const sel = row.querySelector(".member-treasurelv");
+    if (!wrap || !sel) return;
+
+    if (isMythic) {
+      // 復帰時は直前の値を戻す（あれば）
+      if (row.dataset.savedTreasureLv) sel.value = row.dataset.savedTreasureLv;
+      wrap.classList.remove("d-none");
+      sel.disabled = false;
+    } else {
+      // 非mythicは表示しない＆計算上はLv=1固定
+      row.dataset.savedTreasureLv = sel.value;
+      sel.value = "1";
+      sel.disabled = true;
+      wrap.classList.add("d-none");
+    }
+  }
+
   function toggleExtras() {
     const ch = row.querySelector(".member-character").value;
     renderExtraControls(row, ch, {}, recalcFn);
@@ -86,12 +112,17 @@ export function addMember(recalcFn, {
     const node = row.querySelector(sel);
     if (!node) return;
     node.addEventListener(evt, () => {
-      if (sel === ".member-character") toggleExtras();
+      if (sel === ".member-character") {
+        updateTreasureVisibility();
+        toggleExtras();
+      }
       if (el.autoRecalc.checked) recalcFn();
     });
   });
 
   el.partyList.appendChild(row);
+  // 初期表示の反映
+  updateTreasureVisibility();
   renderExtraControls(row, row.querySelector(".member-character").value, { ...extras, intake, mythCount }, recalcFn);
 }
 
@@ -100,7 +131,10 @@ export function getPartyMembers() {
   return rows.map(r => {
     const character = r.querySelector(".member-character").value;
     const charLv = Number(r.querySelector(".member-charlv").value || 1);
-    const treasureLv = Number(r.querySelector(".member-treasurelv").value || 1);
+    const treasureSel = r.querySelector(".member-treasurelv");
+    let treasureLv = Number(treasureSel?.value || 1);
+    // 非mythic（= disabled）なら計算上1固定
+    if (treasureSel?.disabled) treasureLv = 1;
 
     const extras = {};
     const fields = getExtraFieldsForCharacter(character);

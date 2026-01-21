@@ -7,6 +7,8 @@ import hashlib
 import random
 from typing import Any, Dict, List
 
+from data.treasure_db import load_treasure_db
+
 from flask import Flask, jsonify, request, send_from_directory
 from simulator.awakened_hayley import mean_total_damage_15021
 from simulator.hayley import mean_total_damage_5021
@@ -16,6 +18,8 @@ from simulator.chona import mean_total_damage_5019
 from simulator.iam_meow import mean_total_damage_15004
 from simulator.boss_senchoushi import mean_total_damage_15024
 from simulator.doctorpulse import mean_total_damage_14002
+from simulator.captain_roka import mean_total_damage_15023
+from simulator.roka import mean_total_damage_5023
 from simulator.common_sim import mean_total_damage_common
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -68,6 +72,7 @@ def load_enemies() -> Dict[str, Dict[str, Any]]:
         out[str(e["name"])] = e
     return out
 
+TREASURE_DB, _ = load_treasure_db(os.path.join(DATA_DIR, "treasures.json"))
 
 ARTIFACTS_DB = load_artifacts()
 CHAR_DB = load_characters()
@@ -116,7 +121,7 @@ def sign(n):
 
 
 def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> float:
-    DebugMessage = []
+    DebugMessage = dict()
     duration_sec = int(common.get("durationSec", 60))
     trials = int(common.get("trials", 1))
     all_relic_lv = int(common.get("allRelicLv", 1))
@@ -151,26 +156,30 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     fairy_bow_lv = int(common.get("fairyBowLv", all_relic_lv))
     great_sword_lv = int(common.get("greatSwordLv", all_relic_lv))
     secret_book_lv = int(common.get("secretBookLv", all_relic_lv))
-    fruit_candy_lv = int(common.get("fruitCandyLv", all_relic_lv))
+    bambaDoll = int(common.get("bambaDollLv", all_relic_lv))
     bat_lv = int(common.get("batLv", all_relic_lv))
     wizard_hat_lv = int(common.get("wizardHatLv", all_relic_lv))
     bomb_lv = int(common.get("bombLv", all_relic_lv))
     old_book_lv = int(common.get("oldBookLv", all_relic_lv))
     sage_yogurt_lv = int(common.get("sageYogurtLv", all_relic_lv))
     magic_gauntlet_lv = int(common.get("magicGauntletLv", all_relic_lv))
+    t_buff1,t_buff2,t_buff3 = 0,0,0
 
     PowerPotion   = float(ARTIFACTS_DB["力のポーション"]["effects"]["lv" + str(power_potion_lv)]) / 100
     MoneyGun      = float(ARTIFACTS_DB["マネーガン"]["effects"]["lv" + str(money_gun_lv)]) / 100
     FairyBow      = float(ARTIFACTS_DB["妖精の弓"]["effects"][f"lv{fairy_bow_lv}"]) / 100
     GreatSword    = float(ARTIFACTS_DB["大剣"]["effects"][f"lv{great_sword_lv}"]) / 100
     SecretBook    = float(ARTIFACTS_DB["秘伝書"]["effects"][f"lv{secret_book_lv}"]) / 100
-    FruitCandy    = float(ARTIFACTS_DB["フルーツ飴"]["effects"][f"lv{fruit_candy_lv}"])
+    BambaDoll     = float(ARTIFACTS_DB["バンバの人形"]["effects"][f"lv{bambaDoll}"])
     Bat           = float(ARTIFACTS_DB["バット"]["effects"][f"lv{bat_lv}"]) / 100
     WizardHat     = float(ARTIFACTS_DB["魔法使いの帽子"]["effects"][f"lv{wizard_hat_lv}"]) / 100
     Bomb          = float(ARTIFACTS_DB["爆弾"]["effects"][f"lv{bomb_lv}"]) / 100
     OldBook       = float(ARTIFACTS_DB["古びた本"]["effects"][f"lv{old_book_lv}"])
     SageYogurt    = float(ARTIFACTS_DB["賢者のヨーグルト"]["effects"][f"lv{sage_yogurt_lv}"]) / 100
     MagicGauntlet = float(ARTIFACTS_DB["マジック籠手"]["effects"][f"lv{magic_gauntlet_lv}"]) / 100
+
+    MagicBuff1 = 1 + SecretBook + WizardHat
+    PhysicBuff1 = 1 + SecretBook + Bat
 
     mana_buff = int(common.get("manaRegenBuffPct", 0))
     mana_buff = 1 if mana_buff == 0 else mana_buff//100 + 1
@@ -179,10 +188,14 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     ult_mana = int(CHAR_DB[character_id]["sp"])
     lv1_atk = int(CHAR_DB[character_id]["attack_damage"])
     base_atk = lv1_atk + ((char_lv - 1) * upgrade_atk)
+    crit_rate = 5 + BambaDoll
     
     starPower = int(member.get("starPower", 0))
     energyCount = int(member.get("energyCount", 0))
     robots = int(member.get("robots", 0))
+    roka_crit_ = int(member.get("roka_crit_", 0))
+    roka_crit = int(member.get("roka_crit", 0))
+    techEnhance = 1 + int(member.get("techEnhance", 0)) / 10
 
     if char_lv < 3:
         lv_buff_atk, lv_buff_speed = 1.0, 1.0
@@ -300,16 +313,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 10 + OldBook,
-            "skill1_mult": 40*(1+SecretBook+WizardHat),
+            "skill1_mult": 40*MagicBuff1,
             "skill2_rate": 12 + OldBook if 6 <= char_lv else 0,
-            "skill2_mult": 60*(1+SecretBook+WizardHat),
+            "skill2_mult": 60*MagicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": 100*(1 - SageYogurt) if 12 <= char_lv else 10**100,
-            "ult_mult": 180*(1+SecretBook+WizardHat),
+            "ult_mult": 180*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -368,6 +381,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "5003":  # ランスロット
         ans = 28000
     elif character_id == "5004":  # アイアンニャン
+        t_buff1 = 1 + float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
+        t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -376,16 +391,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 5.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 40*(1+SecretBook+WizardHat) if char_lv < 12 else 60*(1+SecretBook+WizardHat),
+            "skill1_mult": 40*t_buff1*MagicBuff1 if char_lv < 12 else 60*t_buff1*MagicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 180*(1+SecretBook+WizardHat) if char_lv < 12 else 270*(1+SecretBook+WizardHat),
+            "ult_mult": 180*t_buff1*MagicBuff1 if char_lv < 12 else 270*t_buff1*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate + t_buff2,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -404,6 +419,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 32000
     elif character_id == "5008":  # ママ
+        t_buff1 = 1 + int(TREASURE_DB["ママ"][treasure_lv][2]) / 100
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -412,16 +428,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 5.0,
             "skill1_rate": 8 + OldBook if 6 <= char_lv else 0,
-            "skill1_mult": 15*(1+SecretBook+WizardHat) if char_lv < 12 else 30*(1+SecretBook+WizardHat),
+            "skill1_mult": 15*MagicBuff1*t_buff1 if char_lv < 12 else 30*MagicBuff1*t_buff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 20*(1+SecretBook+WizardHat) if char_lv < 12 else 40*(1+SecretBook+WizardHat),
+            "ult_mult": 20*MagicBuff1*t_buff1 if char_lv < 12 else 40*MagicBuff1*t_buff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -446,16 +462,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 12 + OldBook,
-            "skill1_mult": 40*(1+SecretBook+Bat),
+            "skill1_mult": 40*PhysicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana,
-            "ult_mult": 70*(1+SecretBook+Bat),
+            "ult_mult": 70*PhysicBuff1,
             "attack_mana_recov": 0,
             "mana_buff": 1,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -485,7 +501,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans = 37000
     elif character_id == "5013":  # ワット（究極発動中）
         buff_mult = 0.03 if char_lv < 6 else 0.05
-        ult_mult = 20*(1+SecretBook+WizardHat)
+        ult_mult = 20*MagicBuff1
         speed *= 2 # 究極バフ
         cirt_dmg = 2.5 + MagicGauntlet
         ans = mean_total_damage_5013(
@@ -493,7 +509,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             attack_power=atk,
             attack_speed=speed,
             buff_mult=buff_mult,
-            cirt_rate=5,
+            cirt_rate=crit_rate,
             cirt_dmg=cirt_dmg,
             ult_mult=ult_mult,
             watt_stack=energyCount,
@@ -522,6 +538,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         #)
         ans = 40000
     elif character_id == "5016":  # ウチ
+        t_buff1 = 1 + float(TREASURE_DB["ウチ"][treasure_lv][1])
+        t_buff2 = float(TREASURE_DB["ウチ"][treasure_lv][2]) / 100
+        speed = base_speed*(1 + speedBuffPct + t_buff2)*(1 + FairyBow)
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -530,16 +549,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 10 + OldBook if char_lv < 12 else 20 + OldBook,
-            "skill1_mult": 75*(1+SecretBook+WizardHat),
+            "skill1_mult": 75*t_buff1*MagicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 398*(1+SecretBook+WizardHat),
+            "ult_mult": 398*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -570,28 +589,23 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 43000
     elif character_id == "5019":  # チョナ
-        skill1_rate = 15 + OldBook if 6 <= char_lv else 10 + OldBook
-        skill1_mult = 60*(1+SecretBook+Bat)
-        skill2_mult = 70*(1+SecretBook+Bat)
-        ult_mult = 750 if char_lv < 12 else 894
-        ult_mult *= 1 + SecretBook + Bat
-        ult_mana = 40
-        crit_dmg = 2.5
-        ans = mean_total_damage_5019(
-            ticks=int(speed*duration_sec*TICK_COEFF),
-            trials=trials,
-            seed=seed,
-            skill1_rate=skill1_rate,
-            attack_speed=speed,
-            attack_power=atk,
-            skill1_mult=skill1_mult,
-            skill2_mult=skill2_mult,
-            ult_mana=ult_mana,
-            ult_mult=ult_mult,
-            cirt_rate=5,
-            cirt_dmg=crit_dmg,
-        )
+        params = {
+            "ticks": int(speed*duration_sec*TICK_COEFF),
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "skill1_rate": 15 + OldBook if 6 <= char_lv else 10 + OldBook,
+            "skill1_mult": 60*PhysicBuff1,
+            "skill2_mult": 70*PhysicBuff1,
+            "ult_mult": 750*PhysicBuff1 if char_lv < 12 else 894*PhysicBuff1,
+            "ult_mana": 40,
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5,
+        }
+        ans = mean_total_damage_5019(params)
     elif character_id == "5020":  # ペンギン楽師
+        t_buff1 = float(TREASURE_DB["ペンギン楽師"][treasure_lv][2])
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -599,27 +613,28 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 10 + OldBook,
+            "skill1_rate": 10 + OldBook + t_buff1,
             "skill1_mult": 0,
-            "skill2_rate": 10+OldBook if char_lv < 6 else 15+OldBook,
-            "skill2_mult": 60*(1+SecretBook+Bat),
+            "skill2_rate": 10+OldBook+t_buff1 if char_lv < 6 else 15+OldBook+t_buff1,
+            "skill2_mult": 60*PhysicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": 10**100,
             "ult_mult": 1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
     elif character_id == "5021":  # ヘイリー
+        t_buff1 = float(TREASURE_DB["ヘイリー"][treasure_lv][2]) / 100
         skill1_rate = 10 + OldBook
         skill2_rate = 0 if char_lv < 12 else 12 + OldBook
-        skill1_mult = 50*(1+SecretBook+WizardHat)
-        skill2_mult = 50*(1+SecretBook+WizardHat)
+        skill1_mult = 50*MagicBuff1
+        skill2_mult = 50*MagicBuff1
         ult_mana = 250*(1 - SageYogurt)
-        crit_dmg = 2.5 + MagicGauntlet
+        crit_dmg = 2.5 + MagicGauntlet + t_buff1
 
         starPower_mult = 2 if char_lv < 6 else 4
         atk = base_atk
@@ -650,7 +665,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             ult_mana=ult_mana,
             mana_buff=mana_buff,
             tick_seconds=1.0,
-            crit_rate=5,
+            crit_rate=crit_rate,
             crit_dmg=crit_dmg,
         )
     elif character_id == "5022":  # アト
@@ -666,17 +681,23 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 47000
     elif character_id == "5023":  # ロカ
-        
-        
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 48000
+        params = {
+            "ticks": int(speed*duration_sec*TICK_COEFF),
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "skill1_mult": 40*PhysicBuff1 if 12 <= char_lv else 20*PhysicBuff1,
+            "skill2_mult": 10 if 6 <= char_lv else 6,
+            "skill2_rate": 7 + OldBook,
+            "skill3_mult": 65*PhysicBuff1,
+            "ult_mult": 200*PhysicBuff1,
+            "ult_mana": 50,
+            "crit_rate": roka_crit + crit_rate,
+            "bomb_rate": 80,
+            "crit_dmg": 2.5,
+        }
+        ans = mean_total_damage_5023(params)
     elif character_id == "5024":  # 選鳥師
         
         
@@ -690,28 +711,32 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 49000
     elif character_id == "5104":  # アイアンニャン
+        t_buff1 = 1 + float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
+        t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
             "seed": seed,
             "attack_power": atk,
             "attack_speed": speed,
-            "base_attack_mult": 1.0,
+            "base_attack_mult": 5.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 50*(1+SecretBook+WizardHat),
-            "skill2_rate": 10 + OldBook,
-            "skill2_mult": 60*(1+SecretBook+WizardHat),
+            "skill1_mult": 40*t_buff1*MagicBuff1 if char_lv < 12 else 60*t_buff1*MagicBuff1,
+            "skill2_rate": 0,
+            "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": 100*(1 - SageYogurt) if 12 <= char_lv else 10**100,
-            "ult_mult": 180*(1+SecretBook+WizardHat),
+            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mult": 180*t_buff1*MagicBuff1 if char_lv < 12 else 270*t_buff1*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate + t_buff2,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
     elif character_id == "5106":  # ドラゴン(変身後)
+        t_buff1 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
+        t_buff2 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -720,16 +745,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 50*(1+SecretBook+WizardHat),
+            "skill1_mult": 50*MagicBuff1*t_buff1,
             "skill2_rate": 10 + OldBook,
-            "skill2_mult": 60*(1+SecretBook+WizardHat),
+            "skill2_mult": 60*MagicBuff1*t_buff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": 100*(1 - SageYogurt) if 12 <= char_lv else 10**100,
-            "ult_mult": 180*(1+SecretBook+WizardHat),
+            "ult_mult": 180*MagicBuff1*t_buff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -746,6 +771,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 52000
     elif character_id == "5109":  # キングダイアン
+        t_buff1 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -760,10 +786,10 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 1000*(1+SecretBook+WizardHat),
+            "ult_mult": 1000*MagicBuff1*t_buff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -780,29 +806,25 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 54000
     elif character_id == "5115":  # ロケッチュー(変身後)
-        skill1_rate = 10 + OldBook
-        skill1_mult = 60*(1+SecretBook+Bat)
-        skill2_mult = 160*(1+SecretBook+Bat) if 12 <= char_lv else 1
-        ult_mult = 700*(1+SecretBook+Bat)
-        ult_mana = 25
-        crit_dmg = 2.5
-        ans = mean_total_damage_5115(
-            ticks=int(speed*duration_sec*TICK_COEFF),
-            trials=trials,
-            seed=seed,
-            skill1_rate=skill1_rate,
-            attack_speed=speed,
-            attack_power=atk,
-            skill1_mult=skill1_mult,
-            skill2_mult=skill2_mult,
-            ult_mana=ult_mana,
-            ult_mult=ult_mult,
-            tick_seconds=1.0,
-            cirt_rate=5,
-            cirt_dmg=crit_dmg,
-        )
+        params = {
+            "ticks": int(speed*duration_sec*TICK_COEFF),
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "skill1_rate": 10 + OldBook,
+            "skill1_mult": 60*PhysicBuff1,
+            "skill2_mult": 160*PhysicBuff1 if 12 <= char_lv else 1,
+            "ult_mult": 700*PhysicBuff1,
+            "ult_mana": 25,
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5,
+        }
+        ans = mean_total_damage_5115(params)
         ans *= 1.5 # 最先端ロボット
     elif character_id == "5204":  # アイアンニャンv2
+        t_buff1 = 1 + float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
+        t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -811,16 +833,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 5.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 50*(1+SecretBook+WizardHat) if char_lv < 12 else 75*(1+SecretBook+WizardHat),
+            "skill1_mult": 50*MagicBuff1*t_buff1*techEnhance if char_lv < 12 else 75*MagicBuff1*t_buff1*techEnhance,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 360*(1+SecretBook+WizardHat) if char_lv < 12 else 540*(1+SecretBook+WizardHat),
+            "ult_mult": 360*MagicBuff1*t_buff1*techEnhance if char_lv < 12 else 540*MagicBuff1*t_buff1*techEnhance,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate + t_buff2,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -849,6 +871,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 58000
     elif character_id == "5306":  # ドレイン
+        t_buff1 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
+        t_buff2 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -857,16 +881,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 75*(1+SecretBook+WizardHat),
+            "skill1_mult": (50 + 25*t_buff2)*MagicBuff1*t_buff1,
             "skill2_rate": 10 + OldBook,
-            "skill2_mult": 85*(1+SecretBook+WizardHat),
+            "skill2_mult": (60 + 25*t_buff2)*MagicBuff1*t_buff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt) if 12 <= char_lv else 10**100,
-            "ult_mult": 255*(1+SecretBook+WizardHat),
+            "ult_mult": (180 + 75*t_buff2)*MagicBuff1*t_buff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -896,7 +920,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans = 61000
     elif character_id == "14002":  # ドクターパルス
         skill1_rate = 10 + OldBook
-        skill1_mult = 70*(1+SecretBook+WizardHat)
+        skill1_mult = 70*MagicBuff1
         ult_mana = 550*(1 - SageYogurt)
         ult_mult = 120*(1 - SageYogurt)
         crit_dmg = 2.5 + MagicGauntlet
@@ -912,7 +936,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             ult_mana=ult_mana,
             ult_mult=ult_mult,
             mana_buff=mana_buff,
-            crit_rate=5,
+            crit_rate=crit_rate,
             crit_dmg=crit_dmg,
         )
         if 12 <= char_lv:
@@ -920,10 +944,10 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "15004":  # アイアムニャン
         skill1_rate = 11 + OldBook if 12 <= char_lv else 7 + OldBook
         skill2_rate = 11 + OldBook if 12 <= char_lv else 7 + OldBook
-        skill1_mult = 180*(1+SecretBook+WizardHat)
-        skill2_mult = 100*(1+SecretBook+WizardHat)
+        skill1_mult = 180*MagicBuff1
+        skill2_mult = 100*MagicBuff1
         ult_mana = 300*(1 - SageYogurt)
-        ult_mult = 1000*(1+SecretBook+WizardHat) if char_lv < 6 else 1500*(1+SecretBook+WizardHat)
+        ult_mult = 1000*MagicBuff1 if char_lv < 6 else 1500*MagicBuff1
         ult_cooldown = int(speed*3) if char_lv < 6 else int(speed*4.5)
         crit_dmg = 2.5 + MagicGauntlet
         ans = mean_total_damage_15004(
@@ -940,7 +964,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             ult_mana=ult_mana,
             ult_cooldown=ult_cooldown,
             mana_buff=mana_buff,
-            crit_rate=5,
+            crit_rate=crit_rate,
             crit_dmg=crit_dmg,
         )
         ans *= (1 + mana_buff//0.5 * 0.05) # アイアムニャンパッシブ
@@ -973,16 +997,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 120*(1+SecretBook+WizardHat),
+            "skill1_mult": 120*MagicBuff1,
             "skill2_rate": 12 + OldBook,
-            "skill2_mult": 90*(1+SecretBook+WizardHat),
+            "skill2_mult": 90*MagicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": 10**100,
             "ult_mult": 1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -1019,9 +1043,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "15021":  # 覚醒ヘイリー
         skill1_rate = 10 + OldBook
         skill2_rate = 15 + OldBook if 12 <= char_lv else 10 + OldBook
-        skill1_mult = 180*(1+SecretBook+WizardHat)
-        skill2_mult = 100*(1+SecretBook+WizardHat)
-        skill3_mult = 1125*(1+SecretBook+WizardHat)
+        skill1_mult = 180*MagicBuff1
+        skill2_mult = 100*MagicBuff1
+        skill3_mult = 1125*MagicBuff1
         ult_mana = 250*(1 - SageYogurt)
         crit_dmg = 2.5 + MagicGauntlet
         ans = mean_total_damage_15021(
@@ -1038,7 +1062,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             ult_mana=ult_mana,
             mana_buff=mana_buff,
             tick_seconds=1.0,
-            crit_rate=5,
+            crit_rate=crit_rate,
             crit_dmg=crit_dmg,
         )
         ans *= (1 + int(member.get("mythCount")) * 0.05) # 覚醒ヘイリーパッシブ
@@ -1052,24 +1076,31 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             mana_buff=mana_buff,
         )
         ans = 70000
-    elif character_id == "15023":  # キャプテン・ロカ
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 71000
+    elif character_id == "15023":  # キャプテンロカ
+        params = {
+            "ticks": int(speed*duration_sec*TICK_COEFF),
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "skill1_rate": 9 + OldBook,
+            "skill1_mult": 467.5*PhysicBuff1 if 12 <= char_lv else 330*PhysicBuff1,
+            "skill2_mult": 40*PhysicBuff1,
+            "skill3_mult": 150*PhysicBuff1,
+            "ult_mult": 350*PhysicBuff1 if 6 <= char_lv else 233.333*PhysicBuff1,
+            "ult_mana": 80,
+            "crit_rate": roka_crit_ + crit_rate,
+            "crit_dmg": 2.5,
+        }
+        ans = mean_total_damage_15023(params)
     elif character_id == "15024":  # ボス選鳥師
         skill1_rate = 11 + OldBook 
         skill2_rate = 10 + OldBook
-        skill1_mult = 330*(1+SecretBook+WizardHat)
-        skill2_mult = 160*(1+SecretBook+WizardHat)
-        skill3_mult = 5*(1+SecretBook+WizardHat) + 5 if 6 <= char_lv else 5*(1+SecretBook+WizardHat)
+        skill1_mult = 330*MagicBuff1
+        skill2_mult = 160*MagicBuff1
+        skill3_mult = 5*MagicBuff1 + 5 if 6 <= char_lv else 5*MagicBuff1
         ult_mana = 250*(1 - SageYogurt)
-        ult_mult = 300*(1+SecretBook+WizardHat)
+        ult_mult = 300*MagicBuff1
         crit_dmg = 2.5 + MagicGauntlet
         ult_buff = 5 if char_lv < 12 else 10
         ans = mean_total_damage_15024(
@@ -1083,7 +1114,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             skill1_mult=skill1_mult,
             skill2_mult=skill2_mult,
             skill3_mult=skill3_mult,
-            crit_rate=5,
+            crit_rate=crit_rate,
             crit_dmg=crit_dmg,
             ult_mult=ult_mult,
             ult_buff=ult_buff,
@@ -1099,16 +1130,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 20.0,
             "skill1_rate": 8 + OldBook if char_lv < 6 else 13 + OldBook,
-            "skill1_mult": 1750*(1+SecretBook+WizardHat),
+            "skill1_mult": 1750*MagicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 1200*(1+SecretBook+WizardHat),
+            "ult_mult": 1200*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
-            "crit_rate": 5,
+            "crit_rate": crit_rate,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)
@@ -1136,9 +1167,14 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans = 0
     if int(character_id) in PHISICS_CHAR:
         ans *= def_mult
-    DebugMessage.append(atk)
-    DebugMessage.append(speed)
-    DebugMessage.append(ult_mana)
+    DebugMessage["base_atk"] = base_atk
+    DebugMessage["atk"] = atk
+    DebugMessage["base_speed"] = base_speed
+    DebugMessage["speed"] = speed
+    DebugMessage["ult_mana"] = ult_mana
+    DebugMessage["t_buff1"] = t_buff1
+    DebugMessage["t_buff2"] = t_buff2
+    DebugMessage["t_buff3"] = t_buff3
     return (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * (1 + GreatSword) * (1 + Bomb), str(DebugMessage)
 
 
@@ -1208,7 +1244,7 @@ def api_calc():
     fairy_bow_lv = clamp_relic_lv("fairyBowLv")
     great_sword_lv = clamp_relic_lv("greatSwordLv")
     secret_book_lv = clamp_relic_lv("secretBookLv")
-    fruit_candy_lv = clamp_relic_lv("fruitCandyLv")
+    bambaDoll = clamp_relic_lv("bambaDollLv")
     bat_lv = clamp_relic_lv("batLv")
     wizard_hat_lv = clamp_relic_lv("wizardHatLv")
     bomb_lv = clamp_relic_lv("bombLv")
@@ -1235,7 +1271,7 @@ def api_calc():
         "fairyBowLv": fairy_bow_lv,
         "greatSwordLv": great_sword_lv,
         "secretBookLv": secret_book_lv,
-        "fruitCandyLv": fruit_candy_lv,
+        "bambaDollLv": bambaDoll,
         "batLv": bat_lv,
         "wizardHatLv": wizard_hat_lv,
         "bombLv": bomb_lv,
@@ -1334,9 +1370,17 @@ def api_calc():
         if cid == "5106" or cname == "ドラゴン":
             member_s["StrongestCreature"] = clamp_int(m.get("StrongestCreature", 1), 1, 1000, 0)
 
-        # ドラゴン：最強の生物
+        # ドクターパルス：ドローン数
         if cid == "14002" or cname == "ドクターパルス":
             member_s["robots"] = clamp_int(m.get("robots", 1), 1, 4, 1)
+
+        # ロカ：精密射撃
+        if cid == "15023" or cname == "キャプテンロカ":
+            member_s["roka_crit_"] = clamp_int(m.get("roka_crit_", 1), 1, 30, 30)
+
+        # ロカ：精密射撃
+        if cid == "5023" or cname == "ロカ":
+            member_s["roka_crit"] = clamp_int(m.get("roka_crit", 1), 1, 30, 30)
 
         # === per-member common option aliases ===
         # 既存実装が common["バットマン"/"ヘイリー"/"マスタークン"] を参照しているため、
@@ -1372,6 +1416,8 @@ def api_calc():
                 "training": member_s.get("training"),
                 "StrongestCreature": member_s.get("StrongestCreature"),
                 "robots": member_s.get("robots"),
+                "roka_crit_": member_s.get("roka_crit_"),
+                "roka_crit": member_s.get("roka_crit"),
                 "dps": dps,
             }
         )

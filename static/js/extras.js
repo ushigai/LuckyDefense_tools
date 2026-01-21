@@ -16,6 +16,8 @@ export const EXTRA_KEY_LABEL = {
   training: "鍛錬",
   StrongestCreature: "動物ユニット数",
   robots: "ドローン",
+  roka_crit_: "クリティカル率増加",
+  roka_crit: "クリティカル率増加",
 };
 
 // name -> fields
@@ -35,6 +37,8 @@ export const EXTRA_FIELDS_BY_NAME = {
   "バンバ":       [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }],
   "ドラゴン":     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
   "ドクターパルス":     [{ key: "robots", label: "ドローン", kind: "number", min: 1, max: 4, def: 1 }],
+  "ロカ":     [{ key: "roka_crit", label: "クリティカル率増加", kind: "number", min: 1, max: 30, def: 30 }],
+  "キャプテンロカ":     [{ key: "roka_crit_", label: "クリティカル率増加", kind: "number", min: 1, max: 30, def: 30 }],
 };
 
 export function getCharNameById(characterId) {

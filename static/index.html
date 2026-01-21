@@ -52,8 +52,9 @@
                   <li>DPS算出のロジック</li>
                     <ul class="mb-0">
                       <li>緑字攻撃力=白字攻撃力*(力のポーション+ユニットレベル合計バフ)*神話強化*(マネガン+攻撃力バフ)*ギルド加護</li>
-                      <li>ダメージ=大剣*爆弾*スキル倍率*秘伝書*(バットor魔法使いの帽子)*(白字攻撃力 + 緑字攻撃力)</li>
+                      <li>ダメージ=大剣*爆弾*スキル倍率*(秘伝書+バットor魔法使いの帽子)*(白字攻撃力 + 緑字攻撃力)</li>
                       <li>仮想敵はボス2体で常に気絶中</li>
+                      <li>財宝のダメージ増加全般は加算か乗算か分からないので適当に全部乗算として計算</li>
                       <li>キャラのモーションフレーム数は反映していなく全て基本攻撃と同じ速度で発動している</li>
                     </ul>
                   <li>【実装予定】各キャラの基本攻撃/スキル/究極や物理/魔法、単体/複数など区分別ダメージ割合</li>
@@ -263,8 +264,8 @@
                     <select id="secretBookLv" class="form-select rounded-3 relic-lv"></select>
                   </div>
                   <div class="col-12 col-md-3">
-                    <label class="form-label text-secondary small" for="fruitCandyLv">フルーツ飴</label>
-                    <select id="fruitCandyLv" class="form-select rounded-3 relic-lv"></select>
+                    <label class="form-label text-secondary small" for="bambaDollLv">バンバの人形</label>
+                    <select id="bambaDollLv" class="form-select rounded-3 relic-lv"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="batLv">バット</label>

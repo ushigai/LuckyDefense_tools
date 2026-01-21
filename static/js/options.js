@@ -17,7 +17,7 @@ export function collectOptions() {
     fairyBowLv: Number(el.fairyBowLv.value || el.allRelicLv.value || 1),
     greatSwordLv: Number(el.greatSwordLv.value || el.allRelicLv.value || 1),
     secretBookLv: Number(el.secretBookLv.value || el.allRelicLv.value || 1),
-    fruitCandyLv: Number(el.fruitCandyLv.value || el.allRelicLv.value || 1),
+    bambaDollLv: Number(el.bambaDollLv.value || el.allRelicLv.value || 1),
     batLv: Number(el.batLv.value || el.allRelicLv.value || 1),
     wizardHatLv: Number(el.wizardHatLv.value || el.allRelicLv.value || 1),
     bombLv: Number(el.bombLv.value || el.allRelicLv.value || 1),
