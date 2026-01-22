@@ -79,6 +79,7 @@ CHAR_DB = load_characters()
 ENEMY_DB = load_enemies()
 ALLOWED_ENEMIES = set(ENEMY_DB.keys())
 PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15010, 15011, 15020, 15023, 15110, 15210]
+BAT_ENHANCE_DB = [0, 1.0, 1.5, 2.0, 2.5, 5.0, 7.0, 9.0, 11.0, 13.0, 20.0, 25.0, 20.0, 35.0, 40.0, 60.0, 70.0, 90.0, 120.0, 150.0, 180.0]
 
 
 @app.get("/")
@@ -196,6 +197,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     roka_crit_ = int(member.get("roka_crit_", 0))
     roka_crit = int(member.get("roka_crit", 0))
     techEnhance = 1 + int(member.get("techEnhance", 0)) / 10
+    batEnhance = int(member.get("batEnhance", 0))
+    batEnhance = BAT_ENHANCE_DB[batEnhance]
 
     if char_lv < 3:
         lv_buff_atk, lv_buff_speed = 1.0, 1.0
@@ -218,7 +221,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         atkBuffPct += 12
     if character_id in ["15021"]:
         atkBuffPct += 20
-    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + int(member.get("StrongestCreature", 0))*0.3 + int(member.get("バットマン", 0)) + int(member.get("マスタークン", 0)) 
+    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + int(member.get("StrongestCreature", 0))*0.3 + batEnhance + int(member.get("マスタークン", 0)) 
     atk *= 1 + guildBuff_atk
     atk += base_atk
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow)
@@ -454,6 +457,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 34000
     elif character_id == "5010":  # バットマン
+        t_buff1 = float(TREASURE_DB["バットマン"][treasure_lv][2])
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -471,7 +475,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult_mult": 70*PhysicBuff1,
             "attack_mana_recov": 0,
             "mana_buff": 1,
-            "crit_rate": crit_rate,
+            "crit_rate": crit_rate + t_buff1,
             "crit_dmg": 2.5 + MagicGauntlet,
         }
         ans = mean_total_damage_common(params)

@@ -393,7 +393,7 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 60
     },
     {
       "name": "ヴェイン",
