@@ -228,54 +228,14 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
 
     ans = 0
     if character_id == "1001":  # 弓兵
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
         ans = 1000
     elif character_id == "1002":  # 榴弾兵
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
         ans = 2000
     elif character_id == "1003":  # 野蛮人
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
         ans = 3000
     elif character_id == "1004":  # 水の精霊
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
         ans = 4000
     elif character_id == "1005":  # 山賊
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
         ans = 5000
     elif character_id == "2001":  # レンジャー
         ans = 6000
@@ -508,6 +468,13 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ult_mult = 20*MagicBuff1
         speed *= 2 # 究極バフ
         cirt_dmg = 2.5 + MagicGauntlet
+        DebugMessage["atk"] = atk
+        DebugMessage["speed"] = speed
+        DebugMessage["cirt_dmg"] = cirt_dmg
+        DebugMessage["crit_rate"] = crit_rate
+        DebugMessage["buff_mult"] = buff_mult
+        DebugMessage["ult_mult"] = ult_mult
+        DebugMessage["energyCount"] = energyCount
         ans = mean_total_damage_5013(
             tick=int(speed * duration_sec),
             attack_power=atk,
@@ -518,6 +485,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             ult_mult=ult_mult,
             watt_stack=energyCount,
         )
+        DebugMessage["ans"] = ans
         ans *= TICK_COEFF # 相殺用
     elif character_id == "5014":  # タール小
         
@@ -775,7 +743,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 52000
     elif character_id == "5109":  # キングダイアン
-        t_buff1 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
+        t_buff1 = 1 + float(TREASURE_DB["キングダイアン"][treasure_lv][2]) / 100
         params = {
             "ticks": int(speed*duration_sec*TICK_COEFF),
             "trials": trials,
@@ -863,17 +831,28 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 57000
     elif character_id == "5214":  # タール大
-        
-        
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 58000
+        t_buff1 = float(TREASURE_DB["タール"][treasure_lv][2])
+        params = {
+            "ticks": int(speed*duration_sec*TICK_COEFF),
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1,
+            "skill1_rate": 12 + OldBook,
+            "skill1_mult": 200*PhysicBuff1,
+            "skill2_rate": 12 + OldBook,
+            "skill2_mult": 50*PhysicBuff1,
+            "skill3_rate": 0,
+            "skill3_mult": 0,
+            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mult": 150*PhysicBuff1*1.3,
+            "attack_mana_recov": 1,
+            "mana_buff": mana_buff,
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5 + MagicGauntlet,
+        }
+        ans = mean_total_damage_common(params)
     elif character_id == "5306":  # ドレイン
         t_buff1 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
         t_buff2 = 1 + float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100
