@@ -49,15 +49,24 @@
                  data-bs-parent="#noticeAccordion">
               <div class="accordion-body pt-2">
                 <ul class="mb-0">
+                  <li>何かお気づきの点があればDiscord(@ushigai), <a href="https://x.com/ushigai_sub" target="_blank" rel="noopener noreferrer">X(@ushigai_sub)</a>, <a href="https://github.com/ushigai/LuckyDefense_tools/issues" target="_blank" rel="noopener noreferrer">GitHubのissue</a>にてお知らせください</li>
+                  <li>注意</li>
+                    <ul class="mb-0">
+                      <li>ページを開いて長時間放置するとDPS結果が低くかなり低く表示されるバグがあるので適宜ページの更新をお願いします</li>
+                    </ul>
                   <li>DPS算出のロジック</li>
                     <ul class="mb-0">
                       <li>緑字攻撃力=白字攻撃力*(力のポーション+ユニットレベル合計バフ)*神話強化*(マネガン+攻撃力バフ)*ギルド加護</li>
                       <li>ダメージ=大剣*爆弾*スキル倍率*(秘伝書+バットor魔法使いの帽子)*(白字攻撃力 + 緑字攻撃力)</li>
                       <li>仮想敵はボス2体で常に気絶中</li>
-                      <li>財宝のダメージ増加全般は加算か乗算か分からないので適当に全部乗算として計算</li>
+                      <li>財宝などのダメージ増加全般は加算か乗算か分からないので適当に全部乗算として計算</li>
                       <li>キャラのモーションフレーム数は反映していなく全て基本攻撃と同じ速度で発動している</li>
                     </ul>
-                  <li>【実装予定】各キャラの基本攻撃/スキル/究極や物理/魔法、単体/複数など区分別ダメージ割合</li>
+                  <li>要検証項目</li>
+                    <ul class="mb-0">
+                      <li>GitHubのissueにて管理</li>
+                      <li><a href="https://github.com/ushigai/LuckyDefense_tools/issues" target="_blank" rel="noopener noreferrer">https://github.com/ushigai/LuckyDefense_tools/issues</a></li>
+                    </ul>
                   <li>実装予定の機能</li>
                     <ul class="mb-0">
                       <li>洗剤の反映</li>
@@ -355,7 +364,7 @@
                     <select id="guildBlessing" class="form-select rounded-3">
                       <option value="0">ギルド加入無しorギルドレベル7未満</option>
                       <option value="1" selected>ギルドレベル7~9</option>
-                      <option value="2">ギルドレベル10</option>
+                      <option value="2">ギルドレベル10（未実装）</option>
                     </select>
                   </div>
                   <div class="col-12 col-md-4">
