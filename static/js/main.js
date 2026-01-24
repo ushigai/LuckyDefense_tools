@@ -73,6 +73,25 @@ async function init() {
   state.ENEMIES = eobj.enemies ?? [];
   state.ENEMY_MAP = new Map(state.ENEMIES.map(e => [String(e.name), e]));
 
+// load runes (optional; missing file should not break UI)
+try {
+  const rr = await fetch("/data/runes.json");
+  if (rr.ok) {
+    const robj = await rr.json();
+    // expected: Array<{name: string, data: {卓越|不滅|...: {description, buff}}}>
+    state.RUNES = Array.isArray(robj) ? robj : (robj.runes ?? []);
+    state.RUNE_MAP = new Map((state.RUNES ?? []).map(r => [String(r.name), r]));
+  } else {
+    console.warn("runes.json not found:", rr.status);
+    state.RUNES = [];
+    state.RUNE_MAP = new Map();
+  }
+} catch (e) {
+  console.warn("Failed to load runes.json:", e);
+  state.RUNES = [];
+  state.RUNE_MAP = new Map();
+}
+
   const initialEnemy = state.ENEMIES[0]?.name ?? "";
   renderEnemyOptions(initialEnemy);
 

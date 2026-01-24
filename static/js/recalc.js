@@ -21,7 +21,7 @@ export async function recalc() {
   if (members.length === 0) return;
 
   const party = members.map(m => {
-    const obj = { character: m.character, charLv: m.charLv, treasureLv: m.treasureLv };
+    const obj = { character: m.character, charLv: m.charLv, treasureLv: m.treasureLv, runeName: m.runeName, runeRarity: m.runeRarity };
     Object.assign(obj, m.extras || {});
     return obj;
   });
@@ -65,8 +65,12 @@ export async function recalc() {
         if (v === undefined || v === null) continue;
         extraParts.push(`${label}=${v}`);
       }
-      const extra = extraParts.length ? ` | ${extraParts.join(" | ")}` : "";
-      return `  - ${name} | dps=${Math.round(dps).toLocaleString("ja-JP")} | share=${share.toFixed(3)}%${extra}`;
+const runePart = (m?.runeName && m.runeName !== "なし")
+  ? ` | ルーン=${m.runeName}(${m.runeRarity ?? "なし"})`
+  : "";
+const extra = extraParts.length ? ` | ${extraParts.join(" | ")}` : "";
+return `  - ${name} | dps=${Math.round(dps).toLocaleString("ja-JP")} | share=${share.toFixed(3)}%${runePart}${extra}`;
+
     }).join("\n");
 
     const totalStr = Math.round(total).toLocaleString("ja-JP");

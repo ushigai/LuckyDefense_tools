@@ -72,11 +72,32 @@ def load_enemies() -> Dict[str, Dict[str, Any]]:
         out[str(e["name"])] = e
     return out
 
+def load_runes() -> Dict[str, Dict[str, Any]]:
+    """Load runes.json (list) into name->entry mapping."""
+    path = os.path.join(DATA_DIR, "runes.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        obj = json.load(f)
+    if not isinstance(obj, list):
+        return {}
+    out: Dict[str, Dict[str, Any]] = {}
+    for r in obj:
+        try:
+            name = str(r.get("name", ""))
+        except Exception:
+            continue
+        if not name:
+            continue
+        out[name] = r
+    return out
+
 TREASURE_DB, _ = load_treasure_db(os.path.join(DATA_DIR, "treasures.json"))
 
 ARTIFACTS_DB = load_artifacts()
 CHAR_DB = load_characters()
 ENEMY_DB = load_enemies()
+RUNES_DB = load_runes()
 ALLOWED_ENEMIES = set(ENEMY_DB.keys())
 PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15010, 15011, 15020, 15023, 15110, 15210]
 BAT_ENHANCE_DB = [0, 1.0, 1.5, 2.0, 2.5, 5.0, 7.0, 9.0, 11.0, 13.0, 20.0, 25.0, 20.0, 35.0, 40.0, 60.0, 70.0, 90.0, 120.0, 150.0, 180.0]
@@ -182,15 +203,89 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     MagicBuff1 = 1 + SecretBook + WizardHat
     PhysicBuff1 = 1 + SecretBook + Bat
 
-    mana_buff = int(common.get("manaRegenBuffPct", 0))
-    mana_buff = 1 if mana_buff == 0 else mana_buff//100 + 1
+    mana_buff_pct_raw = int(common.get("manaRegenBuffPct", 0))
     upgrade_atk = int(CHAR_DB[character_id]["upgrade_attack_damage"])
     base_speed = float(CHAR_DB[character_id]["attack_speed"])
     ult_mana = int(CHAR_DB[character_id]["sp"])
     lv1_atk = int(CHAR_DB[character_id]["attack_damage"])
     base_atk = lv1_atk + ((char_lv - 1) * upgrade_atk)
     crit_rate = 5 + BambaDoll
-    
+
+    # === Rune buffs (immortal only) ===
+    rune_name = str(member.get("runeName", "なし") or "なし")
+    rune_rarity = str(member.get("runeRarity", "なし") or "なし")
+    rune_effects: Dict[str, float] = {}
+    rune_warnings: List[str] = []
+
+    # only immortal characters can use runes (same idea as mythic-only treasure)
+    if str(CHAR_DB.get(character_id, {}).get("rarity", "")) != "immortal":
+        rune_name = "なし"
+        rune_rarity = "なし"
+
+    if rune_name != "なし" and rune_rarity != "なし":
+        entry = RUNES_DB.get(rune_name)
+        if not entry:
+            rune_warnings.append(f"unknown rune: {rune_name}")
+        else:
+            data = entry.get("data", {}) if isinstance(entry, dict) else {}
+            rr = data.get(rune_rarity) if isinstance(data, dict) else None
+            if not rr or not isinstance(rr, dict):
+                rune_warnings.append(f"unknown rarity for rune: {rune_rarity}")
+            else:
+                buff = rr.get("buff", []) or []
+                desc = str(rr.get("description", "") or "")
+                lines = [ln.strip() for ln in desc.splitlines() if ln.strip()]
+                for i, ln in enumerate(lines):
+                    if i >= len(buff):
+                        break
+                    try:
+                        val = float(buff[i])
+                    except Exception:
+                        continue
+
+                    key = None
+                    # NOTE: these are "simple additive" effects. conditional effects are ignored safely.
+                    if "攻撃力" in ln:
+                        atkBuffPct += val / 100
+                        key = "atkBuffPct"
+                    elif "攻撃速度" in ln:
+                        speedBuffPct += val / 100
+                        key = "speedBuffPct"
+                    elif "物理ダメージ" in ln:
+                        PhysicBuff1 *= (1 + val / 100)
+                        key = "physDmgPct"
+                    elif "魔法ダメージ" in ln:
+                        MagicBuff1 *= (1 + val / 100)
+                        key = "magicDmgPct"
+                    elif "ダメージ" in ln:
+                        MagicBuff1 *= (1 + val / 100)
+                        PhysicBuff1 *= (1 + val / 100)
+                        key = "allDmgPct"
+                    elif ("会心率" in ln) or ("クリ率" in ln):
+                        crit_rate += val
+                        key = "critRate"
+                    elif ("会心ダメージ" in ln) or ("クリダメ" in ln):
+                        MagicGauntlet += val / 100
+                        key = "critDmgPct"
+                    elif ("マナ" in ln and "回復" in ln):
+                        mana_buff_pct_raw += int(round(val))
+                        key = "manaRegenBuffPct"
+                    else:
+                        rune_warnings.append(f"unhandled rune line: {ln}")
+
+                    if key:
+                        rune_effects[key] = rune_effects.get(key, 0.0) + float(val)
+
+        if rune_name != "なし":
+            DebugMessage["rune"] = {
+                "name": rune_name,
+                "rarity": rune_rarity,
+                "effects": rune_effects,
+                "warnings": rune_warnings,
+            }
+    # mana regen multiplier (from common + rune)
+    mana_buff = 1 if mana_buff_pct_raw == 0 else mana_buff_pct_raw // 100 + 1
+
     starPower = int(member.get("starPower", 0))
     energyCount = int(member.get("energyCount", 0))
     robots = int(member.get("robots", 0))
@@ -1281,13 +1376,17 @@ def api_calc():
         char_lv = clamp_int(m.get("charLv", 1), 1, 15, 1)
         treasure_lv = clamp_int(m.get("treasureLv", 1), 1, 15, 1)
 
+        rune_name = str(m.get("runeName", "なし") or "なし")
+        rune_rarity = str(m.get("runeRarity", "なし") or "なし")
+
         member_s: Dict[str, Any] = {
             "character": cid,
             "charLv": char_lv,
             "treasureLv": treasure_lv,
+            "runeName": rune_name,
+            "runeRarity": rune_rarity,
         }
-
-        # === Extra per-character parameters (UI dropdowns) ===
+# === Extra per-character parameters (UI dropdowns) ===
         # 既存の計算ロジック（compute_member_dps）は変更せず、
         # ここで入力の正規化・バリデーションと、既存キーへのエイリアス付与だけ行う。
         cname = str(CHAR_DB.get(cid, {}).get("name", ""))
@@ -1385,6 +1484,8 @@ def api_calc():
                 "character": cid,
                 "charLv": char_lv,
                 "treasureLv": treasure_lv,
+                "runeName": member_s.get("runeName"),
+                "runeRarity": member_s.get("runeRarity"),
                 "intake": member_s.get("intake"),
                 "mythCount": member_s.get("mythCount"),
                 "uchiCells": member_s.get("uchiCells"),
