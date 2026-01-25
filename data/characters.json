@@ -178,6 +178,7 @@
     },
     {
       "name": "忍者",
+      "rarity": "mythic",
       "id": 3007,
       "attack_damage": 5040,
       "plus_attack_damage_percentage": 0.5,
@@ -185,10 +186,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 30
     },
     {
       "name": "オークシャーマン",
+      "rarity": "mythic",
       "id": 4001,
       "attack_damage": 5040,
       "plus_attack_damage_percentage": 0.5,
@@ -200,6 +202,7 @@
     },
     {
       "name": "パルス発生器",
+      "rarity": "mythic",
       "id": 4002,
       "attack_damage": 7200,
       "plus_attack_damage_percentage": 0.5,
@@ -244,6 +247,7 @@
     },
     {
       "name": "猫の魔法使い",
+      "rarity": "mythic",
       "id": 4006,
       "attack_damage": 2880,
       "plus_attack_damage_percentage": 0.5,
@@ -405,7 +409,7 @@
       "attack_speed": 0.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 90
     },
     {
       "name": "インディ",
@@ -501,7 +505,7 @@
       "attack_speed": 1.3,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 40
     },
     {
       "name": "ペンギン楽師",
@@ -537,7 +541,7 @@
       "attack_speed": 1.25,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 50
     },
     {
       "name": "ロカ",
@@ -549,7 +553,7 @@
       "attack_speed": 1,
       "attack_range": 7,
       "move_speed": 3,
-      "sp": 0
+      "sp": 50
     },
     {
       "name": "選鳥師",
@@ -632,7 +636,7 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 25
     },
     {
       "name": "アイアンニャンv2",
@@ -704,7 +708,7 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 50
     },
     {
       "name": "ドクターパルス",
@@ -788,7 +792,7 @@
       "attack_speed": 0.7,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 60
     },
     {
       "name": "ノイズペンギンキング",
@@ -824,7 +828,7 @@
       "attack_speed": 1.25,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 40
     },
     {
       "name": "キャプテンロカ",
@@ -836,7 +840,7 @@
       "attack_speed": 1,
       "attack_range": 7,
       "move_speed": 3,
-      "sp": 0
+      "sp": 80
     },
     {
       "id": 15024,
@@ -872,7 +876,7 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 60
     },
     {
       "name": "エースバットマン打者",
@@ -884,7 +888,7 @@
       "attack_speed": 1.5,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 60
     }
   ]
 }
