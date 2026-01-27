@@ -62,60 +62,46 @@ def _roll_crit(rng: random.Random, crit_rate_pct: float, crit_dmg: float) -> flo
     return crit_dmg if (rng.random() < crit_rate_pct / 100.0) else 1.0
 
 
-def simulate_one_trial_15023(
+def _simulate_one_trial_core_15023(
     p: CaptainRokaParams15023,
     base_ticks: int,
     rng: random.Random,
-) -> Tuple[float, Dict[str, int], int]:
-    """
-    1試行分の総ダメージを返す。
-    戻り値: (total_damage, action_counts, simulated_ticks)
-
-    実装上の行動優先度:
-      ult (mana>=ult_mana) >
-      skill3 (burst_shotが3回溜まっていれば) >
-      skill2 (basicスタックが5溜まっていれば) >
-      skill1 (確率) >
-      basic
-    """
+) -> Tuple[float, Dict[str, float], Dict[str, int], int]:
+    """Core simulator returning (total_damage, dmg_breakdown, action_counts, simulated_ticks)."""
     _validate_params(p)
     if base_ticks < 0:
         raise ValueError("base_ticks must be >= 0")
 
     mana = 0.0
-    basic_stack = 0          # basic実行で+1、5でskill2
-    burst_count = 0          # skill2実行で+1、3でskill3
+    basic_stack = 0
+    burst_count = 0
 
-    end_time = float(base_ticks)  # floatで拡張を保持
+    end_time = float(base_ticks)
     t = 0
 
-    total_damage = 0.0
+    dmg_br: Dict[str, float] = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "skill3": 0.0, "ult": 0.0}
     counts: Dict[str, int] = {"basic": 0, "skill1": 0, "skill2": 0, "skill3": 0, "ult": 0}
 
     while t < end_time:
         action = "basic"
         mult = 1.0
 
-        # ---- 行動決定（tick先頭）----
         if mana >= p.ult_mana and p.ult_mana > 0:
             action = "ult"
             mult = p.ult_mult
-            mana = 0.0  # 発動直後に0へ
+            mana = 0.0
         else:
-            # skill3 優先
             if burst_count >= 3:
                 action = "skill3"
                 mult = p.skill3_mult
                 burst_count -= 3
                 end_time += p.charge_extend_ticks
-            # skill2 次
             elif basic_stack >= 5:
                 action = "skill2"
                 mult = p.skill2_mult
                 basic_stack -= 5
                 burst_count += 1
             else:
-                # skill1 は basic の抽選枠（置換）
                 if rng.random() < p.skill1_rate / 100.0:
                     action = "skill1"
                     mult = p.skill1_mult
@@ -124,21 +110,32 @@ def simulate_one_trial_15023(
                     mult = 1.0
                     basic_stack += 1
 
-        # ---- ダメージ ----
-        dmg = p.attack_power * mult
-        dmg *= _roll_crit(rng, p.crit_rate, p.crit_dmg)
-        total_damage += dmg
+        dealt = p.attack_power * mult
+        dealt *= _roll_crit(rng, p.crit_rate, p.crit_dmg)
+
+        dmg_br[action] += dealt
         counts[action] += 1
 
-        # ---- tick末尾のマナ回復（常に適用）----
         mana += 1.0 / p.attack_speed
-
         t += 1
 
-    return total_damage, counts, t
+    total_damage = sum(dmg_br.values())
+    return total_damage, dmg_br, counts, t
+
+def simulate_one_trial_15023(
+    p: CaptainRokaParams15023,
+    base_ticks: int,
+    rng: random.Random,
+) -> Tuple[float, Dict[str, int], int]:
+    """
+    1試行分の総ダメージを返す（従来互換ラッパ）。
+    戻り値: (total_damage, action_counts, simulated_ticks)
+    """
+    total, _br, counts, t = _simulate_one_trial_core_15023(p, base_ticks, rng)
+    return total, counts, t
 
 
-def mean_total_damage_15023(options: Dict[str, Any]) -> float:
+def mean_total_damage_15023(options: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
     """
     外部から「平均総ダメージ」だけ取りたい用。
 
@@ -189,12 +186,16 @@ def mean_total_damage_15023(options: Dict[str, Any]) -> float:
 
     rng = random.Random(seed)
 
-    total = 0.0
+    sum_basic = sum_skill1 = sum_skill2 = sum_skill3 = sum_ult = 0.0
     for _ in range(trials):
-        dmg, _, _ = simulate_one_trial_15023(p, int(ticks), rng)
-        total += dmg
+        _total, br, _counts, _t = _simulate_one_trial_core_15023(p, int(ticks), rng)
+        sum_basic += br['basic']
+        sum_skill1 += br['skill1']
+        sum_skill2 += br['skill2']
+        sum_skill3 += br['skill3']
+        sum_ult += br['ult']
 
-    return total / trials
+    return (sum_basic / trials, sum_skill1 / trials, sum_skill2 / trials, sum_skill3 / trials, sum_ult / trials)
 
 
 def main() -> None:

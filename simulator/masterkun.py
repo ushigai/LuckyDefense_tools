@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import random
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -152,33 +152,77 @@ def simulate_total_damage_once_5018(p: MasterKunParams5018, rng: random.Random) 
     return total
 
 
-def mean_total_damage_5018(params: Dict[str, Any]) -> float:
+def simulate_damage_breakdown_once_5018(p: MasterKunParams5018, rng: random.Random) -> Tuple[float, float, float, float, float]:
+    """
+    1試行分のダメージ内訳を返す。
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill1 は DoT の継続ダメージとして skill1 に計上
+      - このキャラは skill3/ult を持たないため 0.0
+    """
+    dmg_basic = 0.0
+    dmg_skill1 = 0.0
+    dmg_skill2 = 0.0
+
+    dot_remaining = 0.0
+
+    dot_duration = p.attack_speed * 10.0
+    dot_per_full_tick = p.attack_power * (p.skill1_mult / (p.attack_speed * p.skill1_interval))
+
+    basic_damage_base = p.attack_power * p.base_attack_mult
+    skill2_damage_base = p.attack_power * p.skill2_mult
+
+    for _ in range(p.tick):
+        action = _choose_action_basic_skill1_skill2(rng, p.skill1_rate, p.skill2_rate)
+
+        if action == "basic":
+            dmg_basic += _roll_crit(rng, p.crit_rate, p.crit_dmg, basic_damage_base)
+        elif action == "skill2":
+            dmg_skill2 += _roll_crit(rng, p.crit_rate, p.crit_dmg, skill2_damage_base)
+        elif action == "skill1":
+            dot_remaining = dot_duration
+        else:
+            raise RuntimeError(f"Unknown action: {action}")
+
+        if dot_remaining > 0.0 and dot_per_full_tick > 0.0:
+            active = 1.0 if dot_remaining >= 1.0 else dot_remaining
+            dot_damage = dot_per_full_tick * active
+            dmg_skill1 += _roll_crit(rng, p.crit_rate, p.crit_dmg, dot_damage)
+
+        dot_remaining -= 1.0
+
+    return dmg_basic, dmg_skill1, dmg_skill2, 0.0, 0.0
+
+def mean_total_damage_5018(params: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
     """
     外部から参照する用:
-      params(dict) を受け取り、モンテカルロ平均の総ダメージを返す。
-    必須キー:
-      tick, attack_power, attack_speed, base_attack_mult,
-      skill1_mult, skill2_mult, skill1_rate, skill2_rate,
-      skill3_rate, crit_rate, crit_dmg, skill1_interval
-    任意キー:
-      n_iter, seed
+      params(dict) を受け取り、モンテカルロ平均の総ダメージ内訳を返す。
+
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill3/ult は存在しないため 0.0
     """
     p = MasterKunParams5018(**params).validated()
     rng = random.Random(p.seed)
 
-    s = 0.0
+    s_basic = s_s1 = s_s2 = s_s3 = s_ult = 0.0
     for _ in range(p.n_iter):
-        s += simulate_total_damage_once_5018(p, rng)
-    return s / p.n_iter
+        b, s1, s2, s3, u = simulate_damage_breakdown_once_5018(p, rng)
+        s_basic += b
+        s_s1 += s1
+        s_s2 += s2
+        s_s3 += s3
+        s_ult += u
 
+    inv = 1.0 / float(p.n_iter)
+    return s_basic * inv, s_s1 * inv, s_s2 * inv, s_s3 * inv, s_ult * inv
 
 def mean_dps_5018(params: Dict[str, Any]) -> float:
     """平均DPS（= 平均総ダメージ / tick）"""
     tick = int(params["tick"])
     if tick <= 0:
         return 0.0
-    return mean_total_damage_5018(params) / tick
-
+    b, s1, s2, s3, u = mean_total_damage_5018(params)
+    total = b + s1 + s2 + s3 + u
+    return total / tick
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="MasterKun(5018) Monte Carlo damage/DPS simulator")
@@ -212,7 +256,8 @@ def main() -> None:
     a = ap.parse_args()
 
     params = vars(a)
-    mean_total = mean_total_damage_5018(params)
+    b, s1, s2, s3, u = mean_total_damage_5018(params)
+    mean_total = b + s1 + s2 + s3 + u
     dps = mean_total / params["tick"] if params["tick"] > 0 else 0.0
 
     print(f"mean_total_damage = {mean_total:.6f}")

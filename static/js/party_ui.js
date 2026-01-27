@@ -115,6 +115,7 @@ export function addMember(recalcFn, {
       <div class="col-12 col-md-4 text-md-end">
         <div class="fw-semibold metric member-dps">—</div>
         <div class="text-secondary small member-share">share: —</div>
+        <div class="mt-2 member-dpsratio"></div>
         <button class="btn btn-outline-secondary btn-sm rounded-3 mt-2 member-remove">
           <i class="bi bi-x-lg me-1"></i>削除
         </button>
@@ -278,6 +279,7 @@ const runeRarity = (runeRaritySel && !runeRaritySel.disabled) ? (runeRaritySel.v
       extras,
       dpsEl: r.querySelector(".member-dps"),
       shareEl: r.querySelector(".member-share"),
+      ratioEl: r.querySelector(".member-dpsratio"),
     };
   });
 }

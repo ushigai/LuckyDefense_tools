@@ -110,54 +110,49 @@ def _damage_for_action(action: str, p: CommonParams) -> float:
         raise ValueError(f"unknown action: {action}")
     return p.attack_power * mult
 
-
-def simulate_once(p: CommonParams, ticks: int, rng: random.Random) -> Tuple[float, Dict[str, int]]:
-    """
-    1試行分のシミュレーションを実行して (総ダメージ, 行動回数dict) を返す。
-    仕様（重要）:
-      - 各tick冒頭で mana >= ult_mana なら ult を発動し、直後に mana を 0 に戻す
-      - mana < ult_mana のときのみ skill1/2/3/basic を確率で選択（互いに排他）
-      - マナ回復は「各tickの最後」に適用
-          * 常に + (1/attack_speed)
-          * そのtickの行動が basic のときだけ + attack_mana_recov
-          * それら全てに mana_buff を乗算
-      - crit は各ダメージ発生行為ごとに判定（basic/skill/ult 全て）
-    """
+def simulate_once_core(p: CommonParams, ticks: int, rng: random.Random) -> Tuple[float, Dict[str, float], Dict[str, int]]:
+    """Run one trial and return (total_damage, dmg_breakdown, action_counts)."""
     if ticks < 0:
         raise ValueError("ticks must be >= 0")
 
     mana = 0.0
-    total_damage = 0.0
+    dmg_br = {ACTION_BASIC: 0.0, ACTION_SKILL1: 0.0, ACTION_SKILL2: 0.0, ACTION_SKILL3: 0.0, ACTION_ULT: 0.0}
     counts = {ACTION_BASIC: 0, ACTION_SKILL1: 0, ACTION_SKILL2: 0, ACTION_SKILL3: 0, ACTION_ULT: 0}
 
     passive_recov = (1.0 / p.attack_speed) * p.mana_buff
     attack_recov = p.attack_mana_recov * p.mana_buff
 
     for _ in range(ticks):
-        # 1) tick冒頭：ult判定
         if mana >= p.ult_mana and p.ult_mana > 0:
             action = ACTION_ULT
-            mana = 0.0  # ult後 0 に戻る
+            mana = 0.0
         elif mana >= p.ult_mana and p.ult_mana == 0:
-            # ult_mana=0 は「常に撃てる」になるので無限ultになり得る。
-            # ここでは仕様通りに毎tick ult を撃つ扱いにする。
             action = ACTION_ULT
             mana = 0.0
         else:
             action = _choose_nonult_action(rng, p)
 
-        # 2) ダメージ計算（crit判定）
         base = _damage_for_action(action, p)
         crit_mult = _roll_crit(rng, p.crit_rate, p.crit_dmg)
-        total_damage += base * crit_mult
+        dealt = base * crit_mult
+        dmg_br[action] += dealt
         counts[action] += 1
 
-        # 3) tick末尾：マナ回復
         mana += passive_recov
         if action == ACTION_BASIC:
             mana += attack_recov
 
-    return total_damage, counts
+    total = sum(dmg_br.values())
+    return total, dmg_br, counts
+
+
+def simulate_once(p: CommonParams, ticks: int, rng: random.Random) -> Tuple[float, Dict[str, int]]:
+    """
+    1試行分のシミュレーションを実行して (総ダメージ, 行動回数dict) を返す。
+    （従来互換の薄いラッパ）
+    """
+    total, _br, counts = simulate_once_core(p, ticks, rng)
+    return total, counts
 
 
 def simulate_many(p: CommonParams, ticks: int, trials: int, seed: Optional[int] = None) -> Dict[str, Any]:
@@ -169,12 +164,15 @@ def simulate_many(p: CommonParams, ticks: int, trials: int, seed: Optional[int] 
 
     damages = []
     sum_counts = {ACTION_BASIC: 0, ACTION_SKILL1: 0, ACTION_SKILL2: 0, ACTION_SKILL3: 0, ACTION_ULT: 0}
+    sum_breakdown = {ACTION_BASIC: 0.0, ACTION_SKILL1: 0.0, ACTION_SKILL2: 0.0, ACTION_SKILL3: 0.0, ACTION_ULT: 0.0}
 
     for _ in range(trials):
-        d, c = simulate_once(p, ticks, rng)
+        d, br, c = simulate_once_core(p, ticks, rng)
         damages.append(d)
         for k in sum_counts:
             sum_counts[k] += c.get(k, 0)
+        for k in sum_breakdown:
+            sum_breakdown[k] += br.get(k, 0.0)
 
     mean = sum(damages) / trials
     # 標本分散（不偏に寄せる）
@@ -185,6 +183,7 @@ def simulate_many(p: CommonParams, ticks: int, trials: int, seed: Optional[int] 
     std = math.sqrt(var)
 
     avg_counts = {k: v / trials for k, v in sum_counts.items()}
+    mean_breakdown_total = {k: v / trials for k, v in sum_breakdown.items()}
 
     return {
         "ticks": ticks,
@@ -194,10 +193,11 @@ def simulate_many(p: CommonParams, ticks: int, trials: int, seed: Optional[int] 
         "std_total_damage": std,
         "mean_damage_per_tick": (mean / ticks) if ticks > 0 else 0.0,
         "avg_action_counts": avg_counts,
+        "mean_breakdown_total": mean_breakdown_total,
     }
 
 
-def mean_total_damage_common(options: Dict[str, Any]) -> float:
+def mean_total_damage_common(options: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
     """
     外部から「平均総ダメージ」だけ取りたい用。
 
@@ -244,7 +244,8 @@ def mean_total_damage_common(options: Dict[str, Any]) -> float:
     trials = int(options.get("trials", 10000))
     seed = options.get("seed", None)
     result = simulate_many(p, ticks=ticks, trials=trials, seed=seed)
-    return float(result["mean_total_damage"])
+    br = result.get('mean_breakdown_total', {})
+    return (float(br.get(ACTION_BASIC, 0.0)), float(br.get(ACTION_SKILL1, 0.0)), float(br.get(ACTION_SKILL2, 0.0)), float(br.get(ACTION_SKILL3, 0.0)), float(br.get(ACTION_ULT, 0.0)))
 
 
 def _build_argparser() -> argparse.ArgumentParser:

@@ -279,9 +279,10 @@ def mean_total_damage_5021(
     ult_mana: float,
     mana_buff: float = 1.0,
     tick_seconds: float = 1.0,
-) -> float:
+) -> Tuple[float, float, float, float, float]:
     """
-    外部から「平均総ダメージ」だけ参照するための関数。
+    外部から「平均総ダメージ内訳」を参照するための関数。
+    戻り値は (basic, skill1, skill2, skill3, ult)。
     """
     cfg = HayleyConfig(
         attack_speed=attack_speed,
@@ -298,7 +299,8 @@ def mean_total_damage_5021(
         tick_seconds=tick_seconds,
     )
     result = run_simulation(ticks=ticks, trials=trials, seed=seed, cfg=cfg)
-    return float(result["mean_total_damage"])
+    br = result.get('mean_breakdown_total', {})
+    return (float(br.get('basic', 0.0)), float(br.get('skill1', 0.0)), float(br.get('skill2', 0.0)), 0.0, float(br.get('ult', 0.0)))
 
 
 # ----------------------------

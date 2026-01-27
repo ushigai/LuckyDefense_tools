@@ -178,29 +178,86 @@ def monte_carlo_mean_total_damage_3007(
 # External API function
 # ----------------------------
 
-def mean_total_damage_3007(options: Dict[str, Any]) -> float:
+def simulate_damage_breakdown_once_3007(
+    params: NinjaParams3007,
+    ticks: int,
+    rng: random.Random,
+) -> Tuple[float, float, float, float, float]:
     """
-    外部から「平均総ダメージ」だけ取りたい用。
+    1 trial simulation for given ticks.
+    Returns damage breakdown: (basic, skill1, skill2, skill3, ult).
+      - skill3 is not present for this character, so it is always 0.0
+    """
+    if ticks < 0:
+        raise ValueError("ticks must be >= 0")
 
-    options例:
-      {
-        "attack_power": 100000,
-        "attack_speed": 1.5,
-        "base_attack_mult": 1.0,
-        "skill1_rate": 20,
-        "skill2_rate": 10,
-        "react_rate": 30,
-        "skill1_mult": 3.0,
-        "skill2_mult": 4.0,
-        "ult_mult": 10.0,
-        "ult_mana": 190,
-        "mana_buff": 1.0,   # 省略可 (default 1.0)
-        "crit_rate": 20,
-        "crit_dmg": 2.5,
-        "ticks": 100,
-        "trials": 10000,
-        "seed": 1
-      }
+    mana: float = 0.0
+    in_skill2_chain: bool = False
+
+    dmg_basic = 0.0
+    dmg_skill1 = 0.0
+    dmg_skill2 = 0.0
+    dmg_ult = 0.0
+
+    mana_per_tick: float = params.mana_buff * (1.0 / params.attack_speed)
+
+    for _ in range(ticks):
+        action: str
+
+        if in_skill2_chain:
+            action = "skill2"
+        else:
+            if mana >= params.ult_mana and params.ult_mana > 0:
+                action = "ult"
+            elif params.ult_mana == 0:
+                action = "ult"
+            else:
+                r = rng.random() * 100.0
+                if r < params.skill1_rate:
+                    action = "skill1"
+                elif r < params.skill1_rate + params.skill2_rate:
+                    action = "skill2"
+                else:
+                    action = "basic"
+
+        if action == "basic":
+            raw = params.attack_power * params.base_attack_mult
+            dmg_basic += _apply_crit(rng, raw, params.crit_rate, params.crit_dmg)
+
+        elif action == "skill1":
+            raw = params.attack_power * params.skill1_mult
+            dmg_skill1 += _apply_crit(rng, raw, params.crit_rate, params.crit_dmg)
+
+        elif action == "skill2":
+            raw = params.attack_power * params.skill2_mult
+            dmg_skill2 += _apply_crit(rng, raw, params.crit_rate, params.crit_dmg)
+
+        elif action == "ult":
+            raw = params.attack_power * params.ult_mult
+            dmg_ult += _apply_crit(rng, raw, params.crit_rate, params.crit_dmg)
+            mana = 0.0
+
+        else:
+            raise RuntimeError(f"unknown action: {action}")
+
+        if action == "skill2":
+            if rng.random() * 100.0 < params.react_rate:
+                in_skill2_chain = True
+            else:
+                in_skill2_chain = False
+        else:
+            in_skill2_chain = False
+
+        mana += mana_per_tick
+
+    return dmg_basic, dmg_skill1, dmg_skill2, 0.0, dmg_ult
+
+def mean_total_damage_3007(options: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
+    """
+    外部から「平均総ダメージ内訳」を取りたい用。
+
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill3 は存在しないため常に 0.0
     """
     params = NinjaParams3007(
         attack_power=float(options["attack_power"]),
@@ -220,16 +277,24 @@ def mean_total_damage_3007(options: Dict[str, Any]) -> float:
 
     ticks = int(options["ticks"])
     trials = int(options.get("trials", 10000))
+    if trials <= 0:
+        raise ValueError("trials must be > 0")
+
     seed = options.get("seed", None)
     seed_int = int(seed) if seed is not None else None
+    rng = random.Random(seed_int)
 
-    mean, _std = monte_carlo_mean_total_damage_3007(params, ticks=ticks, trials=trials, seed=seed_int)
-    return mean
+    s_basic = s_s1 = s_s2 = s_s3 = s_ult = 0.0
+    for _ in range(trials):
+        b, s1, s2, s3, u = simulate_damage_breakdown_once_3007(params, ticks, rng)
+        s_basic += b
+        s_s1 += s1
+        s_s2 += s2
+        s_s3 += s3
+        s_ult += u
 
-
-# ----------------------------
-# CLI
-# ----------------------------
+    inv = 1.0 / float(trials)
+    return s_basic * inv, s_s1 * inv, s_s2 * inv, s_s3 * inv, s_ult * inv
 
 def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Ninja (ID 3007) Monte Carlo damage simulator (tick-based).")

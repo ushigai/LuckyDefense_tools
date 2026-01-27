@@ -4,7 +4,7 @@
 from __future__ import annotations
 import argparse
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Tuple
 
 
 @dataclass(frozen=True)
@@ -52,7 +52,7 @@ def mean_total_damage_5013(
     options: Optional[Dict[str, Any]] = None,
     # 重要な曖昧点：スタックを「消費前」の値で参照するか
     stack_is_before_consume: bool = True,
-) -> float:
+) -> Tuple[float, float, float, float, float]:
     """
     ワット(5013)の期待総ダメージ（会心込みの平均）を返す。
 
@@ -105,7 +105,7 @@ def mean_total_damage_5013(
 
     n = min(p.tick, p.watt_stack)
     if n <= 0:
-        return 0.0
+        return (0.0, 0.0, 0.0, 0.0, 0.0)
 
     # 会心の期待倍率
     crit_p = _clamp(p.cirt_rate / 100.0, 0.0, 1.0)
@@ -127,7 +127,7 @@ def mean_total_damage_5013(
     sum_term = n + (p.buff_mult * sum_k)
 
     total = p.attack_power * p.ult_mult * expected_crit_mult * sum_term
-    return float(total)
+    return (0.0, 0.0, 0.0, 0.0, float(total))
 
 
 def _build_argparser() -> argparse.ArgumentParser:
@@ -152,7 +152,7 @@ def main() -> None:
     ap = _build_argparser()
     args = ap.parse_args()
 
-    total = mean_total_damage_5013(
+    basic, skill1, skill2, skill3, ult = mean_total_damage_5013(
         watt_stack=args.watt_stack,
         tick=args.tick,
         attack_speed=args.attack_speed,
@@ -164,6 +164,7 @@ def main() -> None:
         stack_is_before_consume=not args.stack_after_consume,
     )
 
+    total = basic + skill1 + skill2 + skill3 + ult
     print(f"{total:.10f}")
 
 

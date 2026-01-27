@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Tuple
 import random
 import math
 
@@ -78,6 +78,70 @@ def _damage_for(action: str, p: IamNyanParams15004) -> float:
         raise ValueError(f"unknown action: {action}")
     return p.attack_power * mult
 
+
+def simulate_one_trial_breakdown_15004(
+    p: IamNyanParams15004,
+    ticks: int,
+    rng: random.Random,
+) -> Tuple[float, float, float, float, float]:
+    """
+    1 trial のダメージ内訳を返す。
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill3 は存在しないため常に 0.0
+    """
+    if ticks <= 0:
+        return 0.0, 0.0, 0.0, 0.0, 0.0
+
+    mana = 0.0
+    cd = 0  # remaining cooldown ticks
+
+    dmg_basic = 0.0
+    dmg_skill1 = 0.0
+    dmg_skill2 = 0.0
+    dmg_ult = 0.0
+
+    per_tick_regen = (1.0 / p.attack_speed) * p.mana_buff
+
+    for _ in range(ticks):
+        if cd > 0:
+            cd -= 1
+            # cooldown中は「基本攻撃、スキル、究極、マナ回復全て不可」
+            continue
+
+        # action selection (ult has priority)
+        action: str
+        if mana >= p.ult_mana:
+            action = "ult"
+            mana = 0.0
+            cd = p.ult_cooldown
+        else:
+            r = rng.random() * 100.0
+            if r < p.skill1_rate:
+                action = "skill1"
+            elif r < (p.skill1_rate + p.skill2_rate):
+                action = "skill2"
+            else:
+                action = "basic"
+
+        dmg = _damage_for(action, p)
+        dmg *= _roll_crit(rng, p.crit_rate, p.crit_dmg)
+
+        if action == "basic":
+            dmg_basic += dmg
+            mana += 1.0 * p.mana_buff
+        elif action == "skill1":
+            dmg_skill1 += dmg
+        elif action == "skill2":
+            dmg_skill2 += dmg
+        elif action == "ult":
+            dmg_ult += dmg
+        else:
+            raise RuntimeError(f"unknown action: {action}")
+
+        # end-of-tick regen
+        mana += per_tick_regen
+
+    return dmg_basic, dmg_skill1, dmg_skill2, 0.0, dmg_ult
 
 def simulate_one_trial_15004(p: IamNyanParams15004, ticks: int, rng: random.Random) -> float:
     """
@@ -195,47 +259,12 @@ def mean_total_damage_15004(
     options: Optional[Dict[str, Any]] = None,
     /,
     **kwargs: Any,
-) -> float:
+) -> Tuple[float, float, float, float, float]:
     """
-    外部から「平均総ダメージ」だけ取りたい用。
+    外部から「平均総ダメージ内訳」を取りたい用。
 
-    使い方1: dict で渡す
-      mean_total_damage_15004({
-        "attack_power": 100000,
-        "attack_speed": 1.5,
-        "skill1_rate": 20,
-        "skill2_rate": 10,
-        "skill1_mult": 150,
-        "skill2_mult": 80,
-        "ult_mult": 600,
-        "ult_mana": 190,
-        "ult_cooldown": 30,
-        "mana_buff": 1.0,
-        "crit_rate": 20,
-        "crit_dmg": 2.5,
-        "durationSec": 60,   # または "ticks": 90
-        "trials": 10000,
-        "seed": 1
-      })
-
-    使い方2: 変数を直接キーワード引数で渡す
-      mean_total_damage_15004(
-        attack_power=100000,
-        attack_speed=1.5,
-        skill1_rate=20,
-        skill2_rate=10,
-        skill1_mult=150,
-        skill2_mult=80,
-        ult_mult=600,
-        ult_mana=190,
-        ult_cooldown=30,
-        mana_buff=1.0,
-        crit_rate=20,
-        crit_dmg=2.5,
-        durationSec=60,
-        trials=10000,
-        seed=1,
-      )
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill3 は存在しないため常に 0.0
     """
     data: Dict[str, Any] = {}
     if options:
@@ -248,7 +277,6 @@ def mean_total_damage_15004(
     if "crit_dmg" not in data and "cirt_dmg" in data:
         data["crit_dmg"] = data["cirt_dmg"]
 
-    # required fields
     required = [
         "attack_power", "attack_speed",
         "skill1_rate", "skill2_rate",
@@ -277,8 +305,11 @@ def mean_total_damage_15004(
         crit_rate=float(data.get("crit_rate", 0.0)),
         crit_dmg=float(data.get("crit_dmg", 1.0)),
     )
+    _validate_params(p)
 
     trials = int(data.get("trials", 10000))
+    if trials <= 0:
+        raise ValueError("trials must be > 0")
     seed = data.get("seed", 1)
 
     # ticks resolution: ticks preferred, else durationSec
@@ -288,9 +319,19 @@ def mean_total_damage_15004(
         durationSec = float(data.get("durationSec", 60.0))
         ticks = _ticks_from_duration(durationSec, p.attack_speed)
 
-    res = simulate_many_15004(p, ticks=ticks, trials=trials, seed=seed)
-    return float(res["mean"])
+    rng = random.Random(seed)
 
+    s_basic = s_s1 = s_s2 = s_s3 = s_ult = 0.0
+    for _ in range(trials):
+        b, s1, s2, s3, u = simulate_one_trial_breakdown_15004(p, ticks, rng)
+        s_basic += b
+        s_s1 += s1
+        s_s2 += s2
+        s_s3 += s3
+        s_ult += u
+
+    inv = 1.0 / float(trials)
+    return s_basic * inv, s_s1 * inv, s_s2 * inv, s_s3 * inv, s_ult * inv
 
 def mean_dps_15004(
     options: Optional[Dict[str, Any]] = None,
@@ -307,7 +348,6 @@ def mean_dps_15004(
         data.update(options)
     data.update(kwargs)
 
-    # durationSec/ticks の解決を mean_total_damage と整合させる
     if "ticks" in data and data["ticks"] is not None:
         ticks = int(data["ticks"])
         attack_speed = float(data["attack_speed"])
@@ -315,9 +355,9 @@ def mean_dps_15004(
     else:
         durationSec = float(data.get("durationSec", 60.0))
 
-    total = mean_total_damage_15004(data)
+    b, s1, s2, s3, u = mean_total_damage_15004(data)
+    total = b + s1 + s2 + s3 + u
     return total / durationSec if durationSec > 0 else 0.0
-
 
 if __name__ == "__main__":
     # simple CLI
@@ -348,9 +388,9 @@ if __name__ == "__main__":
     args = ap.parse_args()
 
     opts = vars(args)
-    mean_total = mean_total_damage_15004(opts)
+    b, s1, s2, s3, u = mean_total_damage_15004(opts)
+    mean_total = b + s1 + s2 + s3 + u
     mean_dps = mean_dps_15004(opts)
-
     ticks = opts["ticks"] if opts["ticks"] is not None else _ticks_from_duration(opts["durationSec"], opts["attack_speed"])
     print(f"ticks={ticks}, trials={opts['trials']}, seed={opts['seed']}")
     print(f"mean_total_damage={mean_total:.6f}")

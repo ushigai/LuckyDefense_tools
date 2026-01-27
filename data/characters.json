@@ -9,7 +9,11 @@
       "attack_speed": 1,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "榴弾兵",
@@ -20,7 +24,11 @@
       "attack_speed": 1,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "野蛮人",
@@ -31,7 +39,11 @@
       "attack_speed": 0.5,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "水の精霊",
@@ -42,7 +54,11 @@
       "attack_speed": 1,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "山賊",
@@ -53,7 +69,11 @@
       "attack_speed": 1,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "レンジャー",
@@ -64,7 +84,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ショックロボット",
@@ -75,7 +99,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "聖騎士",
@@ -86,7 +114,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "サンドマン",
@@ -97,7 +129,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "悪魔の兵士",
@@ -108,7 +144,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "電気ロボット",
@@ -119,7 +159,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "木",
@@ -130,7 +174,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ハンター",
@@ -141,7 +189,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "重力弾",
@@ -152,7 +204,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "イーグル将軍",
@@ -163,7 +219,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ウルフ戦士",
@@ -174,7 +234,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "忍者",
@@ -186,7 +250,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 30
+      "sp": 30,
+      "skill1": "巨大手裏剣",
+      "skill2": "暗殺",
+      "skill3": "",
+      "ult": "忍法"
     },
     {
       "name": "オークシャーマン",
@@ -198,7 +266,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "呪い",
+      "skill2": "",
+      "skill3": "",
+      "ult": "感染"
     },
     {
       "name": "パルス発生器",
@@ -210,7 +282,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "エネルギー球",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ウォーマシン",
@@ -221,7 +297,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "虎の師父",
@@ -232,7 +312,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "嵐の精霊",
@@ -243,7 +327,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "猫の魔法使い",
@@ -255,7 +343,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 200
+      "sp": 200,
+      "skill1": "猫パンチ",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "保安官",
@@ -266,7 +358,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "謎のレジェンド",
@@ -277,7 +373,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "バンバ",
@@ -289,7 +389,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "本気のパンチ",
+      "skill2": "ハンマー",
+      "skill3": "起爆",
+      "ult": ""
     },
     {
       "name": "コルディ",
@@ -301,7 +405,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "吹雪",
+      "skill2": "氷の花",
+      "skill3": "",
+      "ult": "氷河の衝突"
     },
     {
       "name": "ランスロット",
@@ -313,7 +421,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "火花の剣気",
+      "skill2": "黒点爆発",
+      "skill3": "",
+      "ult": "火柱"
     },
     {
       "name": "アイアンニャン（変身前）",
@@ -325,7 +437,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "パルスビーム",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "id": 5005,
@@ -337,7 +453,11 @@
       "attack_speed": 3,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "スライムパンチ",
+      "skill2": "",
+      "skill3": "",
+      "ult": "スライムトラップ"
     },
     {
       "name": "ドラゴン(変身前)",
@@ -349,7 +469,11 @@
       "attack_speed": 0,
       "attack_range": 0,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "モノポリーマン",
@@ -361,7 +485,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 300
+      "sp": 300,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": "変異"
     },
     {
       "name": "ママ",
@@ -373,7 +501,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "恐怖",
+      "skill2": "",
+      "skill3": "",
+      "ult": "死霊術"
     },
     {
       "name": "カエルの王様",
@@ -385,7 +517,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "切り落とし",
+      "skill2": "ベローン",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "バットマン",
@@ -397,7 +533,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 60
+      "sp": 60,
+      "skill1": "旋風打撃",
+      "skill2": "",
+      "skill3": "",
+      "ult": "フルスイング"
     },
     {
       "name": "ヴェイン",
@@ -409,7 +549,11 @@
       "attack_speed": 0.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 90
+      "sp": 90,
+      "skill1": "ダンブル",
+      "skill2": "金の矢",
+      "skill3": "",
+      "ult": "最後の決選"
     },
     {
       "name": "インディ",
@@ -421,7 +565,11 @@
       "attack_speed": 1,
       "attack_range": 4,
       "move_speed": 1.5,
-      "sp": 150
+      "sp": 150,
+      "skill1": "秘蔵武器",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ワット（究極発動中）",
@@ -433,7 +581,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": "放出モード"
     },
     {
       "name": "タール小",
@@ -445,7 +597,11 @@
       "attack_speed": 1,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 150
+      "sp": 150,
+      "skill1": "黒い物質",
+      "skill2": "居合斬り",
+      "skill3": "",
+      "ult": "貫通"
     },
     {
       "id": 5015,
@@ -457,7 +613,11 @@
       "attack_speed": 1.25,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "強化ロケット",
+      "skill2": "超爆破ロケット",
+      "skill3": "",
+      "ult": ""
     },
     {
       "id": 5016,
@@ -469,7 +629,11 @@
       "attack_speed": 0.6,
       "attack_range": 7,
       "move_speed": 2,
-      "sp": 190
+      "sp": 190,
+      "skill1": "寒風",
+      "skill2": "",
+      "skill3": "",
+      "ult": "風の精霊"
     },
     {
       "name": "ビリ",
@@ -481,7 +645,11 @@
       "attack_speed": 4,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 300
+      "sp": 300,
+      "skill1": "完璧な計算",
+      "skill2": "",
+      "skill3": "",
+      "ult": "魔力増幅"
     },
     {
       "name": "マスタークン",
@@ -493,7 +661,11 @@
       "attack_speed": 1,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 250
+      "sp": 250,
+      "skill1": "回転炎",
+      "skill2": "火花ひっかき",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "チョナ",
@@ -505,7 +677,11 @@
       "attack_speed": 1.3,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 40
+      "sp": 40,
+      "skill1": "トゲのたね",
+      "skill2": "植物のつる",
+      "skill3": "",
+      "ult": "怪物樹木"
     },
     {
       "name": "ペンギン楽師",
@@ -517,7 +693,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "アンダンテ",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ヘイリー",
@@ -529,7 +709,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 250
+      "sp": 250,
+      "skill1": "光の光線",
+      "skill2": "光の種",
+      "skill3": "",
+      "ult": "超新星"
     },
     {
       "name": "アト",
@@ -541,7 +725,11 @@
       "attack_speed": 1.25,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 50
+      "sp": 50,
+      "skill1": "時間遅延",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "ロカ",
@@ -553,7 +741,11 @@
       "attack_speed": 1,
       "attack_range": 7,
       "move_speed": 3,
-      "sp": 50
+      "sp": 50,
+      "skill1": "爆弾",
+      "skill2": "連射",
+      "skill3": "貫通弾",
+      "ult": "ヘッドショット"
     },
     {
       "name": "選鳥師",
@@ -565,7 +757,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 200
+      "sp": 200,
+      "skill1": "シャッフル",
+      "skill2": "マジックサークル",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "アイアンニャン",
@@ -577,7 +773,11 @@
       "attack_speed": 2.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "レーザーブレード",
+      "skill2": "",
+      "skill3": "",
+      "ult": "リパルサービーム"
     },
     {
       "name": "ドラゴン",
@@ -589,7 +789,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "火炎弾",
+      "skill2": "地面爆発",
+      "skill3": "",
+      "ult": "火炎の息吹"
     },
     {
       "name": "インプ",
@@ -600,7 +804,11 @@
       "attack_speed": 1,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "キングダイアン",
@@ -612,7 +820,11 @@
       "attack_speed": 1.25,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": "稲妻玉"
     },
     {
       "name": "タール中",
@@ -624,7 +836,11 @@
       "attack_speed": 1.25,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 150
+      "sp": 150,
+      "skill1": "黒い物質",
+      "skill2": "居合斬り",
+      "skill3": "",
+      "ult": "貫通"
     },
     {
       "name": "ロケッチュー（変身後）",
@@ -636,7 +852,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 25
+      "sp": 25,
+      "skill1": "チューチュービーム",
+      "skill2": "超爆破ロケット",
+      "skill3": "",
+      "ult": "ミニチュー"
     },
     {
       "name": "アイアンニャンv2",
@@ -648,7 +868,11 @@
       "attack_speed": 2.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "ロケットパンチ",
+      "skill2": "",
+      "skill3": "",
+      "ult": "スーパービーム"
     },
     {
       "name": "偉大な卵",
@@ -660,7 +884,11 @@
       "attack_speed": 0,
       "attack_range": 0,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "タール大",
@@ -672,7 +900,11 @@
       "attack_speed": 1.5,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 150
+      "sp": 150,
+      "skill1": "黒い物質",
+      "skill2": "居合斬り",
+      "skill3": "",
+      "ult": "貫通"
     },
     {
       "name": "ドレイン",
@@ -684,7 +916,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "火炎弾",
+      "skill2": "地面爆発",
+      "skill3": "",
+      "ult": "火炎の息吹"
     },
     {
       "name": "スーパー重力弾",
@@ -696,7 +932,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 200
+      "sp": 200,
+      "skill1": "電場",
+      "skill2": "重力場",
+      "skill3": "",
+      "ult": "ブラックホール生成"
     },
     {
       "name": "鬼神忍者",
@@ -708,7 +948,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 50
+      "sp": 50,
+      "skill1": "投擲",
+      "skill2": "排除",
+      "skill3": "",
+      "ult": "斬首"
     },
     {
       "name": "ドクターパルス",
@@ -720,7 +964,11 @@
       "attack_speed": 1,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 550
+      "sp": 550,
+      "skill1": "最大出力",
+      "skill2": "",
+      "skill3": "",
+      "ult": "過熱"
     },
     {
       "id": 15004,
@@ -732,7 +980,11 @@
       "attack_speed": 2,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 300
+      "sp": 300,
+      "skill1": "プラズマキャノン",
+      "skill2": "サポートビーム",
+      "skill3": "",
+      "ult": "オメガブラスター"
     },
     {
       "name": "魔王ドラゴン",
@@ -744,7 +996,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 250
+      "sp": 250,
+      "skill1": "火炎の印",
+      "skill2": "火炎弾",
+      "skill3": "火炎放出",
+      "ult": "火炎地獄"
     },
     {
       "name": "グランドママ",
@@ -756,7 +1012,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 100
+      "sp": 100,
+      "skill1": "死霊術",
+      "skill2": "死霊の印",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "カエルの死神",
@@ -768,7 +1028,11 @@
       "attack_speed": 2,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "抑制",
+      "skill2": "死刑",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "エースバットマン",
@@ -780,7 +1044,11 @@
       "attack_speed": 0,
       "attack_range": 0,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "トップヴェイン",
@@ -792,7 +1060,11 @@
       "attack_speed": 0.7,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 60
+      "sp": 60,
+      "skill1": "黄金の矢",
+      "skill2": "破裂の矢",
+      "skill3": "",
+      "ult": "終末の時"
     },
     {
       "name": "ノイズペンギンキング",
@@ -804,7 +1076,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 0
+      "sp": 0,
+      "skill1": "レント",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "id": 15021,
@@ -816,7 +1092,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 250
+      "sp": 250,
+      "skill1": "太陽の光線",
+      "skill2": "太古の爆発",
+      "skill3": "",
+      "ult": "フレア"
     },
     {
       "name": "時空アト",
@@ -828,7 +1108,11 @@
       "attack_speed": 1.25,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 40
+      "sp": 40,
+      "skill1": "時間調整",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
     },
     {
       "name": "キャプテンロカ",
@@ -840,7 +1124,11 @@
       "attack_speed": 1,
       "attack_range": 7,
       "move_speed": 3,
-      "sp": 80
+      "sp": 80,
+      "skill1": "バウンスショット",
+      "skill2": "バーストショット",
+      "skill3": "チャージショット",
+      "ult": "砲撃命令"
     },
     {
       "id": 15024,
@@ -852,7 +1140,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 250
+      "sp": 250,
+      "skill1": "ハードシャッフル",
+      "skill2": "プライムサークル",
+      "skill3": "トリックトークン",
+      "ult": "フィナーレ"
     },
     {
       "name": "死神ダイアン",
@@ -864,7 +1156,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 200
+      "sp": 200,
+      "skill1": "稲妻の連鎖",
+      "skill2": "",
+      "skill3": "",
+      "ult": "死の手"
     },
     {
       "name": "エースバットマン投手",
@@ -876,7 +1172,11 @@
       "attack_speed": 1.5,
       "attack_range": 4,
       "move_speed": 4,
-      "sp": 60
+      "sp": 60,
+      "skill1": "ストライクアウト",
+      "skill2": "",
+      "skill3": "",
+      "ult": "フィニッシュピッチ"
     },
     {
       "name": "エースバットマン打者",
@@ -888,7 +1188,11 @@
       "attack_speed": 1.5,
       "attack_range": 2.1,
       "move_speed": 4,
-      "sp": 60
+      "sp": 60,
+      "skill1": "竜巻スマッシュ",
+      "skill2": "",
+      "skill3": "",
+      "ult": "ホームラン乱打"
     }
   ]
 }

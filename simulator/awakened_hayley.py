@@ -321,9 +321,11 @@ def mean_total_damage_15021(
     crit_dmg: float,
     tick_seconds: float = 1.0,
     ult_crit_mode: str = "per_tick",
-) -> float:
-    """
-    External-call friendly function: returns mean_total_damage only.
+) -> Tuple[float, float, float, float, float]:
+    """External-call friendly function: returns mean_total_damage breakdown.
+
+    Returns (basic, skill1, skill2, skill3, ult).
+    This simulator does not have an independent skill3 damage bucket, so skill3 is always 0.0.
     """
     p = Params(
         skill1_rate=skill1_rate,
@@ -341,9 +343,14 @@ def mean_total_damage_15021(
         ult_crit_mode=ult_crit_mode,
     )
     res = simulate(ticks=ticks, trials=trials, p=p, seed=seed)
-    return float(res["mean_total_damage"])
-
-
+    br = res.get('mean_breakdown', {})
+    return (
+        float(br.get('basic', 0.0)),
+        float(br.get('skill1', 0.0)),
+        float(br.get('skill2', 0.0)),
+        0.0,
+        float(br.get('ult', 0.0)),
+    )
 def _build_argparser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Awakened Hayley DPS Monte Carlo Simulator (tick-based)")
     ap.add_argument("--ticks", type=int, required=True, help="simulation ticks")

@@ -38,37 +38,27 @@ def _roll_percent(rng: random.Random, pct_0_100: float) -> bool:
     """Return True with pct_0_100% probability."""
     return (rng.random() * 100.0) < pct_0_100
 
-
-def _simulate_one_trial(
+def _simulate_one_trial_core(
     params: ChonaParams5019,
     ticks: int,
     rng: random.Random,
-) -> Tuple[float, Dict[str, int]]:
-    """
-    1 trial 分をシミュレートして total_damage を返す。
-    counts は action 回数の内訳。
-    """
+) -> Tuple[float, Dict[str, float], Dict[str, int]]:
+    """Return (total_damage, dmg_breakdown, counts)."""
     mana = 0.0
-    basic_stack = 0  # "基本攻撃を発動した回数" を数えるスタック
+    basic_stack = 0
 
-    total_damage = 0.0
+    dmg_br = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "ult": 0.0}
     counts = {"basic": 0, "skill1": 0, "skill2": 0, "ult": 0}
 
     for _ in range(ticks):
-        # ===== action decision (priority) =====
-        # 1) ult if mana >= ult_mana
-        # 2) skill2 if basic_stack >= 25
-        # 3) skill1 by skill1_rate
-        # 4) otherwise basic
         if mana >= params.ult_mana:
             action = "ult"
             mult = params.ult_mult
-            mana = 0.0  # ult 発動後マナは0に戻る
-            # stackは変化なし（基本攻撃ではないため）
+            mana = 0.0
         elif basic_stack >= 25:
             action = "skill2"
             mult = params.skill2_mult
-            basic_stack = 0  # 植物のつる発動でスタック消費（0に戻す想定）
+            basic_stack = 0
         else:
             if _roll_percent(rng, params.skill1_rate):
                 action = "skill1"
@@ -76,23 +66,28 @@ def _simulate_one_trial(
             else:
                 action = "basic"
                 mult = 1.0
-                basic_stack += 1  # 基本攻撃を1回発動するたびにスタック+1
+                basic_stack += 1
 
-        # ===== damage =====
         dmg = params.attack_power * mult
-
-        # crit
         if _roll_percent(rng, params.crit_rate):
             dmg *= params.crit_dmg
 
-        total_damage += dmg
+        dmg_br[action] += dmg
         counts[action] += 1
 
-        # ===== end-of-tick mana recovery =====
-        # 「各tickの最後に適用」：行動種別に関係なく回復する扱い
         mana += (1.0 / params.attack_speed)
 
-    return total_damage, counts
+    total = dmg_br["basic"] + dmg_br["skill1"] + dmg_br["skill2"] + dmg_br["ult"]
+    return total, dmg_br, counts
+
+
+def _simulate_one_trial(
+    params: ChonaParams5019,
+    ticks: int,
+    rng: random.Random,
+) -> Tuple[float, Dict[str, int]]:
+    total, _br, counts = _simulate_one_trial_core(params, ticks, rng)
+    return total, counts
 
 
 def run_monte_carlo_5019(
@@ -105,14 +100,18 @@ def run_monte_carlo_5019(
 
     total_sum = 0.0
     counts_sum = {"basic": 0, "skill1": 0, "skill2": 0, "ult": 0}
+    breakdown_sum = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "ult": 0.0}
 
     for _ in range(trials):
-        dmg, counts = _simulate_one_trial(params, ticks, rng)
+        dmg, br, counts = _simulate_one_trial_core(params, ticks, rng)
         total_sum += dmg
         for k in counts_sum:
             counts_sum[k] += counts[k]
+        for k in breakdown_sum:
+            breakdown_sum[k] += br[k]
 
     mean_total = total_sum / float(trials)
+    mean_breakdown_total = {k: breakdown_sum[k] / float(trials) for k in breakdown_sum}
 
     # 参考: tick→秒の変換を「1tick = 1/attack_speed 秒」と仮定すると…
     duration_sec_est = ticks / params.attack_speed
@@ -123,6 +122,7 @@ def run_monte_carlo_5019(
         "ticks": ticks,
         "trials": trials,
         "mean_counts": {k: counts_sum[k] / float(trials) for k in counts_sum},
+        "mean_breakdown_total": mean_breakdown_total,
         "duration_sec_est": duration_sec_est,
         "mean_dps_est": mean_dps_est,
     }
@@ -131,7 +131,7 @@ def run_monte_carlo_5019(
 # =========================
 # External function requested
 # =========================
-def mean_total_damage_5019(options: Dict[str, Any]) -> float:
+def mean_total_damage_5019(options: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
     """
     外部から「平均総ダメージ」だけ取りたい用。
 
@@ -177,7 +177,8 @@ def mean_total_damage_5019(options: Dict[str, Any]) -> float:
         raise ValueError("options must include either 'ticks' or 'durationSec'.")
 
     result = run_monte_carlo_5019(params=params, ticks=ticks, trials=trials, seed=seed)
-    return float(result["mean_total_damage"])
+    br = result.get('mean_breakdown_total', {})
+    return (float(br.get('basic', 0.0)), float(br.get('skill1', 0.0)), float(br.get('skill2', 0.0)), 0.0, float(br.get('ult', 0.0)))
 
 
 # =========================

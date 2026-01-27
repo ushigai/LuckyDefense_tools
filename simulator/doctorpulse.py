@@ -50,20 +50,23 @@ def _simulate_one_trial(
     p: DoctorPulseParams14002,
     ticks: int,
     rng: random.Random,
-) -> float:
-    """
-    1試行分の総ダメージを返す。
-    状態:
-      - 通常時: mana 回復あり
-      - バフ中: ダメージ5倍、mana回復なし
-      - ult発動tick: ダメージなし(仕様上未記載のため)、そのtick末もmana回復なし
-      - バフ終了tick末: ult_mult*robots の追加ダメージ(バフ終了後扱いで5倍は乗せない)
+) -> Tuple[float, float, float, float, float]:
+    """1試行分のダメージ内訳を返す。
+
+    戻り値は (basic, skill1, skill2, skill3, ult)。
+
+    重要な集計仕様（ユーザー要望）:
+      - buff中の basic / skill1 のダメージはすべて ult として計上
+      - buff終了時の爆発ダメージも ult として計上
+      - skill2/skill3 はこのキャラでは存在しないため常に 0.0
+
+    ※シミュレーションの挙動（乱数消費順・総ダメージ期待値）は従来実装と同一に保つ。
     """
     # precompute
     skill1_p = p.skill1_rate / 100.0
     crit_p = p.crit_rate / 100.0
 
-    # damage bases (仕様文の書き方に合わせ、attack_power を乗算する前提)
+    # damage bases
     basic_base = p.attack_power * p.robots * 10.0
     skill1_base = p.attack_power * p.skill1_mult * p.robots
     ult_explosion_base = p.attack_power * p.ult_mult * p.robots
@@ -76,14 +79,14 @@ def _simulate_one_trial(
     # buff ticks (round per requirement)
     buff_ticks = int(round(10.0 * p.attack_speed))
     if buff_ticks < 1:
-        buff_ticks = 1  # 0tickバフは扱いづらいので最低1に丸め
+        buff_ticks = 1
 
-    total = 0.0
+    basic_sum = 0.0
+    skill1_sum = 0.0
+    ult_sum = 0.0
+
     mana = 0.0
-
-    # バフ中の「バフが乗る攻撃tick」残り
     buff_remaining = 0
-    # ult発動したtickは、tick末のmana回復を止めたい（バフ開始が即時のため）
     ult_cast_this_tick = False
 
     for _ in range(ticks):
@@ -91,54 +94,44 @@ def _simulate_one_trial(
 
         if buff_remaining > 0:
             # ===== buff状態 =====
-            # mana回復できないので mana は固定（ult後0想定だが、念のため維持）
-            # 行動は通常どおり (mana>=ult_mana にはならない想定)
             if rng.random() < skill1_p:
-                # skill1
-                dmg = _apply_crit(rng, skill1_base * 5.0, crit_p, p.crit_dmg)
-                total += dmg
+                d = _apply_crit(rng, skill1_base * 5.0, crit_p, p.crit_dmg)
+                ult_sum += d  # buff中のskill1はult計上
             else:
-                # basic
-                dmg = _apply_crit(rng, basic_base * 5.0, crit_p, p.crit_dmg)
-                total += dmg
+                d = _apply_crit(rng, basic_base * 5.0, crit_p, p.crit_dmg)
+                ult_sum += d  # buff中のbasicはult計上
 
             # tick end: mana regen 없음
             buff_remaining -= 1
 
-            # バフ終了直後に追加ダメージ（バフ終了後扱いで5倍は乗せない）
+            # バフ終了直後に追加ダメージ（5倍は乗せない） -> ult計上
             if buff_remaining == 0:
                 explosion = _apply_crit(rng, ult_explosion_base, crit_p, p.crit_dmg)
-                total += explosion
-                mana = 0.0  # 仕様: バフ時間終了後にマナ0で回復可能に
+                ult_sum += explosion
+                mana = 0.0
 
         else:
             # ===== normal状態 =====
             if mana >= p.ult_mana and p.ult_mana > 0:
-                # ult
                 mana = 0.0
                 buff_remaining = buff_ticks
                 ult_cast_this_tick = True
-                # 仕様に「過熱自体の即時ダメージ」が書かれていないので 0 とする
+                # 過熱自体の即時ダメージは仕様未記載のため 0
             else:
-                # skill1 or basic
                 if rng.random() < skill1_p:
-                    # skill1
-                    dmg = _apply_crit(rng, skill1_base, crit_p, p.crit_dmg)
-                    total += dmg
-                    # tick end mana
+                    d = _apply_crit(rng, skill1_base, crit_p, p.crit_dmg)
+                    skill1_sum += d
                     mana += mana_gain_skill1
                 else:
-                    # basic
-                    dmg = _apply_crit(rng, basic_base, crit_p, p.crit_dmg)
-                    total += dmg
-                    # tick end mana
+                    d = _apply_crit(rng, basic_base, crit_p, p.crit_dmg)
+                    basic_sum += d
                     mana += mana_gain_basic
 
-            # ultを撃ったtick末は、バフ開始即時として mana回復なし
             if ult_cast_this_tick:
                 pass
 
-    return total
+    return (basic_sum, skill1_sum, 0.0, 0.0, ult_sum)
+
 
 
 def simulate_14002(
@@ -190,10 +183,29 @@ def simulate_14002(
     rng = random.Random(seed)
 
     total_sum = 0.0
+    sum_basic = 0.0
+    sum_skill1 = 0.0
+    sum_skill2 = 0.0
+    sum_skill3 = 0.0
+    sum_ult = 0.0
     for _ in range(trials):
-        total_sum += _simulate_one_trial(p, ticks, rng)
+        b, s1, s2, s3, u = _simulate_one_trial(p, ticks, rng)
+        sum_basic += b
+        sum_skill1 += s1
+        sum_skill2 += s2
+        sum_skill3 += s3
+        sum_ult += u
+        total_sum += (b + s1 + s2 + s3 + u)
 
     mean_total = total_sum / trials
+
+    mean_breakdown_total = {
+        'basic': sum_basic / trials,
+        'skill1': sum_skill1 / trials,
+        'skill2': sum_skill2 / trials,
+        'skill3': sum_skill3 / trials,
+        'ult': sum_ult / trials,
+    }
 
     # DPS: 1tick = 1/attack_speed sec と解釈 => elapsed_sec = ticks/attack_speed
     elapsed_sec = (ticks / p.attack_speed) if p.attack_speed > 0 else float("inf")
@@ -209,6 +221,7 @@ def simulate_14002(
         "trials": trials,
         "seed": seed,
         "params": p,
+        "mean_breakdown_total": mean_breakdown_total,
     }
 
 
@@ -227,28 +240,34 @@ def mean_total_damage_14002(
     durationSec: Optional[float] = None,
     trials: int = 10000,
     seed: int = 1,
-) -> float:
+) -> Tuple[float, float, float, float, float]:
     """
-    外部から「平均総ダメージ」だけ取りたい用。
-    引数はCLI相当の値を直接渡せる形。
+    外部から「平均総ダメージ内訳」を取りたい用。
+    戻り値は (basic, skill1, skill2, skill3, ult)。
     """
-    return float(
-        simulate_14002(
-            attack_power=attack_power,
-            attack_speed=attack_speed,
-            skill1_rate=skill1_rate,
-            skill1_mult=skill1_mult,
-            ult_mult=ult_mult,
-            ult_mana=ult_mana,
-            crit_rate=crit_rate,
-            crit_dmg=crit_dmg,
-            robots=robots,
-            mana_buff=mana_buff,
-            ticks=ticks,
-            durationSec=durationSec,
-            trials=trials,
-            seed=seed,
-        )["mean_total_damage"]
+    res = simulate_14002(
+        attack_power=attack_power,
+        attack_speed=attack_speed,
+        skill1_rate=skill1_rate,
+        skill1_mult=skill1_mult,
+        ult_mult=ult_mult,
+        ult_mana=ult_mana,
+        crit_rate=crit_rate,
+        crit_dmg=crit_dmg,
+        robots=robots,
+        mana_buff=mana_buff,
+        ticks=ticks,
+        durationSec=durationSec,
+        trials=trials,
+        seed=seed,
+    )
+    br = res.get('mean_breakdown_total') or {}
+    return (
+        float(br.get('basic', 0.0)),
+        float(br.get('skill1', 0.0)),
+        float(br.get('skill2', 0.0)),
+        float(br.get('skill3', 0.0)),
+        float(br.get('ult', 0.0)),
     )
 
 

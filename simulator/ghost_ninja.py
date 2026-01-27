@@ -102,11 +102,15 @@ def _mana_regen_per_tick(params: OnigamiNinjaParams) -> float:
     return (1.0 / params.attack_speed) * params.mana_buff
 
 
-def _simulate_once(params: OnigamiNinjaParams, rng: random.Random) -> float:
+def _simulate_once(params: OnigamiNinjaParams, rng: random.Random) -> Tuple[float, float, float, float, float]:
     tick_limit = params.tick
     used = 0
 
-    total_damage = 0.0
+    basic_sum = 0.0
+    skill1_sum = 0.0
+    skill2_sum = 0.0
+    ult_sum = 0.0
+
     mana = 0.0
     stack = 0
 
@@ -116,9 +120,8 @@ def _simulate_once(params: OnigamiNinjaParams, rng: random.Random) -> float:
         # Priority: ult if mana enough
         if mana >= params.ult_mana:
             dmg, _ = _apply_crit(rng, params.attack_power * params.ult_mult, params.crit_rate, params.crit_dmg)
-            total_damage += dmg
-            mana = 0.0  # ult後0
-            # end-of-tick regen
+            ult_sum += dmg
+            mana = 0.0
             mana += mana_regen
             used += 1
             continue
@@ -126,50 +129,46 @@ def _simulate_once(params: OnigamiNinjaParams, rng: random.Random) -> float:
         # Priority: skill1 if stack enough
         if stack >= params.skill1_stack:
             dmg, is_crit = _apply_crit(rng, params.attack_power * params.skill1_mult, params.crit_rate, params.crit_dmg)
-            total_damage += dmg
+            skill1_sum += dmg
             if is_crit:
-                mana += 16.0 * params.mana_buff  # skill1 crit => +16 (buff乗算)
+                mana += 16.0 * params.mana_buff
             stack = 0
             mana += mana_regen
             used += 1
             continue
 
-        # Otherwise: "基本攻撃時にskill2_rateで排除"
+        # Otherwise: skill2 proc
         if _roll_percent(rng, params.skill2_rate):
-            # skill2 cast
             dmg, _ = _apply_crit(rng, params.attack_power * params.skill2_mult, params.crit_rate, params.crit_dmg)
-            total_damage += dmg
-            mana += 4.0 * params.mana_buff  # skill2(含む再発動) => +4 (buff乗算)
-
+            skill2_sum += dmg
+            mana += 4.0 * params.mana_buff
             mana += mana_regen
             used += 1
 
-            # Re-activation chain: continue until react fails
             while used < tick_limit and _roll_percent(rng, params.react_rate):
-                # At the start of a chained tick, ult can preempt (assumption; see notes below)
                 if mana >= params.ult_mana:
                     break
-
                 dmg2, _ = _apply_crit(rng, params.attack_power * params.skill2_mult, params.crit_rate, params.crit_dmg)
-                total_damage += dmg2
+                skill2_sum += dmg2
                 mana += 4.0 * params.mana_buff
                 mana += mana_regen
                 used += 1
 
             continue
 
-        # basic attack
+        # basic
         dmg, _ = _apply_crit(rng, params.attack_power * params.base_attack_mult, params.crit_rate, params.crit_dmg)
-        total_damage += dmg
+        basic_sum += dmg
         stack += 1
         mana += mana_regen
         used += 1
 
-    return total_damage
+    return (basic_sum, skill1_sum, skill2_sum, 0.0, ult_sum)
+
 
 
 def mean_total_damage_13007(params: Dict[str, Any], tick: Optional[int] = None, trials: Optional[int] = None,
-                           seed: Optional[int] = None) -> float:
+                           seed: Optional[int] = None) -> Tuple[float, float, float, float, float]:
     """
     外部参照用: 鬼神忍者(13007)の平均総ダメージを返す（モンテカルロ）
 
@@ -221,10 +220,15 @@ def mean_total_damage_13007(params: Dict[str, Any], tick: Optional[int] = None, 
     ).validated()
 
     rng = random.Random(p.seed)
-    total = 0.0
+    sum_basic = sum_skill1 = sum_skill2 = sum_skill3 = sum_ult = 0.0
     for _ in range(p.trials):
-        total += _simulate_once(p, rng)
-    return total / p.trials
+        b, s1, s2, s3, u = _simulate_once(p, rng)
+        sum_basic += b
+        sum_skill1 += s1
+        sum_skill2 += s2
+        sum_skill3 += s3
+        sum_ult += u
+    return (sum_basic / p.trials, sum_skill1 / p.trials, sum_skill2 / p.trials, sum_skill3 / p.trials, sum_ult / p.trials)
 
 
 def _build_argparser() -> argparse.ArgumentParser:
@@ -286,7 +290,8 @@ def main() -> None:
         "seed": args.seed,
     }
 
-    mean_dmg = mean_total_damage_13007(params)
+    br = mean_total_damage_13007(params)
+    mean_dmg = sum(br)
     print(f"mean_total_damage={mean_dmg:.6f}")
     if args.print_dps:
         dps = mean_dmg / args.tick if args.tick > 0 else 0.0

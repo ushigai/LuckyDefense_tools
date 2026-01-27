@@ -15,6 +15,90 @@ function setBusy(isBusy) {
     : '<i class="bi bi-cpu me-1"></i>計算する';
 }
 
+
+function _getCharacterById(id) {
+  return (state.CHARACTERS ?? []).find(c => String(c.id) === String(id)) ?? null;
+}
+
+function _formatPct(x) {
+  if (!isFinite(x) || x <= 0) return "0.0";
+  return x.toFixed(1);
+}
+
+function _escHtml(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function _renderDpsRatio(characterId, ratioObj) {
+  // ratioObj: {basic, skill1, skill2, skill3, ult} (values are raw damage totals)
+  if (!ratioObj || typeof ratioObj !== "object") return "";
+
+  const ch = _getCharacterById(characterId) ?? {};
+
+  // total damage is computed from raw keys (even if some labels are hidden)
+  const KEYS = ["basic", "skill1", "skill2", "skill3", "ult"];
+  const total = KEYS.reduce((a, k) => {
+    const v = Number(ratioObj?.[k] ?? 0);
+    return a + (isFinite(v) ? v : 0);
+  }, 0);
+
+  // If everything is 0, show a small placeholder
+  if (!isFinite(total) || total <= 0) {
+    return `<div class="text-secondary small">内訳: —</div>`;
+  }
+
+  const items = [];
+
+  // basic is always shown
+  items.push({ key: "basic", label: "基本攻撃", value: Number(ratioObj.basic ?? 0) });
+
+  // skill labels come from characters.json; if empty string, don't show that row
+  const s1name = String(ch.skill1 ?? "").trim();
+  const s2name = String(ch.skill2 ?? "").trim();
+  const s3name = String(ch.skill3 ?? "").trim();
+
+  if (s1name !== "") items.push({ key: "skill1", label: s1name, value: Number(ratioObj.skill1 ?? 0) });
+  if (s2name !== "") items.push({ key: "skill2", label: s2name, value: Number(ratioObj.skill2 ?? 0) });
+  if (s3name !== "") items.push({ key: "skill3", label: s3name, value: Number(ratioObj.skill3 ?? 0) });
+
+  // ult label: if characters.json has ult="" then don't show at all
+  const hasUltKey = Object.prototype.hasOwnProperty.call(ch, "ult");
+  const ultName = hasUltKey ? String(ch.ult ?? "").trim() : "ult";
+  if (ultName !== "") {
+    items.push({ key: "ult", label: ultName, value: Number(ratioObj.ult ?? 0) });
+  }
+
+  const rows = items.map(it => {
+    const v = isFinite(it.value) ? it.value : 0;
+    const pct = (v / total) * 100;
+    const pctStr = _formatPct(pct);
+    const safeLabel = String(it.label ?? it.key);
+    const width = Math.max(0, Math.min(100, pct));
+    return `
+      <div class="mb-2">
+        <div class="d-flex justify-content-between small">
+          <span class="text-secondary text-truncate me-2" title="${_escHtml(safeLabel)}">${_escHtml(safeLabel)}</span>
+          <span class="metric">${pctStr}%</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar" role="progressbar" style="width: ${width}%" aria-valuenow="${pctStr}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="mt-2 text-start">
+      ${rows}
+    </div>
+  `;
+}
+
 export async function recalc() {
   const options = collectOptions();
   const members = getPartyMembers();
@@ -42,6 +126,19 @@ export async function recalc() {
 
       const share = (total > 0) ? (dps / total) * 100 : (100 / members.length);
       members[i].shareEl.textContent = `share: ${share.toFixed(3)}%`;
+
+      // DPS 内訳（basic/skill/ult）
+      let ratioObj = null;
+      if (r && r.dpsRatio && typeof r.dpsRatio === "object") {
+        ratioObj = r.dpsRatio;
+      } else if (Array.isArray(data?.dpsRatio) && data.dpsRatio[i] && typeof data.dpsRatio[i] === "object") {
+        ratioObj = data.dpsRatio[i];
+      } else if (members.length === 1 && data && typeof data.dpsRatio === "object") {
+        ratioObj = data.dpsRatio;
+      }
+      if (members[i].ratioEl) {
+        members[i].ratioEl.innerHTML = _renderDpsRatio(r.character ?? members[i].character, ratioObj);
+      }
     });
 
     const debugObj = data?.Debug ?? data?.DebugMessage;

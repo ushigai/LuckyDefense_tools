@@ -143,25 +143,57 @@ def simulate_one_trial_5115(
     return total_damage, counts
 
 
-def mean_total_damage_5115(options: Dict[str, Any]) -> float:
+def simulate_one_trial_breakdown_5115(
+    p: RokechuuParams5115,
+    ticks: int,
+    rng: random.Random,
+) -> Tuple[float, float, float, float, float]:
     """
-    外部から平均総ダメージを取得するための関数。
+    1試行分のダメージ内訳を返す。
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - このキャラは skill3 を持たないため常に 0.0
+    """
+    mana = 0.0
+    basic_stack = 0
 
-    options例:
-      {
-        "attack_power": 100000,
-        "attack_speed": 1.5,
-        "skill1_rate": 20,
-        "skill1_mult": 3.0,
-        "skill2_mult": 10.0,
-        "ult_mult": 20.0,
-        "ult_mana": 190,
-        "crit_rate": 20,
-        "crit_dmg": 2.5,
-        "ticks": 1500,           # または "durationSec": 60
-        "trials": 20000,
-        "seed": 1
-      }
+    dmg_basic = 0.0
+    dmg_skill1 = 0.0
+    dmg_skill2 = 0.0
+    dmg_ult = 0.0
+
+    for _ in range(ticks):
+        action = _choose_action(mana, basic_stack, p, rng)
+
+        mult = _action_multiplier(action, p)
+        dmg = p.attack_power * mult
+        dmg *= _crit_multiplier(rng, p.crit_rate, p.crit_dmg)
+
+        if action == ACT_BASIC:
+            dmg_basic += dmg
+            basic_stack += 1
+        elif action == ACT_SKILL1:
+            dmg_skill1 += dmg
+            # スタック増えない
+        elif action == ACT_SKILL2:
+            dmg_skill2 += dmg
+            basic_stack = 0
+        elif action == ACT_ULT:
+            dmg_ult += dmg
+            mana = 0.0
+        else:
+            raise RuntimeError(f"Unknown action: {action}")
+
+        # end-of-tick mana regen
+        mana += (1.0 / p.attack_speed)
+
+    return dmg_basic, dmg_skill1, dmg_skill2, 0.0, dmg_ult
+
+def mean_total_damage_5115(options: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
+    """
+    外部から平均総ダメージ内訳を取得するための関数。
+
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill3 は存在しないため常に 0.0
     """
     p = RokechuuParams5115(
         attack_power=float(options["attack_power"]),
@@ -184,15 +216,23 @@ def mean_total_damage_5115(options: Dict[str, Any]) -> float:
         raise ValueError("Either 'ticks' or 'durationSec' must be provided in options")
 
     trials = int(options.get("trials", 20000))
+    if trials <= 0:
+        raise ValueError("trials must be > 0")
+
     seed = options.get("seed", None)
     rng = random.Random(seed)
 
-    total = 0.0
+    s_basic = s_s1 = s_s2 = s_s3 = s_ult = 0.0
     for _ in range(trials):
-        dmg, _ = simulate_one_trial_5115(p, ticks, rng, return_counts=False)
-        total += dmg
-    return total / float(trials)
+        b, s1, s2, s3, u = simulate_one_trial_breakdown_5115(p, ticks, rng)
+        s_basic += b
+        s_s1 += s1
+        s_s2 += s2
+        s_s3 += s3
+        s_ult += u
 
+    inv = 1.0 / float(trials)
+    return s_basic * inv, s_s1 * inv, s_s2 * inv, s_s3 * inv, s_ult * inv
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Rokechuu(5115) Monte Carlo DPS simulator (tick-based)")

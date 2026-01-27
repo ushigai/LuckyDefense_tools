@@ -146,28 +146,101 @@ def simulate_total_damage_5023(
     return total_damage, end_tick
 
 
-def mean_total_damage_5023(options: Dict[str, Any]) -> float:
+def simulate_damage_breakdown_5023(
+    params: RokaParams5023,
+    ticks: float,
+    rng: random.Random,
+) -> Tuple[Tuple[float, float, float, float, float], float]:
     """
-    外部から「平均総ダメージ」だけ取りたい用。
-    options例:
-      {
-        "attack_power": 100000,
-        "attack_speed": 1.5,
-        "skill1_mult": 2,
-        "skill2_mult": 10,
-        "skill2_rate": 20,
-        "skill3_mult": 8,
-        "ult_mult": 50,
-        "ult_mana": 190,
-        "crit_rate": 20,
-        "crit_dmg": 2.5,
-        "bomb_rate": 30,
-        "ticks": 600,
-        "trials": 10000,
-        "seed": 1
-      }
+    1試行ぶんのダメージ内訳をシミュレーションする。
+    戻り値: ((basic, skill1, skill2, skill3, ult), effective_ticks)
+
+    注意:
+      - skill2(連射) はダメージ0のため skill2 は常に 0.0
+      - reload(装填) もダメージ0
     """
-    # 互換キー（過去の綴り揺れ吸収）
+    t: int = 0
+    end_tick: float = float(ticks)
+
+    mana: float = 0.0
+    stacks: int = 0
+    bombs: int = 0
+
+    reload_interval: int = int(params.attack_speed * 10)
+    if reload_interval < 1:
+        reload_interval = 1
+
+    next_reload_tick: int = reload_interval
+    dmg_basic = 0.0
+    dmg_skill1 = 0.0
+    dmg_skill3 = 0.0
+    dmg_ult = 0.0
+
+    while t < end_tick:
+        action: str = "none"
+        damage: float = 0.0
+
+        if t == next_reload_tick:
+            action = "reload"
+            bombs = _roll_bomb_load(rng, params.bomb_rate)
+            next_reload_tick += reload_interval
+
+        else:
+            if mana >= params.ult_mana:
+                action = "ult"
+                damage = params.attack_power * params.ult_mult
+                damage = _apply_crit(rng, damage, 50.0, params.crit_dmg)
+                mana = 0.0
+
+            elif bombs > 0:
+                action = "skill1"
+                bombs -= 1
+                damage = params.attack_power * (1.0 + params.skill1_mult)
+                damage = _apply_crit(rng, damage, params.crit_rate, params.crit_dmg)
+                stacks += 1
+
+            else:
+                if rng.random() < _pct(params.skill2_rate):
+                    action = "skill2"
+                    extension = params.attack_speed * params.skill2_mult * (1.0 - 1.0 / params.attack_speed)
+                    end_tick += extension
+
+                elif stacks >= 15:
+                    action = "skill3"
+                    damage = params.attack_power * params.skill3_mult
+                    damage = _apply_crit(rng, damage, params.crit_rate, params.crit_dmg)
+                    stacks = 0
+
+                else:
+                    action = "basic"
+                    damage = params.attack_power
+                    damage = _apply_crit(rng, damage, params.crit_rate, params.crit_dmg)
+                    stacks += 1
+
+        # accumulate by action
+        if action == "basic":
+            dmg_basic += damage
+        elif action == "skill1":
+            dmg_skill1 += damage
+        elif action == "skill3":
+            dmg_skill3 += damage
+        elif action == "ult":
+            dmg_ult += damage
+        # skill2/reload/none have 0 damage by design
+
+        # tick末尾 マナ回復
+        mana += 1.0 / params.attack_speed
+
+        t += 1
+
+    return (dmg_basic, dmg_skill1, 0.0, dmg_skill3, dmg_ult), end_tick
+
+def mean_total_damage_5023(options: Dict[str, Any]) -> Tuple[float, float, float, float, float]:
+    """
+    外部から「平均総ダメージ内訳」だけ取りたい用。
+    戻り値: (basic, skill1, skill2, skill3, ult)
+      - skill2 はダメージ0のため常に 0.0
+    """
     crit_rate = options.get("crit_rate", options.get("cirt_rate"))
     crit_dmg = options.get("crit_dmg", options.get("cirt_dmg"))
 
@@ -190,15 +263,23 @@ def mean_total_damage_5023(options: Dict[str, Any]) -> float:
         raise ValueError("options に ticks (推奨) もしくは durationSec を指定してください。")
 
     trials = int(options.get("trials", 10000))
+    if trials <= 0:
+        raise ValueError("trials must be > 0")
+
     seed = options.get("seed", None)
     rng = random.Random(seed)
 
-    s = 0.0
+    s_basic = s_s1 = s_s2 = s_s3 = s_ult = 0.0
     for _ in range(trials):
-        dmg, _end = simulate_total_damage_5023(params=params, ticks=ticks, rng=rng)
-        s += dmg
-    return s / trials
+        (b, s1, s2, s3, u), _end = simulate_damage_breakdown_5023(params=params, ticks=ticks, rng=rng)
+        s_basic += b
+        s_s1 += s1
+        s_s2 += s2
+        s_s3 += s3
+        s_ult += u
 
+    inv = 1.0 / float(trials)
+    return s_basic * inv, s_s1 * inv, s_s2 * inv, s_s3 * inv, s_ult * inv
 
 def _main() -> None:
     ap = argparse.ArgumentParser(description="Roka(5023) Monte-Carlo damage simulator (tick-based)")
