@@ -1063,17 +1063,28 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "13004":  # スーパー重力弾
-        
-        
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 60000
+        params = {
+            "ticks": ticks,
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.5,
+            "skill1_rate": 7 + OldBook,
+            "skill1_mult": 50*MagicBuff1,
+            "skill2_rate": 11 + OldBook,
+            "skill2_mult": 40*MagicBuff1,
+            "skill3_rate": 0,
+            "skill3_mult": 0,
+            "ult_mana": ult_mana,
+            "ult_mult": 90*MagicBuff1,
+            "attack_mana_recov": 1,
+            "mana_buff": mana_buff,
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5 + MagicGauntlet,
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "13007":  # 鬼神忍者
         params = {
             "tick": ticks,
