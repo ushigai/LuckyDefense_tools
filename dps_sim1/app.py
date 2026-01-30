@@ -11,20 +11,20 @@ from data.treasure_db import load_treasure_db
 from data.emotionControl_buff import emotionControl_buff
 
 from flask import Flask, jsonify, request, send_from_directory
-from simulator.awakened_hayley import mean_total_damage_15021
-from simulator.hayley import mean_total_damage_5021
-from simulator.rokechuu_oc import mean_total_damage_5115
-from simulator.watt import mean_total_damage_5013
-from simulator.chona import mean_total_damage_5019
-from simulator.iam_meow import mean_total_damage_15004
-from simulator.boss_senchoushi import mean_total_damage_15024
-from simulator.doctorpulse import mean_total_damage_14002
-from simulator.captain_roka import mean_total_damage_15023
-from simulator.ninja import mean_total_damage_3007
-from simulator.masterkun import mean_total_damage_5018
-from simulator.roka import mean_total_damage_5023
-from simulator.ghost_ninja import mean_total_damage_13007
-from simulator.common_sim import mean_total_damage_common
+from dps_sim1.simulator.awakened_hayley import mean_total_damage_15021
+from dps_sim1.simulator.hayley import mean_total_damage_5021
+from dps_sim1.simulator.rokechuu_oc import mean_total_damage_5115
+from dps_sim1.simulator.watt import mean_total_damage_5013
+from dps_sim1.simulator.chona import mean_total_damage_5019
+from dps_sim1.simulator.iam_meow import mean_total_damage_15004
+from dps_sim1.simulator.boss_senchoushi import mean_total_damage_15024
+from dps_sim1.simulator.doctorpulse import mean_total_damage_14002
+from dps_sim1.simulator.captain_roka import mean_total_damage_15023
+from dps_sim1.simulator.ninja import mean_total_damage_3007
+from dps_sim1.simulator.masterkun import mean_total_damage_5018
+from dps_sim1.simulator.roka import mean_total_damage_5023
+from dps_sim1.simulator.ghost_ninja import mean_total_damage_13007
+from dps_sim1.simulator.common_sim import mean_total_damage_common
 
 
 DamageTuple = Tuple[float, float, float, float, float]
@@ -73,8 +73,11 @@ mean_total_damage_common = _wrap_damage_func(mean_total_damage_common)
 
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+# repo root (data/ はルートに置いたまま)
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, os.pardir))
+
 STATIC_DIR = os.path.join(APP_DIR, "static")
-DATA_DIR = os.path.join(APP_DIR, "data")
+DATA_DIR = os.path.join(BASE_DIR, "data")
 TICK_COEFF = 1000
 
 app = Flask(__name__)
