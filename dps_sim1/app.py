@@ -8,7 +8,7 @@ import random
 from typing import Any, Dict, List, Callable, Tuple
 
 from data.treasure_db import load_treasure_db
-from data.emotionControl_buff import emotionControl_buff
+from data.char_params import *
 
 from flask import Flask, jsonify, request, send_from_directory
 from dps_sim1.simulator.awakened_hayley import mean_total_damage_15021
@@ -24,6 +24,10 @@ from dps_sim1.simulator.ninja import mean_total_damage_3007
 from dps_sim1.simulator.masterkun import mean_total_damage_5018
 from dps_sim1.simulator.roka import mean_total_damage_5023
 from dps_sim1.simulator.ghost_ninja import mean_total_damage_13007
+from dps_sim1.simulator.prim_bamba import mean_total_damage_15001
+from dps_sim1.simulator.darkload_dragon import mean_total_damage_15006
+from dps_sim1.simulator.ace_batman_ball import mean_total_damage_15110
+from dps_sim1.simulator.ace_batman_bat import mean_total_damage_15210
 from dps_sim1.simulator.common_sim import mean_total_damage_common
 
 
@@ -152,8 +156,7 @@ CHAR_DB = load_characters()
 ENEMY_DB = load_enemies()
 RUNES_DB = load_runes()
 ALLOWED_ENEMIES = set(ENEMY_DB.keys())
-PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15010, 15011, 15020, 15023, 15110, 15210]
-BAT_ENHANCE_DB = [0, 1.0, 1.5, 2.0, 2.5, 5.0, 7.0, 9.0, 11.0, 13.0, 20.0, 25.0, 20.0, 35.0, 40.0, 60.0, 70.0, 90.0, 120.0, 150.0, 180.0]
+PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15001, 15010, 15011, 15020, 15023, 15110, 15210]
 
 
 @app.get("/")
@@ -224,6 +227,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         enemy_def = 175
     
     def_mult = 1 + sign(defDown - enemy_def)*(1 - 50/(3*abs(defDown - enemy_def) + 50))
+    def_mult_prim_bamba = 1 + sign(defDown - enemy_def*0.75)*(1 - 50/(3*abs(defDown - enemy_def*0.75) + 50))
 
     treasure_lv = int(member.get("treasureLv", 1))
     money_gun_lv = int(common.get("moneyGunLv", all_relic_lv))
@@ -349,8 +353,11 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     roka_crit = int(member.get("roka_crit", 0))
     techEnhance = 1 + int(member.get("techEnhance", 0)) / 10
     batEnhance = int(member.get("batEnhance", 0))
-    batEnhance = BAT_ENHANCE_DB[batEnhance]
+    batEnhance = batEnhance_db[batEnhance]
+    batEnhance_ = int(member.get("batEnhance_", 0))
     emotionControl = int(member.get("emotionControl", 0))
+    StrongestCreature = int(member.get("StrongestCreature", 0))
+    StrongestCreature *= 0.3 if character_id == "5106" else 0.4
 
     if char_lv < 3:
         lv_buff_atk, lv_buff_speed = 1.0, 1.0
@@ -373,7 +380,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         atkBuffPct += 12
     if character_id in ["15021"]:
         atkBuffPct += 20
-    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + int(member.get("StrongestCreature", 0))*0.3 + batEnhance +  emotionControl_buff[emotionControl]
+    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + int(member.get("StrongestCreature", 0))*0.3 + batEnhance + emotionControl_db[emotionControl] + ace_batman_attack_enhance[batEnhance_] / 100
     atk *= 1 + guildBuff_atk
     atk += base_atk
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow)
@@ -837,6 +844,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 47000
     elif character_id == "5023":  # ロカ
+        t_buff1 = float(TREASURE_DB["ロカ"][treasure_lv][1])
+        t_buff2 = float(TREASURE_DB["ロカ"][treasure_lv][2]) / 100
         params = {
             "ticks": ticks,
             "trials": trials,
@@ -850,8 +859,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult_mult": 200*PhysicBuff1,
             "ult_mana": 50,
             "crit_rate": roka_crit + crit_rate,
-            "bomb_rate": 80,
-            "crit_dmg": 2.5,
+            "bomb_rate": t_buff1,
+            "crit_dmg": 2.5 + t_buff2,
         }
         basic, skill1, skill2, skill3, ult = mean_total_damage_5023(params)
         ans = basic + skill1 + skill2 + skill3 + ult
@@ -1139,6 +1148,24 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             skill3 *= mult
             ult *= mult
             ans = basic + skill1 + skill2 + skill3 + ult
+    elif character_id == "15001":  # 原始バンバ
+        params = {
+            "tick": ticks,
+            "trials": trials,
+            "seed": seed,
+            "base_attack_mult": 7.5,
+            "skill1_rate": 10+RateBuff1,
+            "skill1_mult": 200*PhysicBuff1,
+            "skill2_mult": 80*PhysicBuff1,
+            "attack_speed": speed,
+            "attack_power": atk,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg,
+            "ult_mana": ult_mana if 6 <= char_lv else 10**100,
+            "ult_time": 10 if char_lv < 12 else 20,
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15001(params)
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15004":  # アイアムニャン
         skill1_rate = 11 + OldBook if 12 <= char_lv else 7 + OldBook
         skill2_rate = 11 + OldBook if 12 <= char_lv else 7 + OldBook
@@ -1174,15 +1201,27 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ult *= mult
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15006":  # 魔王ドラゴン
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 64000
+        params = {
+            "tick": ticks,
+            "n_iter": trials,
+            "base_attack_mult": 1.0,
+            "skill1_rate": 8 + RateBuff1,
+            "skill2_rate": 11 + RateBuff1,
+            "attack_speed": speed,
+            "attack_power": atk,
+            "skill1_mult": 350*MagicBuff1,
+            "skill2_mult": 320*MagicBuff1,
+            "skill3_mult": 25*MagicBuff1,
+            "ult_mult": 550*MagicBuff1 if char_lv < 12 else 650*MagicBuff1,
+            "ult_mana": ult_mana,
+            "attack_mana_recov": 1.0,
+            "mana_buff": mana_buff,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg,
+            "seed": seed
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15006(params)
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15008":  # グランドママ
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -1359,29 +1398,51 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15110":  # バットマン投手
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 74000
+        params = {
+            "tick": ticks,
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_rate": 10 + OldBook,
+            "skill1_mult": 160*PhysicBuff1,
+            "skill1_react": 1,
+            "ult_mana": ult_mana if 6 <= char_lv else 10**100,
+            "ult_mult": 400*PhysicBuff1,
+            "add_rate": 10 if char_lv < 12 else 20,
+            "add_mult": 100*PhysicBuff1,
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5,
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15110(params)
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15210":  # バットマン打者
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 75000
+        if char_lv < 12:
+            ult_mult = sum([120*(1.5**i) for i in range(batEnhance_)])*PhysicBuff1
+        else:
+            ult_mult = sum([120*(1.5**i) for i in range(batEnhance_)])*(PhysicBuff1 + 0.5)
+        params = {
+            "ticks": ticks,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_mult": 250*PhysicBuff1,
+            "ult_mana": ult_mana if 6 <= char_lv else 10**100,
+            "ult_mult": ult_mult,
+            "ult_ticks": ace_batman_attack_ult_ticks[batEnhance_],
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5 + MagicGauntlet,
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15210(params, n_iter=trials, seed=seed)
+        ans = basic + skill1 + skill2 + skill3 + ult
     else:
         ans = 0
-    if int(character_id) in PHISICS_CHAR:
+    isPhisics = int(character_id) in PHISICS_CHAR
+    if isPhisics:
         ans *= def_mult
+        if character_id == "15001":
+            ans = def_mult*(basic + skill1 + skill2) + def_mult_prim_bamba * ult
     DebugMessage["base_atk"] = base_atk
     DebugMessage["atk"] = atk
     DebugMessage["base_speed"] = base_speed
@@ -1390,6 +1451,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     DebugMessage["t_buff1"] = t_buff1
     DebugMessage["t_buff2"] = t_buff2
     DebugMessage["t_buff3"] = t_buff3
+    DebugMessage["isPhisics"] = isPhisics
+    DebugMessage["StrongestCreature"] = StrongestCreature
     dps_ratio = {"basic":basic, "skill1":skill1, "skill2":skill2, "skill3":skill3, "ult":ult}
     return (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * (1 + GreatSword) * (1 + Bomb), dps_ratio, str(DebugMessage)
 
@@ -1545,6 +1608,10 @@ def api_calc():
         if cid == "5016" or cname == "ウチ":
             member_s["uchiCells"] = clamp_int(m.get("uchiCells", 1), 1, 5, 1)
 
+        # エースバットマン：バット強化（1..20）
+        if cid in ["15110", "15210"] or cname == "エースバットマン打者" or cname == "エースバットマン投手":
+            member_s["batEnhance_"] = clamp_int(m.get("batEnhance_", 1), 1, 20, 1)
+
         # バットマン：バット強化（1..20）
         if cid == "5010" or cname == "バットマン":
             member_s["batEnhance"] = clamp_int(m.get("batEnhance", 1), 1, 20, 1)
@@ -1588,7 +1655,7 @@ def api_calc():
             member_s["training"] = clamp_int(m.get("training", 0), 0, 30, 0)
         
         # ドラゴン：最強の生物
-        if cid == "5106" or cname == "ドラゴン":
+        if cid == "5106" or cname == "ドラゴン" or cid == "15006" or cname == "魔王ドラゴン":
             member_s["StrongestCreature"] = clamp_int(m.get("StrongestCreature", 1), 1, 1000, 0)
 
         # ドクターパルス：ドローン数
@@ -1630,6 +1697,7 @@ def api_calc():
                 "mythCount": member_s.get("mythCount"),
                 "uchiCells": member_s.get("uchiCells"),
                 "batEnhance": member_s.get("batEnhance"),
+                "batEnhance_": member_s.get("batEnhance_"),
                 "starPower": member_s.get("starPower"),
                 "emotionControl": member_s.get("emotionControl"),
                 "sparkBonusDmg": member_s.get("sparkBonusDmg"),

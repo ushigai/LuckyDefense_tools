@@ -26,6 +26,9 @@ export const EXTRA_FIELDS_BY_NAME = {
   "ブロッブ":     [{ key: "intake", label: "摂取値", kind: "number", min: 0, step: 1, def: 0 }],
 
   "バットマン":   [{ key: "batEnhance", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
+  "エースバットマン打者":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
+  "エースバットマン投手":   [{ key: "batEnhance_", label: "フィニッシュピッチ回数", kind: "select-int", min: 1, max: 3, def: 1 }],
+  "エースバットマン投手":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
   "ヘイリー":     [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }],
   "マスタークン": [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }],
   "ランスロット": [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }],
@@ -36,6 +39,7 @@ export const EXTRA_FIELDS_BY_NAME = {
   "タール":       [{ key: "cannibalCount", label: "共食い回数", kind: "number", min: 0, step: 1, def: 0 }],
   "バンバ":       [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }],
   "ドラゴン":     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
+  "魔王ドラゴン":     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
   "ドクターパルス":     [{ key: "robots", label: "ドローン", kind: "number", min: 1, max: 4, def: 1 }],
   "ロカ":     [{ key: "roka_crit", label: "クリティカル率増加", kind: "number", min: 1, max: 30, def: 30 }],
   "キャプテンロカ":     [{ key: "roka_crit_", label: "クリティカル率増加", kind: "number", min: 1, max: 30, def: 30 }],

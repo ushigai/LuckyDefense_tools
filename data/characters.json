@@ -971,6 +971,22 @@
       "ult": "過熱"
     },
     {
+      "name": "原始バンバ",
+      "rarity": "immortal",
+      "id": 15001,
+      "attack_damage": 66000,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 3300,
+      "attack_speed": 1.5,
+      "attack_range": 2.1,
+      "move_speed": 4,
+      "sp": 60,
+      "skill1": "乱打",
+      "skill2": "アッパーカット",
+      "skill3": "",
+      "ult": "力の解放"
+    },
+    {
       "id": 15004,
       "name": "アイアムニャン",
       "rarity": "immortal",
@@ -997,9 +1013,9 @@
       "attack_range": 4,
       "move_speed": 4,
       "sp": 250,
-      "skill1": "火炎の印",
-      "skill2": "火炎弾",
-      "skill3": "火炎放出",
+      "skill1": "火炎弾",
+      "skill2": "火炎放出",
+      "skill3": "火炎の印",
       "ult": "火炎地獄"
     },
     {
