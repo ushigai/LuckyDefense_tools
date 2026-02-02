@@ -50,8 +50,8 @@
 
     /* 2) アイコンの「枠」：ここでサイズ固定＆はみ出し切り取り */
     .char-icon-wrap {
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
       border-radius: 8px;           /* 角丸（不要なら消してOK） */
       overflow: hidden;             /* ← これがトリミング */
       flex: 0 0 auto;
@@ -62,12 +62,12 @@
 
     /* 3) 画像は枠にフィットさせつつ、はみ出しはトリミング */
     .char-icon {
-      width: 150%;
-      height: 150%;
+      width: 130%;
+      height: 130%;
       object-fit: cover;            /* ← contain じゃなく cover */
       display: block;
       padding-top: 0;
-      padding-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     /* 4) テキストは大きくしても高さは固定なので、はみ出さない */
