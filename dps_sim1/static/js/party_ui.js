@@ -21,8 +21,10 @@ function makeCharDropdown(selectedId) {
         <button type="button"
           class="dropdown-item d-flex align-items-center gap-2 member-character-item ${active}"
           data-char-id="${c.id}">
-          <img class="char-icon member-character-item-img" data-src="${charImgUrl(c.id)}" alt="">
-          <i class="bi bi-person member-character-item-fallback d-none"></i>
+          <span class="char-icon-wrap">
+            <img class="char-icon member-character-item-img" data-src="${charImgUrl(c.id)}" alt="">
+            <i class="bi bi-person member-character-item-fallback d-none"></i>
+          </span>
           <span>${c.name}</span>
         </button>
       </li>
@@ -35,8 +37,10 @@ function makeCharDropdown(selectedId) {
         class="form-select text-start rounded-end-3 member-character-btn dropdown-toggle"
         style="min-width:0" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="d-flex align-items-center gap-2 w-100">
+        <span class="char-icon-wrap">
           <img class="char-icon member-character-btn-img" alt="">
           <i class="bi bi-person member-character-btn-fallback d-none"></i>
+        </span>
           <span class="member-character-btn-label flex-grow-1 text-truncate">${selectedName}</span>
         </span>
       </button>

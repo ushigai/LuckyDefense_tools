@@ -38,6 +38,51 @@
     .notice-accordion .accordion-button:focus {
       box-shadow: 0 0 0 .25rem rgba(var(--bs-danger-rgb), .15);
     }
+
+    .member-character-btn,
+    .member-character-menu .dropdown-item {
+      height: 50px;                 /* ← 好きな固定高さに */
+      padding-top: 0;
+      padding-bottom: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    /* 2) アイコンの「枠」：ここでサイズ固定＆はみ出し切り取り */
+    .char-icon-wrap {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;           /* 角丸（不要なら消してOK） */
+      overflow: hidden;             /* ← これがトリミング */
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 3) 画像は枠にフィットさせつつ、はみ出しはトリミング */
+    .char-icon {
+      width: 150%;
+      height: 150%;
+      object-fit: cover;            /* ← contain じゃなく cover */
+      display: block;
+      padding-top: 0;
+      padding-bottom: 8px;
+    }
+
+    /* 4) テキストは大きくしても高さは固定なので、はみ出さない */
+    .member-character-btn,
+    .member-character-menu .dropdown-item {
+      font-size: 1.05rem;
+      line-height: 1.1;
+    }
+
+    /* 5) fallbackのbi-personも枠内に収める */
+    .char-icon-wrap .bi {
+      font-size: 28px;
+      line-height: 1;
+    }
+
   </style>
 </head>
 
