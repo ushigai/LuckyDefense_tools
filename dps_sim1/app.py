@@ -359,6 +359,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     emotionControl = int(member.get("emotionControl", 0))
     StrongestCreature = int(member.get("StrongestCreature", 0))
     StrongestCreature *= 0.3 if character_id == "5106" else 0.4
+    score = int(member.get("score", 0)) / 100
 
     if char_lv < 3:
         lv_buff_atk, lv_buff_speed = 1.0, 1.0
@@ -694,7 +695,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 10 + OldBook if char_lv < 12 else 20 + OldBook,
-            "skill1_mult": 75*t_buff1*MagicBuff1,
+            "skill1_mult": 75*(t_buff1+MagicBuff1),
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
@@ -866,17 +867,30 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5023(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5024":  # 選鳥師
-        
-        
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 49000
+        t_buff2 = float(TREASURE_DB["選鳥師"][treasure_lv][2])
+        MagicBuff1 += score if char_lv < 6 else score*2
+        params = {
+            "ticks": ticks,
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_rate": 8 + OldBook + t_buff2,
+            "skill1_mult": 35*(MagicBuff1) if score < 0.3 else 105*(MagicBuff1),
+            "skill2_rate": 6 + OldBook + t_buff2 if 12 <= char_lv else 0,
+            "skill2_mult": 24*(MagicBuff1) if score < 0.7 else 40*(MagicBuff1),
+            "skill3_rate": 0,
+            "skill3_mult": 0,
+            "ult_mana": 10**100,
+            "ult_mult": 0,
+            "attack_mana_recov": 1,
+            "mana_buff": 1,
+            "crit_rate": crit_rate,
+            "crit_dmg": 2.5 + MagicGauntlet,
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5104":  # アイアンニャン
         t_buff1 = 1 + float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
@@ -888,13 +902,13 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 5.0,
             "skill1_rate": 8 + OldBook,
-            "skill1_mult": 40*t_buff1*MagicBuff1 if char_lv < 12 else 60*t_buff1*MagicBuff1,
+            "skill1_mult": 40*(t_buff1+MagicBuff1) if char_lv < 12 else 60*(t_buff1+MagicBuff1),
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
             "ult_mana": ult_mana*(1 - SageYogurt),
-            "ult_mult": 180*t_buff1*MagicBuff1 if char_lv < 12 else 270*t_buff1*MagicBuff1,
+            "ult_mult": 180*(t_buff1+MagicBuff1) if char_lv < 12 else 270*(t_buff1+MagicBuff1),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
             "crit_rate": crit_rate + t_buff2,
