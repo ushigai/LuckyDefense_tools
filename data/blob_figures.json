@@ -1,62 +1,35 @@
 [
-    {
-        "name": "ダイヤ(攻撃)",
-        "parame1_add": 0.001,
-        "parame1_max": 100
-    },
-    {
-        "name": "ファイヤー(基本)",
-        "parame1_add": 0.001,
-        "parame1_max": 150
-    },
-    {
-        "name": "ウォーター(ボス)",
-        "parame1_add": 0.001,
-        "parame1_max": 150
-    },
-    {
-        "name": "溶岩(スキル)",
-        "parame1_add": 0.001,
-        "parame1_max": 100
-    },
-    {
-        "name": "サイボーグ(物理)",
-        "parame1_add": 0.001,
-        "parame1_max": 100
-    },
-    {
-        "name": "スカル(魔法)",
-        "parame1_add": 0.001,
-        "parame1_max": 100
-    },
-    {
-        "name": "魔法使い(クリダメ)",
-        "parame1_add": 0.001,
-        "parame1_max": 150
-    },
-    {
-        "name": "バンバ(気絶)",
-        "parame1_add": 0.001,
-        "parame1_max": 100
-    },
-    {
-        "name": "仮面(単体)",
-        "parame1_add": 0.001,
-        "parame1_max": 150
-    },
-    {
-        "name": "ぺたんこ(範囲)",
-        "parame1_add": 0.001,
-        "parame1_max": 150
-    },
-    {
-        "name": "バット(神話数)",
-        "parame1_add": 0.0001,
-        "parame1_max": 100
-    },
-    {
-        "name": "片目(ユニ数)",
-        "parame1_add": 0.0001,
-        "parame1_max": 100
-    }
+  { "name": "仮面", "description": "単体dmg：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } },
+  { "name": "ドラゴン", "description": "クリティカル率：X%", "buff": { "min": 0.1, "max": 5, "step": 0.1 } },
+  { "name": "ぺたんこ", "description": "範囲dmg：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } },
+  { "name": "溶岩", "description": "スキルdmg：X%", "buff": { "min": 0.1, "max": 10, "step": 0.1 } },
+  { "name": "片目", "description": "現在ユニ数分：X%分dmg", "buff": { "min": 0.01, "max": 0.5, "step": 0.01 } },
+  { "name": "サイボーグ", "description": "物理dmg：X%", "buff": { "min": 0.1, "max": 10, "step": 0.1 } },
+  { "name": "バンバ", "description": "気絶時のdmg：X%", "buff": { "min": 0.1, "max": 10, "step": 0.1 } },
+  { "name": "スカル", "description": "魔法dmg：X%", "buff": { "min": 0.1, "max": 10, "step": 0.1 } },
+  { "name": "ウォーター", "description": "ボスdmg：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } },
+  { "name": "ダイヤ", "description": "攻撃力：X%", "buff": { "min": 0.1, "max": 10, "step": 0.1 } },
+
+  { "name": "魔法使い", "description": "クリティカルdmg：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } },
+  { "name": "超サイヤ人", "description": "開始コイン：X枚", "buff": { "min": 1, "max": 100, "step": 1 } },
+  { "name": "バット", "description": "神話1種分：X%", "buff": { "min": 0.01, "max": 1, "step": 0.01 } },
+  { "name": "コーラ", "description": "毎waveコイン：X枚", "buff": { "min": 1, "max": 25, "step": 1 } },
+  { "name": "ファイヤー", "description": "基本攻撃dmg：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } },
+  { "name": "メロンソーダ", "description": "エピル率：X%", "buff": { "min": 0.1, "max": 2.5, "step": 0.1 } },
+  { "name": "サンタ", "description": "ゴレキル時コイン：X枚", "buff": { "min": 5, "max": 200, "step": 1 } },
+  { "name": "アイス", "description": "レジェル率：X%", "buff": { "min": 0.1, "max": 1.5, "step": 0.1 } },
+  { "name": "パン", "description": "スキル率：X%", "buff": { "min": 0.01, "max": 2, "step": 0.01 } },
+  { "name": "コーヒー", "description": "レアル率：X%", "buff": { "min": 0.1, "max": 5, "step": 0.1 } },
+
+  { "name": "V3", "description": "最大ユニ：X体", "buff": { "min": 0.1, "max": 5, "step": 0.1 } },
+  { "name": "肉", "description": "クールタイム減：X%", "buff": { "min": 0.1, "max": 10, "step": 0.1 } },
+  { "name": "バーガー", "description": "キル時：X%でコイン2～30枚", "buff": { "min": 0.01, "max": 0.5, "step": 0.01 } },
+  { "name": "サイダー", "description": "毎wave：X%で石1個", "buff": { "min": 1, "max": 10, "step": 1 } },
+  { "name": "軍人", "description": "防御力減少：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } },
+  { "name": "小太り", "description": "合成時ランク上昇：X%", "buff": { "min": 0.01, "max": 1, "step": 0.01 } },
+  { "name": "ハロウィン", "description": "マナ回復速度：X%", "buff": { "min": 0.1, "max": 20, "step": 0.1 } },
+  { "name": "ピンク", "description": "移動速度：X%", "buff": { "min": 1, "max": 25, "step": 1 } },
+  { "name": "ゴールド", "description": "攻撃速度：X%", "buff": { "min": 0.1, "max": 5, "step": 0.1 } },
+  { "name": "教官", "description": "鈍化効果：X%", "buff": { "min": 0.1, "max": 15, "step": 0.1 } }
 ]
+

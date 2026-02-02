@@ -751,17 +751,22 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5018(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5019":  # チョナ
+        t_buff1 = 1 - float(TREASURE_DB["チョナ"][treasure_lv][1]) / 100
+        t_buff2 = float(TREASURE_DB["チョナ"][treasure_lv][2])
+        ult_rate = 0.12
+        ult_rate += t_buff2/100
+        ult_mult_ = 30*ult_rate*65 + 30*(1 - ult_rate)*25
         params = {
             "ticks": ticks,
             "trials": trials,
             "seed": seed,
             "attack_power": atk,
             "attack_speed": speed,
-            "skill1_rate": 15 + OldBook if 6 <= char_lv else 10 + OldBook,
+            "skill1_rate": 15 + OldBook + t_buff2 if 6 <= char_lv else 10 + OldBook + t_buff2,
             "skill1_mult": 60*PhysicBuff1,
             "skill2_mult": 70*PhysicBuff1,
-            "ult_mult": 750*PhysicBuff1 if char_lv < 12 else 894*PhysicBuff1,
-            "ult_mana": 40,
+            "ult_mult": 750*PhysicBuff1 if char_lv < 12 else ult_mult_*PhysicBuff1,
+            "ult_mana": 40*t_buff1,
             "crit_rate": crit_rate,
             "crit_dmg": 2.5,
         }
@@ -990,6 +995,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 54000
     elif character_id == "5115":  # ロケッチュー(変身後)
+        t_buff1 = int(TREASURE_DB["ロケッチュー"][treasure_lv][2])
         params = {
             "ticks": ticks,
             "trials": trials,
@@ -998,7 +1004,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "skill1_rate": 10 + OldBook,
             "skill1_mult": 60*PhysicBuff1,
-            "skill2_mult": 160*PhysicBuff1 if 12 <= char_lv else 1,
+            "skill2_mult": 160*PhysicBuff1,
+            "skill2_stack": t_buff1 if 12 <= char_lv else 10**100,
             "ult_mult": 700*PhysicBuff1,
             "ult_mana": 25,
             "crit_rate": crit_rate,

@@ -201,6 +201,7 @@ def mean_total_damage_5115(options: Dict[str, Any]) -> Tuple[float, float, float
         skill1_rate=float(options["skill1_rate"]),
         skill1_mult=float(options["skill1_mult"]),
         skill2_mult=float(options["skill2_mult"]),
+        skill2_stack_threshold=int(options["skill2_stack"]),
         ult_mult=float(options["ult_mult"]),
         ult_mana=float(options["ult_mana"]),
         crit_rate=float(options["crit_rate"]),
@@ -242,6 +243,7 @@ def main() -> None:
     ap.add_argument("--skill1_rate", type=float, required=True, help="percent 0..100")
     ap.add_argument("--skill1_mult", type=float, required=True, help="multiplier (2 => 2x, 150 => 150x)")
     ap.add_argument("--skill2_mult", type=float, required=True)
+    ap.add_argument("--skill2_stack", type=int, default=15, help="stack threshold for skill2")
     ap.add_argument("--ult_mult", type=float, required=True)
     ap.add_argument("--ult_mana", type=float, required=True)
 
@@ -264,6 +266,7 @@ def main() -> None:
         skill1_rate=args.skill1_rate,
         skill1_mult=args.skill1_mult,
         skill2_mult=args.skill2_mult,
+        skill2_stack=args.skill2_stack,
         ult_mult=args.ult_mult,
         ult_mana=args.ult_mana,
         crit_rate=args.crit_rate,
