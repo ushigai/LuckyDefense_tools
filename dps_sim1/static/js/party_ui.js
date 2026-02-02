@@ -33,11 +33,11 @@ function makeCharDropdown(selectedId) {
     <div class="dropdown flex-grow-1">
       <button type="button"
         class="form-select text-start rounded-end-3 member-character-btn dropdown-toggle"
-        data-bs-toggle="dropdown" aria-expanded="false">
+        style="min-width:0" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="d-flex align-items-center gap-2 w-100">
           <img class="char-icon member-character-btn-img" alt="">
           <i class="bi bi-person member-character-btn-fallback d-none"></i>
-          <span class="member-character-btn-label flex-grow-1">${selectedName}</span>
+          <span class="member-character-btn-label flex-grow-1 text-truncate">${selectedName}</span>
         </span>
       </button>
       <ul class="dropdown-menu w-100 member-character-menu">
@@ -105,35 +105,37 @@ export function addMember(recalcFn, {
     <div class="row g-2 align-items-start">
       <div class="col-12 col-md-8">
         <div class="row g-2">
-          <div class="col-12 col-lg-6">
+          <div class="col-12">
             <label class="form-label text-secondary small mb-1">キャラ</label>
             <div class="input-group">
               ${makeCharDropdown(characterId)}
             </div>
           </div>
 
-          <div class="col-6 col-lg-3">
+          <div class="col-6">
             <label class="form-label text-secondary small mb-1">キャラレベル</label>
             <select class="form-select member-charlv rounded-3">
               ${levelOptions(15, charLv)}
             </select>
           </div>
 
-          <div class="col-6 col-lg-3 member-treasure-wrap">
+          <div class="col-6 member-treasure-wrap">
             <label class="form-label text-secondary small mb-1">専用財宝レベル</label>
             <select class="form-select member-treasurelv rounded-3">
               ${levelOptions(11, treasureLv)}
             </select>
           </div>
 
-          <div class="col-12 col-lg-6 member-rune-wrap d-none">
+          <div class="w-100"></div>
+
+          <div class="col-6 member-rune-wrap d-none">
             <label class="form-label text-secondary small mb-1">ルーン</label>
             <select class="form-select member-rune-name rounded-3">
               ${makeRuneNameOptions(runeName)}
             </select>
           </div>
 
-          <div class="col-6 col-lg-3 member-rune-wrap d-none">
+          <div class="col-6 member-rune-wrap d-none">
             <label class="form-label text-secondary small mb-1">ルーンレアリティ</label>
             <select class="form-select member-rune-rarity rounded-3">
               ${makeRuneRarityOptions(runeName, runeRarity)}
@@ -157,7 +159,6 @@ export function addMember(recalcFn, {
     </div>
   `;
 
-  // ✅ 画像つきキャラセレクトの挙動を付与（選択すると hidden に change を飛ばす）
   enhanceCharacterDropdown(row, { characters: state.CHARACTERS, imgBase: "/data/img" });
 
   function getSelectedCharacterObj() {
