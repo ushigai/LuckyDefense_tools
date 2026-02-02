@@ -28,6 +28,7 @@ from dps_sim1.simulator.prim_bamba import mean_total_damage_15001
 from dps_sim1.simulator.darkload_dragon import mean_total_damage_15006
 from dps_sim1.simulator.ace_batman_ball import mean_total_damage_15110
 from dps_sim1.simulator.ace_batman_bat import mean_total_damage_15210
+from dps_sim1.simulator.top_vein import mean_total_damage_15011
 from dps_sim1.simulator.common_sim import mean_total_damage_common
 
 
@@ -1256,25 +1257,28 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15010":  # エースバットマン
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 67000
+        ans = 0
     elif character_id == "15011":  # トップヴェイン
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 68000
+        params = {
+            "tick": ticks,
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 20.4*PhysicBuff1,
+            "skill1_mult": 70*PhysicBuff1,
+            "skill2_mult": 330*PhysicBuff1,
+            "skill2_going": True if 6 <= char_lv else False,
+            "ult_mana": ult_mana,
+            "ult_buff": 2.5 if char_lv < 12 else 3.5,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg,
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15011(params)
+        if 6 <= char_lv: # 破裂の矢の効果をどう処理するか
+            coeff = 1 + enemy_def / 330
+            skill2 *= coeff
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15020":  # ノイズペンギンキング
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
