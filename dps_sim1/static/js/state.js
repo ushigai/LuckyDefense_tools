@@ -33,6 +33,7 @@ export const ALLOWED_CHARACTER_IDS = [
   "15009", // カエルの死神
   "15109", // 死神ダイアン
   "15110", // エースバットマン投手
+  "15210", // エースバットマン打者
 ];
 
 export const ALLOWLIST_EMPTY_MEANS_ALL = false;

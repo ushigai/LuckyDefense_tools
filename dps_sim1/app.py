@@ -1418,10 +1418,16 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15110(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15210":  # バットマン打者
-        if char_lv < 12:
-            ult_mult = sum([120*(1.5**i) for i in range(batEnhance_)])*PhysicBuff1
+        # この式（乗算でさらに複利で働く式）は間違い
+        #if char_lv < 12: 
+            #ult_mult = sum([120*(1.5**i) for i in range(ace_batman_attack_ult_ticks[batEnhance_])])*PhysicBuff1
+        #else:
+            #ult_mult = sum([120*(1.5**i) for i in range(ace_batman_attack_ult_ticks[batEnhance_])])*(PhysicBuff1 + 0.5)
+        # 実際は単に加算されているだけ
+        if char_lv < 12: 
+            ult_mult = sum([120*(PhysicBuff1 + 0.5*i) for i in range(ace_batman_attack_ult_ticks[batEnhance_])])
         else:
-            ult_mult = sum([120*(1.5**i) for i in range(batEnhance_)])*(PhysicBuff1 + 0.5)
+            ult_mult = sum([120*(PhysicBuff1 + 1.0*i) for i in range(ace_batman_attack_ult_ticks[batEnhance_])])
         params = {
             "ticks": ticks,
             "attack_power": atk,

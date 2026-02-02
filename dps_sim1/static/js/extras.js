@@ -26,9 +26,9 @@ export const EXTRA_FIELDS_BY_NAME = {
   "ブロッブ":     [{ key: "intake", label: "摂取値", kind: "number", min: 0, step: 1, def: 0 }],
 
   "バットマン":   [{ key: "batEnhance", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
-  "エースバットマン打者":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
-  "エースバットマン投手":   [{ key: "batEnhance_", label: "フィニッシュピッチ回数", kind: "select-int", min: 1, max: 3, def: 1 }],
-  "エースバットマン投手":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
+  "エースバットマン打者":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }],
+  "エースバットマン投手":   [{ key: "strikeout", label: "ストライクアウト回数", kind: "select-int", min: 1, max: 3, def: 1 }],
+  "エースバットマン投手":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }],
   "ヘイリー":     [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }],
   "マスタークン": [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }],
   "ランスロット": [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }],
