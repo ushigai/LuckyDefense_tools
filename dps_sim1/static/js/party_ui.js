@@ -2,13 +2,52 @@ import { el } from "./dom.js";
 import { state } from "./state.js";
 import { levelOptions } from "./utils.js";
 import { getExtraFieldsForCharacter, readRowExtraValues, renderExtraControls } from "./extras.js";
+import { enhanceCharacterDropdown } from "./char_select_ui.js";
 
-function makeCharOptions(selectedId) {
-  return state.CHARACTERS.map(c =>
-    `<option value="${c.id}" ${String(c.id) === String(selectedId) ? "selected" : ""}>${c.name}</option>`
-  ).join("");
-}
 const RUNE_RARITY_ORDER = ["卓越", "不滅", "神話", "レジェンド", "エピック", "レア", "ノーマル"];
+
+function charImgUrl(id) {
+  return `/data/img/${id}.png`;
+}
+
+function makeCharDropdown(selectedId) {
+  const selected = (state.CHARACTERS ?? []).find(c => String(c.id) === String(selectedId));
+  const selectedName = selected?.name ?? String(selectedId);
+
+  const items = (state.CHARACTERS ?? []).map(c => {
+    const active = (String(c.id) === String(selectedId)) ? "active" : "";
+    return `
+      <li>
+        <button type="button"
+          class="dropdown-item d-flex align-items-center gap-2 member-character-item ${active}"
+          data-char-id="${c.id}">
+          <img class="char-icon member-character-item-img" data-src="${charImgUrl(c.id)}" alt="">
+          <i class="bi bi-person member-character-item-fallback d-none"></i>
+          <span>${c.name}</span>
+        </button>
+      </li>
+    `;
+  }).join("");
+
+  return `
+    <div class="dropdown flex-grow-1">
+      <button type="button"
+        class="form-select text-start rounded-end-3 member-character-btn dropdown-toggle"
+        data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="d-flex align-items-center gap-2 w-100">
+          <img class="char-icon member-character-btn-img" alt="">
+          <i class="bi bi-person member-character-btn-fallback d-none"></i>
+          <span class="member-character-btn-label flex-grow-1">${selectedName}</span>
+        </span>
+      </button>
+      <ul class="dropdown-menu w-100 member-character-menu">
+        ${items}
+      </ul>
+      <!-- 既存ロジックが読むのはこれ（class名を維持） -->
+      <input type="hidden" class="member-character" value="${selectedId}">
+    </div>
+  `;
+}
 
 function makeRuneNameOptions(selectedName = "なし") {
   const names = (state.RUNES ?? []).map(r => String(r.name));
@@ -47,7 +86,6 @@ function makeRuneRarityOptions(runeName, selectedRarity = "なし") {
   ).join("");
 }
 
-
 export function addMember(recalcFn, {
   characterId = (state.CHARACTERS[0]?.id ?? "15024"),
   charLv = 1,
@@ -70,10 +108,7 @@ export function addMember(recalcFn, {
           <div class="col-12 col-lg-6">
             <label class="form-label text-secondary small mb-1">キャラ</label>
             <div class="input-group">
-              <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
-              <select class="form-select member-character rounded-end-3">
-                ${makeCharOptions(characterId)}
-              </select>
+              ${makeCharDropdown(characterId)}
             </div>
           </div>
 
@@ -91,24 +126,23 @@ export function addMember(recalcFn, {
             </select>
           </div>
 
-<div class="col-12 col-lg-6 member-rune-wrap d-none">
-  <label class="form-label text-secondary small mb-1">ルーン</label>
-  <select class="form-select member-rune-name rounded-3">
-    ${makeRuneNameOptions(runeName)}
-  </select>
-</div>
+          <div class="col-12 col-lg-6 member-rune-wrap d-none">
+            <label class="form-label text-secondary small mb-1">ルーン</label>
+            <select class="form-select member-rune-name rounded-3">
+              ${makeRuneNameOptions(runeName)}
+            </select>
+          </div>
 
-<div class="col-6 col-lg-3 member-rune-wrap d-none">
-  <label class="form-label text-secondary small mb-1">ルーンレアリティ</label>
-  <select class="form-select member-rune-rarity rounded-3">
-    ${makeRuneRarityOptions(runeName, runeRarity)}
-  </select>
-</div>
+          <div class="col-6 col-lg-3 member-rune-wrap d-none">
+            <label class="form-label text-secondary small mb-1">ルーンレアリティ</label>
+            <select class="form-select member-rune-rarity rounded-3">
+              ${makeRuneRarityOptions(runeName, runeRarity)}
+            </select>
+          </div>
 
           <div class="col-12">
             <div class="row g-2 member-extra-container"></div>
           </div>
-
         </div>
       </div>
 
@@ -123,6 +157,9 @@ export function addMember(recalcFn, {
     </div>
   `;
 
+  // ✅ 画像つきキャラセレクトの挙動を付与（選択すると hidden に change を飛ばす）
+  enhanceCharacterDropdown(row, { characters: state.CHARACTERS, imgBase: "/data/img" });
+
   function getSelectedCharacterObj() {
     const chId = row.querySelector(".member-character").value;
     return state.CHARACTERS.find(c => String(c.id) === String(chId));
@@ -136,12 +173,10 @@ export function addMember(recalcFn, {
     if (!wrap || !sel) return;
 
     if (isMythic) {
-      // 復帰時は直前の値を戻す（あれば）
       if (row.dataset.savedTreasureLv) sel.value = row.dataset.savedTreasureLv;
       wrap.classList.remove("d-none");
       sel.disabled = false;
     } else {
-      // 非mythicは表示しない＆計算上はLv=1固定
       row.dataset.savedTreasureLv = sel.value;
       sel.value = "1";
       sel.disabled = true;
@@ -149,60 +184,59 @@ export function addMember(recalcFn, {
     }
   }
 
-function updateRuneVisibility() {
-  const ch = getSelectedCharacterObj();
-  const isImmortal = (ch?.rarity === "immortal");
-  const wraps = row.querySelectorAll(".member-rune-wrap");
-  const nameSel = row.querySelector(".member-rune-name");
-  const rarSel = row.querySelector(".member-rune-rarity");
-  if (!wraps || !nameSel || !rarSel) return;
+  function updateRuneVisibility() {
+    const ch = getSelectedCharacterObj();
+    const isImmortal = (ch?.rarity === "immortal");
+    const wraps = row.querySelectorAll(".member-rune-wrap");
+    const nameSel = row.querySelector(".member-rune-name");
+    const rarSel = row.querySelector(".member-rune-rarity");
+    if (!wraps || !nameSel || !rarSel) return;
 
-  if (isImmortal) {
-    if (row.dataset.savedRuneName) nameSel.value = row.dataset.savedRuneName;
-    if (row.dataset.savedRuneRarity) rarSel.value = row.dataset.savedRuneRarity;
+    if (isImmortal) {
+      if (row.dataset.savedRuneName) nameSel.value = row.dataset.savedRuneName;
+      if (row.dataset.savedRuneRarity) rarSel.value = row.dataset.savedRuneRarity;
 
-    wraps.forEach(w => w.classList.remove("d-none"));
-    nameSel.disabled = false;
+      wraps.forEach(w => w.classList.remove("d-none"));
+      nameSel.disabled = false;
 
-    // refresh rarity options based on selected rune
-    rarSel.innerHTML = makeRuneRarityOptions(nameSel.value, rarSel.value);
-    rarSel.disabled = (nameSel.value === "なし");
+      rarSel.innerHTML = makeRuneRarityOptions(nameSel.value, rarSel.value);
+      rarSel.disabled = (nameSel.value === "なし");
 
-    if (nameSel.value !== "なし" && rarSel.value === "なし") {
-      const opt = rarSel.querySelector("option[value]:not([value='なし'])");
-      if (opt) rarSel.value = opt.value;
+      if (nameSel.value !== "なし" && rarSel.value === "なし") {
+        const opt = rarSel.querySelector("option[value]:not([value='なし'])");
+        if (opt) rarSel.value = opt.value;
+      }
+    } else {
+      row.dataset.savedRuneName = nameSel.value;
+      row.dataset.savedRuneRarity = rarSel.value;
+
+      nameSel.value = "なし";
+      rarSel.value = "なし";
+      rarSel.innerHTML = `<option value="なし" selected>なし</option>`;
+
+      nameSel.disabled = true;
+      rarSel.disabled = true;
+      wraps.forEach(w => w.classList.add("d-none"));
     }
-  } else {
-    row.dataset.savedRuneName = nameSel.value;
-    row.dataset.savedRuneRarity = rarSel.value;
-
-    nameSel.value = "なし";
-    rarSel.value = "なし";
-    rarSel.innerHTML = `<option value="なし" selected>なし</option>`;
-
-    nameSel.disabled = true;
-    rarSel.disabled = true;
-    wraps.forEach(w => w.classList.add("d-none"));
-  }
-}
-
-function updateRuneRarityOptions() {
-  const nameSel = row.querySelector(".member-rune-name");
-  const rarSel = row.querySelector(".member-rune-rarity");
-  if (!nameSel || !rarSel) return;
-
-  const runeName = nameSel.value || "なし";
-  if (runeName === "なし") {
-    rarSel.innerHTML = `<option value="なし" selected>なし</option>`;
-    rarSel.value = "なし";
-    rarSel.disabled = true;
-    return;
   }
 
-  const prev = rarSel.value || "なし";
-  rarSel.innerHTML = makeRuneRarityOptions(runeName, prev);
-  rarSel.disabled = false;
-}
+  function updateRuneRarityOptions() {
+    const nameSel = row.querySelector(".member-rune-name");
+    const rarSel = row.querySelector(".member-rune-rarity");
+    if (!nameSel || !rarSel) return;
+
+    const runeName = nameSel.value || "なし";
+    if (runeName === "なし") {
+      rarSel.innerHTML = `<option value="なし" selected>なし</option>`;
+      rarSel.value = "なし";
+      rarSel.disabled = true;
+      return;
+    }
+
+    const prev = rarSel.value || "なし";
+    rarSel.innerHTML = makeRuneRarityOptions(runeName, prev);
+    rarSel.disabled = false;
+  }
 
   function toggleExtras() {
     const ch = row.querySelector(".member-character").value;
@@ -230,7 +264,7 @@ function updateRuneRarityOptions() {
         updateRuneVisibility();
         toggleExtras();
       }
-            if (sel === ".member-rune-name") {
+      if (sel === ".member-rune-name") {
         updateRuneRarityOptions();
       }
       if (el.autoRecalc.checked) recalcFn();
@@ -238,6 +272,7 @@ function updateRuneRarityOptions() {
   });
 
   el.partyList.appendChild(row);
+
   // 初期表示の反映
   updateTreasureVisibility();
   updateRuneVisibility();
@@ -249,15 +284,15 @@ export function getPartyMembers() {
   return rows.map(r => {
     const character = r.querySelector(".member-character").value;
     const charLv = Number(r.querySelector(".member-charlv").value || 1);
+
     const treasureSel = r.querySelector(".member-treasurelv");
     let treasureLv = Number(treasureSel?.value || 1);
-    // 非mythic（= disabled）なら計算上1固定
     if (treasureSel?.disabled) treasureLv = 1;
 
-const runeNameSel = r.querySelector(".member-rune-name");
-const runeRaritySel = r.querySelector(".member-rune-rarity");
-const runeName = (runeNameSel && !runeNameSel.disabled) ? (runeNameSel.value || "なし") : "なし";
-const runeRarity = (runeRaritySel && !runeRaritySel.disabled) ? (runeRaritySel.value || "なし") : "なし";
+    const runeNameSel = r.querySelector(".member-rune-name");
+    const runeRaritySel = r.querySelector(".member-rune-rarity");
+    const runeName = (runeNameSel && !runeNameSel.disabled) ? (runeNameSel.value || "なし") : "なし";
+    const runeRarity = (runeRaritySel && !runeRaritySel.disabled) ? (runeRaritySel.value || "なし") : "なし";
 
     const extras = {};
     const fields = getExtraFieldsForCharacter(character);

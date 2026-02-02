@@ -11,6 +11,25 @@
   <style>
     .metric { font-variant-numeric: tabular-nums; letter-spacing: .5px; }
     .row-card { background: rgba(255,255,255,.85); }
+    .char-icon {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+    .member-character-btn {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .member-character-btn.dropdown-toggle::after {
+      margin-left: auto;
+    }
+    .member-character-menu {
+      max-height: 360px;
+      overflow: auto;
+    }
 
     /* notice accordion */
     .notice-accordion .accordion-button {
