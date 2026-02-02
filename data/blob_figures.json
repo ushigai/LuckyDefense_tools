@@ -1,0 +1,62 @@
+[
+    {
+        "name": "ダイヤ(攻撃)",
+        "parame1_add": 0.001,
+        "parame1_max": 100
+    },
+    {
+        "name": "ファイヤー(基本)",
+        "parame1_add": 0.001,
+        "parame1_max": 150
+    },
+    {
+        "name": "ウォーター(ボス)",
+        "parame1_add": 0.001,
+        "parame1_max": 150
+    },
+    {
+        "name": "溶岩(スキル)",
+        "parame1_add": 0.001,
+        "parame1_max": 100
+    },
+    {
+        "name": "サイボーグ(物理)",
+        "parame1_add": 0.001,
+        "parame1_max": 100
+    },
+    {
+        "name": "スカル(魔法)",
+        "parame1_add": 0.001,
+        "parame1_max": 100
+    },
+    {
+        "name": "魔法使い(クリダメ)",
+        "parame1_add": 0.001,
+        "parame1_max": 150
+    },
+    {
+        "name": "バンバ(気絶)",
+        "parame1_add": 0.001,
+        "parame1_max": 100
+    },
+    {
+        "name": "仮面(単体)",
+        "parame1_add": 0.001,
+        "parame1_max": 150
+    },
+    {
+        "name": "ぺたんこ(範囲)",
+        "parame1_add": 0.001,
+        "parame1_max": 150
+    },
+    {
+        "name": "バット(神話数)",
+        "parame1_add": 0.0001,
+        "parame1_max": 100
+    },
+    {
+        "name": "片目(ユニ数)",
+        "parame1_add": 0.0001,
+        "parame1_max": 100
+    }
+]

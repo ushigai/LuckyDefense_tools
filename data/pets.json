@@ -1,0 +1,61 @@
+[
+    {
+        "petname": "パテ猫(最終とクリダメ)",
+        "parame1": { "category": "攻撃力増加", "base": 0.1, "add": 0.01 },
+        "parame3_fixed_levels": [
+        { "category": "クリティカル", "pet_lv_low": 1, "pet_lv_app": 9, "value": 0.1 },
+        { "category": "クリティカル", "pet_lv_low": 10, "pet_lv_app": 29, "value": 0.15 },
+        { "category": "クリティカル", "pet_lv_low": 30, "pet_lv_app": 50, "value": 0.2 },
+        { "category": "最終", "pet_lv_low": 1, "pet_lv_app": 19, "value": 0.15 },
+        { "category": "最終", "pet_lv_low": 20, "pet_lv_app": 39, "value": 0.2 },
+        { "category": "最終", "pet_lv_low": 40, "pet_lv_app": 49, "value": 0.25 },
+        { "category": "最終", "pet_lv_low": 50, "pet_lv_app": 50, "value": 0.3 }
+        ]
+    },
+    {
+        "petname": "ポセイドン(ボス)",
+        "parame1": { "category": "攻撃力増加", "base": 0.1, "add": 0.01 },
+        "parame3_fixed_levels": [
+        { "category": "ボス", "pet_lv_low": 1, "pet_lv_app": 9, "value": 0.1 },
+        { "category": "ボス", "pet_lv_low": 10, "pet_lv_app": 29, "value": 0.15 },
+        { "category": "ボス", "pet_lv_low": 30, "pet_lv_app": 50, "value": 0.2 }
+        ]
+    },
+    {
+        "petname": "ドラ爺",
+        "parame1": { "category": "攻撃力増加", "base": 0.05, "add": 0.005 }
+    },
+    {
+        "petname": "サラマンダー",
+        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 }
+    },
+    {
+        "petname": "ヤマアヒル",
+        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 }
+    },
+    {
+        "petname": "ツノオバケ(物理)",
+        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
+        "parame2": { "category": "物理属性", "base": 0.05, "add": 0.03 }
+    },
+    {
+        "petname": "ツルピカ(魔法)",
+        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
+        "parame2": { "category": "魔法属性", "base": 0.05, "add": 0.03 }
+    },
+    {
+        "petname": "スティッキー(究極)",
+        "parame1": { "category": "攻撃力増加", "base": 0.02, "add": 0.002 },
+        "parame2": { "category": "究極", "base": 0.05, "add": 0.02 }
+    },
+    {
+        "petname": "チューブ(基本攻撃)",
+        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
+        "parame2": { "category": "基本攻撃", "base": 0.025, "add": 0.015 }
+    },
+    {
+        "petname": "エビドラ(クリダメ)",
+        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
+        "parame2": { "category": "クリダメ", "base": 0.05, "add": 0.03 }
+    }
+]
