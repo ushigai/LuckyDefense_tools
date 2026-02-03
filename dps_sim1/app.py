@@ -150,12 +150,65 @@ def load_runes() -> Dict[str, Dict[str, Any]]:
         out[name] = r
     return out
 
+def load_blob_figures() -> Dict[str, Dict[str, Any]]:
+    """Load blob_figures.json (list) into name->entry mapping."""
+    path = os.path.join(DATA_DIR, "blob_figures.json")
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            obj = json.load(f)
+    except Exception:
+        return {}
+    if not isinstance(obj, list):
+        return {}
+    out: Dict[str, Dict[str, Any]] = {}
+    for r in obj:
+        if not isinstance(r, dict):
+            continue
+        name = str(r.get("name", "") or "")
+        if not name:
+            continue
+        out[name] = r
+    return out
+
+def load_pets() -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
+    """Load pets.json into id/name lookup maps."""
+    path = os.path.join(DATA_DIR, "pets.json")
+    if not os.path.exists(path):
+        return {}, {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            obj = json.load(f)
+    except Exception:
+        return {}, {}
+    if not isinstance(obj, list):
+        return {}, {}
+
+    by_id: Dict[str, Dict[str, Any]] = {}
+    by_name: Dict[str, Dict[str, Any]] = {}
+    for p in obj:
+        if not isinstance(p, dict):
+            continue
+        pid = str(p.get("id", "") or "").strip()
+        name = str(p.get("name", "") or "").strip()
+        if not pid:
+            continue
+        row = {"id": pid, "name": name}
+        by_id[pid] = row
+        if name and name not in by_name:
+            by_name[name] = row
+    return by_id, by_name
+
+
 TREASURE_DB, _ = load_treasure_db(os.path.join(DATA_DIR, "treasures.json"))
 
 ARTIFACTS_DB = load_artifacts()
 CHAR_DB = load_characters()
 ENEMY_DB = load_enemies()
 RUNES_DB = load_runes()
+BLOB_FIGURES_DB = load_blob_figures()
+PET_DB_BY_ID, PET_DB_BY_NAME = load_pets()
 ALLOWED_ENEMIES = set(ENEMY_DB.keys())
 PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15001, 15010, 15011, 15020, 15023, 15110, 15210]
 
@@ -191,6 +244,167 @@ def clamp_float(v: Any, lo: float, hi: float, default: float) -> float:
     return max(lo, min(hi, x))
 
 
+def _decimals_from_step(step: Any) -> int:
+    try:
+        s = str(step)
+    except Exception:
+        return 0
+    if "e-" in s:
+        try:
+            return int(s.split("e-")[1])
+        except Exception:
+            return 0
+    if "." in s:
+        return len(s.split(".")[1])
+    return 0
+
+
+def _snap_to_step(x: float, lo: float, step: float) -> float:
+    if step <= 0:
+        return x
+    n = round((x - lo) / step)
+    return lo + n * step
+
+
+def _normalize_blob_figures(v: Any) -> List[Dict[str, Any]]:
+    """Normalize common['blobFigures'] to a safe list of {name, value}."""
+    if not isinstance(v, list):
+        return []
+    out: List[Dict[str, Any]] = []
+    for item in v:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name", "") or "")
+        if not name:
+            continue
+        spec = BLOB_FIGURES_DB.get(name)
+        if not spec:
+            continue
+        buff = spec.get("buff") if isinstance(spec, dict) else None
+        if not isinstance(buff, dict):
+            continue
+        lo = float(buff.get("min", 0))
+        hi = float(buff.get("max", 0))
+        step = float(buff.get("step", 1))
+        raw = item.get("value", None)
+        x = clamp_float(raw, lo, hi, lo)
+        x = _snap_to_step(x, lo, step)
+        dec = _decimals_from_step(step)
+        if dec > 0:
+            x = round(x, dec)
+        else:
+            # keep ints stable when step is integer
+            x = float(int(round(x)))
+        out.append({"name": name, "value": x})
+        if len(out) >= 5:
+            break
+    return out
+
+
+
+def _is_none_token(v: Any) -> bool:
+    s = str(v or "").strip().lower()
+    return s in ("", "なし", "none", "null", "0")
+
+
+def _resolve_pet_id_name(pid: Any, pname: Any) -> Tuple[str, str]:
+    pid_s = str(pid or "").strip()
+    if pid_s.lower().endswith(".png"):
+        pid_s = pid_s[:-4].strip()
+
+    if not _is_none_token(pid_s):
+        if pid_s.isdigit():
+            row = PET_DB_BY_ID.get(pid_s, {})
+            return pid_s, str(row.get("name", "") or "")
+        if pid_s in PET_DB_BY_NAME:
+            row = PET_DB_BY_NAME[pid_s]
+            return str(row.get("id", "") or ""), str(row.get("name", "") or pid_s)
+
+    name_s = str(pname or "").strip()
+    if _is_none_token(name_s):
+        return "", ""
+
+    if name_s in PET_DB_BY_NAME:
+        row = PET_DB_BY_NAME[name_s]
+        return str(row.get("id", "") or ""), str(row.get("name", "") or name_s)
+    if name_s.isdigit():
+        row = PET_DB_BY_ID.get(name_s, {})
+        if row:
+            return name_s, str(row.get("name", "") or "")
+    return "", ""
+
+
+def _normalize_pets(options: Any) -> List[Dict[str, Any]]:
+    """Normalize pet options to [{id, name, level, image}] (max 3)."""
+    if not isinstance(options, dict):
+        return []
+
+    raw_rows: List[Dict[str, Any]] = []
+
+    pets = options.get("pets")
+    if isinstance(pets, list):
+        for p in pets:
+            if not isinstance(p, dict):
+                continue
+            raw_rows.append(
+                {
+                    "id": p.get("id", p.get("petId", p.get("petID", ""))),
+                    "name": p.get("name", p.get("petName", "")),
+                    "level": p.get("level", p.get("lv", p.get("petLv", p.get("petLevel", "")))),
+                }
+            )
+
+    if not raw_rows:
+        for i in (1, 2, 3):
+            pid = options.get(f"pet{i}", "")
+            pname = options.get(f"pet{i}Name", "")
+            lv = options.get(f"pet{i}Level", options.get(f"pet{i}Lv", ""))
+            raw_rows.append({"id": pid, "name": pname, "level": lv})
+
+    if not raw_rows:
+        pet_obj = options.get("pet")
+        if isinstance(pet_obj, dict):
+            raw_rows.append(
+                {
+                    "id": pet_obj.get("id", pet_obj.get("petId", "")),
+                    "name": pet_obj.get("name", pet_obj.get("petName", "")),
+                    "level": pet_obj.get("level", pet_obj.get("lv", pet_obj.get("petLv", ""))),
+                }
+            )
+        else:
+            raw_rows.append(
+                {
+                    "id": options.get("petId", options.get("petID", "")),
+                    "name": options.get("petName", ""),
+                    "level": options.get("petLv", options.get("petLevel", options.get("pet_level", ""))),
+                }
+            )
+
+    out: List[Dict[str, Any]] = []
+    for row in raw_rows:
+        pid, pname = _resolve_pet_id_name(row.get("id"), row.get("name"))
+        if not pid:
+            continue
+        level = clamp_int(row.get("level"), 1, 50, 1)
+        out.append(
+            {
+                "id": pid,
+                "name": pname or pid,
+                "level": level,
+                "image": f"/data/img/pet/{pid}.png",
+            }
+        )
+        if len(out) >= 3:
+            break
+    return out
+
+
+def _normalize_pet(options: Any) -> Dict[str, Any] | None:
+    """Normalize a single pet object for backward compatibility."""
+    pets = _normalize_pets(options)
+    return pets[0] if pets else None
+
+
 def sign(n):
     if n:
         if n < 0:
@@ -201,6 +415,13 @@ def sign(n):
 
 def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> float:
     DebugMessage = dict()
+    DebugMessage["blobFigures"] = common.get("blobFigures", [])
+    pet = common.get("pet")
+    if isinstance(pet, dict) and str(pet.get("id", "") or ""):
+        DebugMessage["pet"] = pet
+    pets = common.get("pets")
+    if isinstance(pets, list) and len(pets) > 0:
+        DebugMessage["pets"] = pets
     duration_sec = int(common.get("durationSec", 60))
     trials = int(common.get("trials", 1))
     all_relic_lv = int(common.get("allRelicLv", 1))
@@ -1542,6 +1763,11 @@ def api_calc():
     guildBlessing = clamp_int(common.get("guildBlessing", 0), 0, 2, 0)
     unitLevelSumBuff = clamp_float(common.get("unitLevelSumBuff", 0), 0, 25, 0)
 
+    blob_figures = _normalize_blob_figures(common.get("blobFigures", []))
+
+    pets = _normalize_pets(common)
+    pet = pets[0] if pets else None
+
     # tick秒はUIから削除したので固定扱い（必要ならゲーム仕様に合わせて変更）
     tick_sec = 1.0
     ticks = int(duration_sec / tick_sec)
@@ -1590,6 +1816,9 @@ def api_calc():
         "magicGauntletLv": magic_gauntlet_lv,
         "guildBlessing": guildBlessing,
         "unitLevelSumBuff": unitLevelSumBuff,
+        "blobFigures": blob_figures,
+        "pets": pets,
+        "pet": pet,
     }
 
     members_out: List[Dict[str, Any]] = []
@@ -1762,6 +1991,8 @@ def api_calc():
             "totalDps": total,
             "dpsRatio": dps_ratio_list,
             "members": members_out,
+            "pets": pets,
+            "pet": pet,
             "Debug": DebugMessages,
         }
     )

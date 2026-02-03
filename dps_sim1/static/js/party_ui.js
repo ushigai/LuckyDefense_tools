@@ -7,7 +7,7 @@ import { enhanceCharacterDropdown } from "./char_select_ui.js";
 const RUNE_RARITY_ORDER = ["卓越", "不滅", "神話", "レジェンド", "エピック", "レア", "ノーマル"];
 
 function charImgUrl(id) {
-  return `/data/img/${id}.png`;
+  return `/data/img/char/${id}.png`;
 }
 
 function makeCharDropdown(selectedId) {
@@ -163,7 +163,7 @@ export function addMember(recalcFn, {
     </div>
   `;
 
-  enhanceCharacterDropdown(row, { characters: state.CHARACTERS, imgBase: "/data/img" });
+  enhanceCharacterDropdown(row, { characters: state.CHARACTERS, imgBase: "/data/img/char" });
 
   function getSelectedCharacterObj() {
     const chId = row.querySelector(".member-character").value;

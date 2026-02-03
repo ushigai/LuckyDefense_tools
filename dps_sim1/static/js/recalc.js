@@ -99,8 +99,25 @@ function _renderDpsRatio(characterId, ratioObj) {
   `;
 }
 
+function readBlobFigures() {
+  const out = [];
+  for (let i = 1; i <= 5; i++) {
+    const name = document.getElementById(`blobFigureName${i}`)?.value ?? "";
+    if (!name) continue; // なし
+
+    const v = document.getElementById(`blobFigureValue${i}`)?.value ?? "";
+    const value = Number(v);
+    if (!Number.isFinite(value)) continue;
+
+    out.push({ name, value });
+  }
+  return out;
+}
+
+
 export async function recalc() {
   const options = collectOptions();
+  options.blobFigures = readBlobFigures();
   const members = getPartyMembers();
   if (members.length === 0) return;
 

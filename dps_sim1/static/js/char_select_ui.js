@@ -1,5 +1,5 @@
 // static/char_select_ui.js
-export function enhanceCharacterDropdown(row, { characters, imgBase = "/data/img" }) {
+export function enhanceCharacterDropdown(row, { characters, imgBase = "/data/img/char" }) {
   const charImgUrl = (id) => `${imgBase}/${id}.png`;
 
   function setImgWithFallback(imgEl, fallbackEl, url) {

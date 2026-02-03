@@ -1,6 +1,21 @@
 import { el } from "./dom.js";
 
 export function collectOptions() {
+  const readPet = (nameSel, levelSel) => {
+    const id = String(nameSel?.value ?? "");
+    const name = String(nameSel?.selectedOptions?.[0]?.textContent ?? "");
+    const level = Number(levelSel?.value || 1);
+    return { id, name, level };
+  };
+
+  const pets = [
+    readPet(el.pet1, el.pet1Level),
+    readPet(el.pet2, el.pet2Level),
+    readPet(el.pet3, el.pet3Level),
+  ].filter(p => p.id !== "");
+
+  const firstPet = pets[0] ?? null;
+
   return {
     enemy: String(el.enemy.value),
 
@@ -26,8 +41,13 @@ export function collectOptions() {
     magicGauntletLv: Number(el.magicGauntletLv.value || el.allRelicLv.value || 1),
 
     pet1: String(el.pet1.value),
+    pet1Level: Number(el.pet1Level.value || 1),
     pet2: String(el.pet2.value),
+    pet2Level: Number(el.pet2Level.value || 1),
     pet3: String(el.pet3.value),
+    pet3Level: Number(el.pet3Level.value || 1),
+    pets,
+    pet: firstPet,
     guildBlessing: String(el.guildBlessing.value),
     unitLevelSumBuff: String(el.unitLevelSumBuff.value),
     petLevelSum: String(el.petLevelSum.value),
@@ -38,4 +58,3 @@ export function collectOptions() {
     multiplier: Number(el.multiplier.value || 1),
   };
 }
-

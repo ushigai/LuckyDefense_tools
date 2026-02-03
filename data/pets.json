@@ -1,61 +1,1040 @@
 [
-    {
-        "petname": "パテ猫(最終とクリダメ)",
-        "parame1": { "category": "攻撃力増加", "base": 0.1, "add": 0.01 },
-        "parame3_fixed_levels": [
-        { "category": "クリティカル", "pet_lv_low": 1, "pet_lv_app": 9, "value": 0.1 },
-        { "category": "クリティカル", "pet_lv_low": 10, "pet_lv_app": 29, "value": 0.15 },
-        { "category": "クリティカル", "pet_lv_low": 30, "pet_lv_app": 50, "value": 0.2 },
-        { "category": "最終", "pet_lv_low": 1, "pet_lv_app": 19, "value": 0.15 },
-        { "category": "最終", "pet_lv_low": 20, "pet_lv_app": 39, "value": 0.2 },
-        { "category": "最終", "pet_lv_low": 40, "pet_lv_app": 49, "value": 0.25 },
-        { "category": "最終", "pet_lv_low": 50, "pet_lv_app": 50, "value": 0.3 }
-        ]
-    },
-    {
-        "petname": "ポセイドン(ボス)",
-        "parame1": { "category": "攻撃力増加", "base": 0.1, "add": 0.01 },
-        "parame3_fixed_levels": [
-        { "category": "ボス", "pet_lv_low": 1, "pet_lv_app": 9, "value": 0.1 },
-        { "category": "ボス", "pet_lv_low": 10, "pet_lv_app": 29, "value": 0.15 },
-        { "category": "ボス", "pet_lv_low": 30, "pet_lv_app": 50, "value": 0.2 }
-        ]
-    },
-    {
-        "petname": "ドラ爺",
-        "parame1": { "category": "攻撃力増加", "base": 0.05, "add": 0.005 }
-    },
-    {
-        "petname": "サラマンダー",
-        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 }
-    },
-    {
-        "petname": "ヤマアヒル",
-        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 }
-    },
-    {
-        "petname": "ツノオバケ(物理)",
-        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
-        "parame2": { "category": "物理属性", "base": 0.05, "add": 0.03 }
-    },
-    {
-        "petname": "ツルピカ(魔法)",
-        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
-        "parame2": { "category": "魔法属性", "base": 0.05, "add": 0.03 }
-    },
-    {
-        "petname": "スティッキー(究極)",
-        "parame1": { "category": "攻撃力増加", "base": 0.02, "add": 0.002 },
-        "parame2": { "category": "究極", "base": 0.05, "add": 0.02 }
-    },
-    {
-        "petname": "チューブ(基本攻撃)",
-        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
-        "parame2": { "category": "基本攻撃", "base": 0.025, "add": 0.015 }
-    },
-    {
-        "petname": "エビドラ(クリダメ)",
-        "parame1": { "category": "攻撃力増加", "base": 0.03, "add": 0.003 },
-        "parame2": { "category": "クリダメ", "base": 0.05, "add": 0.03 }
-    }
+  {
+    "name": "単細胞",
+    "id": "61001",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_610010",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610010
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_610011",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "SpRegen",
+        "SkillCooltime": null,
+        "Description": "skill_description_spregen",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610011
+      }
+    ]
+  },
+  {
+    "name": "チリ",
+    "id": "61002",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_610020",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610020
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_610021",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "BasicAttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_basicattackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610021
+      }
+    ]
+  },
+  {
+    "name": "メッシュ",
+    "id": "61003",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_610030",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610030
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_610031",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "UltimateDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_ultimatedamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610031
+      }
+    ]
+  },
+  {
+    "name": "ハサミ",
+    "id": "61004",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_610040",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610040
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_610041",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "BossMonsterDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_bossmonsterdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610041
+      }
+    ]
+  },
+  {
+    "name": "タコさん",
+    "id": "61005",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_610050",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610050
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_610051",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "MovementSpeed",
+        "SkillCooltime": null,
+        "Description": "skill_description_movementspeed",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610051
+      }
+    ]
+  },
+  {
+    "name": "ピヨ助",
+    "id": "61006",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_610060",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610060
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_610061",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "SlowMovementSpeed",
+        "SkillCooltime": null,
+        "Description": "skill_description_slowmovementspeed",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 610061
+      }
+    ]
+  },
+  {
+    "name": "ゼリー",
+    "id": "62001",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_620010",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1.5, 1.65, 1.8, 1.95, 2.1, 2.25, 2.4, 2.55, 2.7, 2.85, 3, 3.15, 3.3, 3.45, 3.6, 3.75, 3.9, 4.05, 4.2, 4.35, 4.5, 4.65, 4.8, 4.95, 5.1, 5.25, 5.4, 5.55, 5.7, 5.85, 6, 6.15, 6.3, 6.45, 6.6, 6.75, 6.9, 7.05, 7.2, 7.35, 7.5, 7.65, 7.8, 7.95, 8.1, 8.25, 8.4, 8.55, 8.7, 8.85],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620010
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_620011",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "SpRegen",
+        "SkillCooltime": null,
+        "Description": "skill_description_spregen",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620011
+      }
+    ]
+  },
+  {
+    "name": "チューブ",
+    "id": "62002",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_620020",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1.5, 1.65, 1.8, 1.95, 2.1, 2.25, 2.4, 2.55, 2.7, 2.85, 3, 3.15, 3.3, 3.45, 3.6, 3.75, 3.9, 4.05, 4.2, 4.35, 4.5, 4.65, 4.8, 4.95, 5.1, 5.25, 5.4, 5.55, 5.7, 5.85, 6, 6.15, 6.3, 6.45, 6.6, 6.75, 6.9, 7.05, 7.2, 7.35, 7.5, 7.65, 7.8, 7.95, 8.1, 8.25, 8.4, 8.55, 8.7, 8.85],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620020
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_620021",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "BasicAttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_basicattackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620021
+      }
+    ]
+  },
+  {
+    "name": "ダンダン",
+    "id": "62003",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_620030",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1.5, 1.65, 1.8, 1.95, 2.1, 2.25, 2.4, 2.55, 2.7, 2.85, 3, 3.15, 3.3, 3.45, 3.6, 3.75, 3.9, 4.05, 4.2, 4.35, 4.5, 4.65, 4.8, 4.95, 5.1, 5.25, 5.4, 5.55, 5.7, 5.85, 6, 6.15, 6.3, 6.45, 6.6, 6.75, 6.9, 7.05, 7.2, 7.35, 7.5, 7.65, 7.8, 7.95, 8.1, 8.25, 8.4, 8.55, 8.7, 8.85],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620030
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_620031",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "DecreaseDefenseValue",
+        "SkillCooltime": null,
+        "Description": "skill_description_decreasedefensevalue",
+        "ParamterType_1": "Count",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620031
+      }
+    ]
+  },
+  {
+    "name": "ハンサム",
+    "id": "62004",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_620040",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1.5, 1.65, 1.8, 1.95, 2.1, 2.25, 2.4, 2.55, 2.7, 2.85, 3, 3.15, 3.3, 3.45, 3.6, 3.75, 3.9, 4.05, 4.2, 4.35, 4.5, 4.65, 4.8, 4.95, 5.1, 5.25, 5.4, 5.55, 5.7, 5.85, 6, 6.15, 6.3, 6.45, 6.6, 6.75, 6.9, 7.05, 7.2, 7.35, 7.5, 7.65, 7.8, 7.95, 8.1, 8.25, 8.4, 8.55, 8.7, 8.85],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620040
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_620041",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "BossMonsterDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_bossmonsterdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620041
+      }
+    ]
+  },
+  {
+    "name": "ヒエ助",
+    "id": "62005",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_620050",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1.5, 1.65, 1.8, 1.95, 2.1, 2.25, 2.4, 2.55, 2.7, 2.85, 3, 3.15, 3.3, 3.45, 3.6, 3.75, 3.9, 4.05, 4.2, 4.35, 4.5, 4.65, 4.8, 4.95, 5.1, 5.25, 5.4, 5.55, 5.7, 5.85, 6, 6.15, 6.3, 6.45, 6.6, 6.75, 6.9, 7.05, 7.2, 7.35, 7.5, 7.65, 7.8, 7.95, 8.1, 8.25, 8.4, 8.55, 8.7, 8.85],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620050
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_620051",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "SlowMovementSpeed",
+        "SkillCooltime": null,
+        "Description": "skill_description_slowmovementspeed",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620051
+      }
+    ]
+  },
+  {
+    "name": "ハッシュ",
+    "id": "62006",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_620060",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [1.5, 1.65, 1.8, 1.95, 2.1, 2.25, 2.4, 2.55, 2.7, 2.85, 3, 3.15, 3.3, 3.45, 3.6, 3.75, 3.9, 4.05, 4.2, 4.35, 4.5, 4.65, 4.8, 4.95, 5.1, 5.25, 5.4, 5.55, 5.7, 5.85, 6, 6.15, 6.3, 6.45, 6.6, 6.75, 6.9, 7.05, 7.2, 7.35, 7.5, 7.65, 7.8, 7.95, 8.1, 8.25, 8.4, 8.55, 8.7, 8.85],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620060
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_620061",
+        "PetSkillCategory": "CooltimeSkill",
+        "PetSkillType": "StunAttack",
+        "SkillCooltime": 30,
+        "Description": "skill_description_stunattack",
+        "ParamterType_1": "Duration",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "Range",
+        "Paramter_2": [1.5],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 620061
+      }
+    ]
+  },
+  {
+    "name": "スティッキー",
+    "id": "63001",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_630010",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4, 6.6, 6.8, 7, 7.2, 7.4, 7.6, 7.8, 8, 8.2, 8.4, 8.6, 8.8, 9, 9.2, 9.4, 9.6, 9.8, 10, 10.2, 10.4, 10.6, 10.8, 11, 11.2, 11.4, 11.6, 11.8],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630010
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_630011",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "UltimateDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_ultimatedamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 15],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630011
+      }
+    ]
+  },
+  {
+    "name": "ツノ",
+    "id": "63002",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_630020",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4, 6.6, 6.8, 7, 7.2, 7.4, 7.6, 7.8, 8, 8.2, 8.4, 8.6, 8.8, 9, 9.2, 9.4, 9.6, 9.8, 10, 10.2, 10.4, 10.6, 10.8, 11, 11.2, 11.4, 11.6, 11.8],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630020
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_630021",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "DecreaseDefenseValue",
+        "SkillCooltime": null,
+        "Description": "skill_description_decreasedefensevalue",
+        "ParamterType_1": "Count",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 15],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630021
+      }
+    ]
+  },
+  {
+    "name": "モッシュ",
+    "id": "63003",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_630030",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4, 6.6, 6.8, 7, 7.2, 7.4, 7.6, 7.8, 8, 8.2, 8.4, 8.6, 8.8, 9, 9.2, 9.4, 9.6, 9.8, 10, 10.2, 10.4, 10.6, 10.8, 11, 11.2, 11.4, 11.6, 11.8],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630030
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_630031",
+        "PetSkillCategory": "GameStart",
+        "PetSkillType": "GetStartFreeUnit",
+        "SkillCooltime": null,
+        "Description": "skill_description_getstartfreeunit",
+        "ParamterType_1": "Chance",
+        "Paramter_1": [10, 10, 10, 10, 10, 10, 10, 10, 10, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 25],
+        "ParamterType_2": "Grade",
+        "Paramter_2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630031
+      }
+    ]
+  },
+  {
+    "name": "アントニー",
+    "id": "63004",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_630040",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4, 6.6, 6.8, 7, 7.2, 7.4, 7.6, 7.8, 8, 8.2, 8.4, 8.6, 8.8, 9, 9.2, 9.4, 9.6, 9.8, 10, 10.2, 10.4, 10.6, 10.8, 11, 11.2, 11.4, 11.6, 11.8],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630040
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_630041",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "CooltimeRegen",
+        "SkillCooltime": null,
+        "Description": "skill_description_cooltimeregen",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630041
+      }
+    ]
+  },
+  {
+    "name": "ハリセンボン",
+    "id": "63005",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_630050",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4, 6.6, 6.8, 7, 7.2, 7.4, 7.6, 7.8, 8, 8.2, 8.4, 8.6, 8.8, 9, 9.2, 9.4, 9.6, 9.8, 10, 10.2, 10.4, 10.6, 10.8, 11, 11.2, 11.4, 11.6, 11.8],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630050
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_630051",
+        "PetSkillCategory": "CooltimeSkill",
+        "PetSkillType": "HpPercentageAttack",
+        "SkillCooltime": 30,
+        "Description": "skill_description_hppercentageattack",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7],
+        "ParamterType_2": "Range",
+        "Paramter_2": [1.5],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 630051
+      }
+    ]
+  },
+  {
+    "name": "サラマンダー",
+    "id": "64001",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_640010",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3.3, 3.6, 3.9, 4.2, 4.5, 4.8, 5.1, 5.4, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.8, 8.1, 8.4, 8.7, 9, 9.3, 9.6, 9.9, 10.2, 10.5, 10.8, 11.1, 11.4, 11.7, 12, 12.3, 12.6, 12.9, 13.2, 13.5, 13.8, 14.1, 14.4, 14.7, 15, 15.3, 15.6, 15.9, 16.2, 16.5, 16.8, 17.1, 17.4, 17.7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640010
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_640011",
+        "PetSkillCategory": "GameStart",
+        "PetSkillType": "FreeSummon",
+        "SkillCooltime": null,
+        "Description": "skill_description_freesummon",
+        "ParamterType_1": "Count",
+        "Paramter_1": [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640011
+      }
+    ]
+  },
+  {
+    "name": "ツノオバケ",
+    "id": "64002",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_640020",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3.3, 3.6, 3.9, 4.2, 4.5, 4.8, 5.1, 5.4, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.8, 8.1, 8.4, 8.7, 9, 9.3, 9.6, 9.9, 10.2, 10.5, 10.8, 11.1, 11.4, 11.7, 12, 12.3, 12.6, 12.9, 13.2, 13.5, 13.8, 14.1, 14.4, 14.7, 15, 15.3, 15.6, 15.9, 16.2, 16.5, 16.8, 17.1, 17.4, 17.7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640020
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_640021",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "PhysicalDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_physicaldamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640021
+      }
+    ]
+  },
+  {
+    "name": "ツルピカ",
+    "id": "64003",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_640030",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3.3, 3.6, 3.9, 4.2, 4.5, 4.8, 5.1, 5.4, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.8, 8.1, 8.4, 8.7, 9, 9.3, 9.6, 9.9, 10.2, 10.5, 10.8, 11.1, 11.4, 11.7, 12, 12.3, 12.6, 12.9, 13.2, 13.5, 13.8, 14.1, 14.4, 14.7, 15, 15.3, 15.6, 15.9, 16.2, 16.5, 16.8, 17.1, 17.4, 17.7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640030
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_640031",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "MagicalDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_magicaldamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640031
+      }
+    ]
+  },
+  {
+    "name": "エビドラ",
+    "id": "64004",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_640040",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3.3, 3.6, 3.9, 4.2, 4.5, 4.8, 5.1, 5.4, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.8, 8.1, 8.4, 8.7, 9, 9.3, 9.6, 9.9, 10.2, 10.5, 10.8, 11.1, 11.4, 11.7, 12, 12.3, 12.6, 12.9, 13.2, 13.5, 13.8, 14.1, 14.4, 14.7, 15, 15.3, 15.6, 15.9, 16.2, 16.5, 16.8, 17.1, 17.4, 17.7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640040
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_640041",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "CriticalDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_criticaldamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640041
+      }
+    ]
+  },
+  {
+    "name": "ヤマアヒル",
+    "id": "64005",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_640050",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [3, 3.3, 3.6, 3.9, 4.2, 4.5, 4.8, 5.1, 5.4, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.8, 8.1, 8.4, 8.7, 9, 9.3, 9.6, 9.9, 10.2, 10.5, 10.8, 11.1, 11.4, 11.7, 12, 12.3, 12.6, 12.9, 13.2, 13.5, 13.8, 14.1, 14.4, 14.7, 15, 15.3, 15.6, 15.9, 16.2, 16.5, 16.8, 17.1, 17.4, 17.7],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640050
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_640051",
+        "PetSkillCategory": "GameStart",
+        "PetSkillType": "GetStartAdditionalPoint",
+        "SkillCooltime": null,
+        "Description": "skill_description_getstartadditionalpoint",
+        "ParamterType_1": "Count",
+        "Paramter_1": [20, 20, 20, 20, 20, 20, 20, 20, 20, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 70],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 640051
+      }
+    ]
+  },
+  {
+    "name": "クジラ王",
+    "id": "65001",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_650010",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5, 22, 22.5, 23, 23.5, 24, 24.5, 25, 25.5, 26, 26.5, 27, 27.5, 28, 28.5, 29, 29.5],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650010
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_650011",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackSpeed",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackspeed",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650011
+      }
+    ]
+  },
+  {
+    "name": "ウーパーちゃん",
+    "id": "65002",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_650020",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5, 22, 22.5, 23, 23.5, 24, 24.5, 25, 25.5, 26, 26.5, 27, 27.5, 28, 28.5, 29, 29.5],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650020
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_650021",
+        "PetSkillCategory": "WaveSkill",
+        "PetSkillType": "GetSpecialPoint",
+        "SkillCooltime": null,
+        "Description": "skill_description_getspecialpoint",
+        "ParamterType_1": "Count",
+        "Paramter_1": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "ParamterType_2": "Chance",
+        "Paramter_2": [5, 5, 5, 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650021
+      }
+    ]
+  },
+  {
+    "name": "ドラ爺",
+    "id": "65003",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_650030",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5, 22, 22.5, 23, 23.5, 24, 24.5, 25, 25.5, 26, 26.5, 27, 27.5, 28, 28.5, 29, 29.5],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650030
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_650031",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "CriticalPercentage",
+        "SkillCooltime": null,
+        "Description": "skill_description_criticalpercentage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 8.5, 10],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650031
+      }
+    ]
+  },
+  {
+    "name": "幽霊カメ",
+    "id": "65004",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_650040",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5, 22, 22.5, 23, 23.5, 24, 24.5, 25, 25.5, 26, 26.5, 27, 27.5, 28, 28.5, 29, 29.5],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650040
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_650041",
+        "PetSkillCategory": "SellUnit",
+        "PetSkillType": "GetAdditionalPointWhenSell",
+        "SkillCooltime": null,
+        "Description": "skill_description_getadditionalpointwhensell",
+        "ParamterType_1": "Count",
+        "Paramter_1": [5, 5, 5, 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20],
+        "ParamterType_2": "Chance",
+        "Paramter_2": [5, 5, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 30],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 650041
+      }
+    ]
+  },
+  {
+    "name": "ポセイドン",
+    "id": "66001",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_660010",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 660010
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_660011",
+        "PetSkillCategory": "WaveCount",
+        "PetSkillType": "KillWaveMonsterAtWaveCount",
+        "SkillCooltime": null,
+        "Description": "skill_description_killwavemonsteratwavecount",
+        "ParamterType_1": "Chance",
+        "Paramter_1": [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 30],
+        "ParamterType_2": "Count",
+        "Paramter_2": [5],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 660011
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_660012",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "BossMonsterDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_bossmonsterdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 660012
+      }
+    ]
+  },
+  {
+    "name": "パーティー猫",
+    "id": "66002",
+    "skills": [
+      {
+        "IconName": "",
+        "Name": "skill_name_660020",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "AttackDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_attackdamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 660020
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_660021",
+        "PetSkillCategory": "CooltimeSkill",
+        "PetSkillType": "TotalAttackDamagePercentageBuff",
+        "SkillCooltime": 60,
+        "Description": "skill_description_totalattackdamagepercentagebuff",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 30],
+        "ParamterType_2": "Duration",
+        "Paramter_2": [20],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 660021
+      },
+      {
+        "IconName": "",
+        "Name": "skill_name_660022",
+        "PetSkillCategory": "Passive",
+        "PetSkillType": "CriticalDamage",
+        "SkillCooltime": null,
+        "Description": "skill_description_criticaldamage",
+        "ParamterType_1": "Percent",
+        "Paramter_1": [10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+        "ParamterType_2": "None",
+        "Paramter_2": [],
+        "ParamterType_3": "None",
+        "Paramter_3": [],
+        "id": 660022
+      }
+    ]
+  }
 ]

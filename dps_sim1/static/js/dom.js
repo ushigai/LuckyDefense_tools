@@ -29,13 +29,28 @@ export const el = {
 
   // pets
   pet1: document.getElementById("pet1"),
+  pet1Level: document.getElementById("pet1Level"),
   pet2: document.getElementById("pet2"),
+  pet2Level: document.getElementById("pet2Level"),
   pet3: document.getElementById("pet3"),
+  pet3Level: document.getElementById("pet3Level"),
 
   // other buffs
   guildBlessing: document.getElementById("guildBlessing"),
   unitLevelSumBuff: document.getElementById("unitLevelSumBuff"),
   petLevelSum: document.getElementById("petLevelSum"),
+
+  // blob figures
+  blobFigureName1: document.getElementById("blobFigureName1"),
+  blobFigureValue1: document.getElementById("blobFigureValue1"),
+  blobFigureName2: document.getElementById("blobFigureName2"),
+  blobFigureValue2: document.getElementById("blobFigureValue2"),
+  blobFigureName3: document.getElementById("blobFigureName3"),
+  blobFigureValue3: document.getElementById("blobFigureValue3"),
+  blobFigureName4: document.getElementById("blobFigureName4"),
+  blobFigureValue4: document.getElementById("blobFigureValue4"),
+  blobFigureName5: document.getElementById("blobFigureName5"),
+  blobFigureValue5: document.getElementById("blobFigureValue5"),
 
   // details
   durationSec: document.getElementById("durationSec"),
@@ -87,3 +102,32 @@ export const RELIC_SELECTS = [
   "magicGauntletLv",
 ].map(k => el[k]).filter(Boolean);
 
+
+
+export const BLOB_FIGURE_NAME_SELECTS = [
+  "blobFigureName1",
+  "blobFigureName2",
+  "blobFigureName3",
+  "blobFigureName4",
+  "blobFigureName5",
+].map(k => el[k]).filter(Boolean);
+
+export const BLOB_FIGURE_VALUE_SELECTS = [
+  "blobFigureValue1",
+  "blobFigureValue2",
+  "blobFigureValue3",
+  "blobFigureValue4",
+  "blobFigureValue5",
+].map(k => el[k]).filter(Boolean);
+
+export const PET_NAME_SELECTS = [
+  "pet1",
+  "pet2",
+  "pet3",
+].map(k => el[k]).filter(Boolean);
+
+export const PET_LEVEL_SELECTS = [
+  "pet1Level",
+  "pet2Level",
+  "pet3Level",
+].map(k => el[k]).filter(Boolean);

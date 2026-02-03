@@ -1,5 +1,7 @@
 export const state = {
   CHARACTERS: [],
+  PETS: [],
+  PET_MAP: new Map(),
   ENEMIES: [],
   ENEMY_MAP: new Map(),
   memberSeq: 0,
@@ -39,4 +41,3 @@ export const ALLOWED_CHARACTER_IDS = [
 ];
 
 export const ALLOWLIST_EMPTY_MEANS_ALL = false;
-
