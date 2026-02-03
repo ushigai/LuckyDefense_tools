@@ -1,5 +1,9 @@
 export const state = {
   CHARACTERS: [],
+  RUNES: [],
+  RUNE_MAP: new Map(),
+  BLOB_FIGURES: [],
+  BLOB_FIGURE_MAP: new Map(),
   PETS: [],
   PET_MAP: new Map(),
   ENEMIES: [],

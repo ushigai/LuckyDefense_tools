@@ -194,7 +194,7 @@ def load_pets() -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
         name = str(p.get("name", "") or "").strip()
         if not pid:
             continue
-        row = {"id": pid, "name": name}
+        row = {"id": pid, "name": name, "raw": p}
         by_id[pid] = row
         if name and name not in by_name:
             by_name[name] = row
@@ -335,7 +335,14 @@ def _resolve_pet_id_name(pid: Any, pname: Any) -> Tuple[str, str]:
 
 
 def _normalize_pets(options: Any) -> List[Dict[str, Any]]:
-    """Normalize pet options to [{id, name, level, image}] (max 3)."""
+    """Normalize pet options to [{id, name, level, image}] (max 3).
+
+    Accepted forms (mixed input is OK):
+      - options["pets"] = [{id|petId, level|petLv|petLevel, name?}, ...]
+      - options["pet1".."pet3"] + options["pet1Level".."pet3Level"]
+      - options["pet1Id".."pet3Id"] + options["pet1Lv".."pet3Lv"]
+      - options["pet"] / options["petId"] + options["petLv"|"petLevel"]
+    """
     if not isinstance(options, dict):
         return []
 
@@ -356,9 +363,15 @@ def _normalize_pets(options: Any) -> List[Dict[str, Any]]:
 
     if not raw_rows:
         for i in (1, 2, 3):
-            pid = options.get(f"pet{i}", "")
+            pid = options.get(
+                f"pet{i}",
+                options.get(f"pet{i}Id", options.get(f"pet{i}ID", "")),
+            )
             pname = options.get(f"pet{i}Name", "")
-            lv = options.get(f"pet{i}Level", options.get(f"pet{i}Lv", ""))
+            lv = options.get(
+                f"pet{i}Level",
+                options.get(f"pet{i}Lv", options.get(f"pet{i}level", "")),
+            )
             raw_rows.append({"id": pid, "name": pname, "level": lv})
 
     if not raw_rows:
@@ -389,8 +402,10 @@ def _normalize_pets(options: Any) -> List[Dict[str, Any]]:
         out.append(
             {
                 "id": pid,
+                "petId": pid,  # alias for consumers expecting petId
                 "name": pname or pid,
                 "level": level,
+                "petLv": level,  # alias for consumers expecting petLv
                 "image": f"/data/img/pet/{pid}.png",
             }
         )
@@ -405,6 +420,45 @@ def _normalize_pet(options: Any) -> Dict[str, Any] | None:
     return pets[0] if pets else None
 
 
+def _to_pet_slots(pets: List[Dict[str, Any]]) -> Tuple[Dict[str, Any] | None, Dict[str, Any] | None, Dict[str, Any] | None]:
+    pet1 = pets[0] if len(pets) >= 1 else None
+    pet2 = pets[1] if len(pets) >= 2 else None
+    pet3 = pets[2] if len(pets) >= 3 else None
+    return pet1, pet2, pet3
+
+
+def _pet_param_at_lv(pet_id: str, pet_lv: int, param_no: int, skill_idx: int = 0) -> float | None:
+    """Read pet skill parameter at level. Returns None when not available.
+
+    - pets.json uses 'Paramter_*' keys (note the typo in source data).
+    - Some pets have empty Paramter_2 / Paramter_3 arrays.
+    """
+    if not pet_id:
+        return None
+    row = PET_DB_BY_ID.get(str(pet_id), {})
+    raw = row.get("raw") if isinstance(row, dict) else None
+    if not isinstance(raw, dict):
+        return None
+
+    skills = raw.get("skills", [])
+    if not isinstance(skills, list) or not (0 <= skill_idx < len(skills)):
+        return None
+    skill = skills[skill_idx]
+    if not isinstance(skill, dict):
+        return None
+
+    # data key is usually "Paramter_N", but allow "Parameter_N" just in case
+    arr = skill.get(f"Paramter_{param_no}", skill.get(f"Parameter_{param_no}", []))
+    if not isinstance(arr, list) or len(arr) == 0:
+        return None
+
+    idx = max(0, min(len(arr) - 1, int(pet_lv) - 1))
+    try:
+        return float(arr[idx])
+    except Exception:
+        return None
+
+
 def sign(n):
     if n:
         if n < 0:
@@ -414,14 +468,56 @@ def sign(n):
 
 
 def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> float:
+    def _slot_pet_id_lv(slot_key: str) -> Tuple[str, int]:
+        p = common.get(slot_key)
+        if not isinstance(p, dict):
+            return "", 1
+        pid = str(p.get("id", p.get("petId", "")) or "")
+        plv = clamp_int(p.get("level", p.get("petLv", 1)), 1, 50, 1)
+        return pid, plv
+
+    pet1_id, pet1_lv = _slot_pet_id_lv("pet1")
+    pet2_id, pet2_lv = _slot_pet_id_lv("pet2")
+    pet3_id, pet3_lv = _slot_pet_id_lv("pet3")
+    # pets.json parameter access (skill_idx=0)
+    pet1_param1 = _pet_param_at_lv(pet1_id, pet1_lv, 1)
+    pet1_param2 = _pet_param_at_lv(pet1_id, pet1_lv, 2)
+    pet1_param3 = _pet_param_at_lv(pet1_id, pet1_lv, 3)
+    pet2_param1 = _pet_param_at_lv(pet2_id, pet2_lv, 1)
+    pet2_param2 = _pet_param_at_lv(pet2_id, pet2_lv, 2)
+    pet2_param3 = _pet_param_at_lv(pet2_id, pet2_lv, 3)
+    pet3_param1 = _pet_param_at_lv(pet3_id, pet3_lv, 1)
+    pet3_param2 = _pet_param_at_lv(pet3_id, pet3_lv, 2)
+    pet3_param3 = _pet_param_at_lv(pet3_id, pet3_lv, 3)
+
     DebugMessage = dict()
     DebugMessage["blobFigures"] = common.get("blobFigures", [])
     pet = common.get("pet")
     if isinstance(pet, dict) and str(pet.get("id", "") or ""):
         DebugMessage["pet"] = pet
-    pets = common.get("pets")
-    if isinstance(pets, list) and len(pets) > 0:
-        DebugMessage["pets"] = pets
+        DebugMessage["petId"] = str(pet.get("id", pet.get("petId", "")) or "")
+        DebugMessage["petLv"] = int(pet.get("level", pet.get("petLv", 1)) or 1)
+    if pet1_id:
+        DebugMessage["pet1"] = common.get("pet1")
+        DebugMessage["pet1Id"] = pet1_id
+        DebugMessage["pet1Lv"] = pet1_lv
+        DebugMessage["pet1Param1"] = pet1_param1
+        DebugMessage["pet1Param2"] = pet1_param2
+        DebugMessage["pet1Param3"] = pet1_param3
+    if pet2_id:
+        DebugMessage["pet2"] = common.get("pet2")
+        DebugMessage["pet2Id"] = pet2_id
+        DebugMessage["pet2Lv"] = pet2_lv
+        DebugMessage["pet2Param1"] = pet2_param1
+        DebugMessage["pet2Param2"] = pet2_param2
+        DebugMessage["pet2Param3"] = pet2_param3
+    if pet3_id:
+        DebugMessage["pet3"] = common.get("pet3")
+        DebugMessage["pet3Id"] = pet3_id
+        DebugMessage["pet3Lv"] = pet3_lv
+        DebugMessage["pet3Param1"] = pet3_param1
+        DebugMessage["pet3Param2"] = pet3_param2
+        DebugMessage["pet3Param3"] = pet3_param3
     duration_sec = int(common.get("durationSec", 60))
     trials = int(common.get("trials", 1))
     all_relic_lv = int(common.get("allRelicLv", 1))
@@ -1766,7 +1862,8 @@ def api_calc():
     blob_figures = _normalize_blob_figures(common.get("blobFigures", []))
 
     pets = _normalize_pets(common)
-    pet = pets[0] if pets else None
+    pet1, pet2, pet3 = _to_pet_slots(pets)
+    pet = pet1  # backward compatible alias
 
     # tick秒はUIから削除したので固定扱い（必要ならゲーム仕様に合わせて変更）
     tick_sec = 1.0
@@ -1817,7 +1914,9 @@ def api_calc():
         "guildBlessing": guildBlessing,
         "unitLevelSumBuff": unitLevelSumBuff,
         "blobFigures": blob_figures,
-        "pets": pets,
+        "pet1": pet1,
+        "pet2": pet2,
+        "pet3": pet3,
         "pet": pet,
     }
 
@@ -1991,7 +2090,9 @@ def api_calc():
             "totalDps": total,
             "dpsRatio": dps_ratio_list,
             "members": members_out,
-            "pets": pets,
+            "pet1": pet1,
+            "pet2": pet2,
+            "pet3": pet3,
             "pet": pet,
             "Debug": DebugMessages,
         }
