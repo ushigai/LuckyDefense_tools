@@ -85,6 +85,13 @@ STATIC_DIR = os.path.join(APP_DIR, "static")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 TICK_COEFF = 1000
 
+ALLOWED_ENEMIES = {
+    "ノーマル80Wボス",
+    "ハード80Wボス",
+    "地獄80Wボス",
+    "神80Wボス",
+}
+
 app = Flask(__name__)
 
 
@@ -467,57 +474,40 @@ def sign(n):
     return 0
 
 
-def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> float:
-    def _slot_pet_id_lv(slot_key: str) -> Tuple[str, int]:
-        p = common.get(slot_key)
-        if not isinstance(p, dict):
-            return "", 1
-        pid = str(p.get("id", p.get("petId", "")) or "")
-        plv = clamp_int(p.get("level", p.get("petLv", 1)), 1, 50, 1)
-        return pid, plv
-
-    pet1_id, pet1_lv = _slot_pet_id_lv("pet1")
-    pet2_id, pet2_lv = _slot_pet_id_lv("pet2")
-    pet3_id, pet3_lv = _slot_pet_id_lv("pet3")
-    # pets.json parameter access (skill_idx=0)
-    pet1_param1 = _pet_param_at_lv(pet1_id, pet1_lv, 1)
-    pet1_param2 = _pet_param_at_lv(pet1_id, pet1_lv, 2)
-    pet1_param3 = _pet_param_at_lv(pet1_id, pet1_lv, 3)
-    pet2_param1 = _pet_param_at_lv(pet2_id, pet2_lv, 1)
-    pet2_param2 = _pet_param_at_lv(pet2_id, pet2_lv, 2)
-    pet2_param3 = _pet_param_at_lv(pet2_id, pet2_lv, 3)
-    pet3_param1 = _pet_param_at_lv(pet3_id, pet3_lv, 1)
-    pet3_param2 = _pet_param_at_lv(pet3_id, pet3_lv, 2)
-    pet3_param3 = _pet_param_at_lv(pet3_id, pet3_lv, 3)
-
+def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> Tuple[float, Dict[str, float], Dict[str, Any]]:
+    """
+    1. 初期化
+        1. 変数の初期化
+            1. デバッグメッセージ
+            2. 専用財宝バフ
+            3. 計算結果
+        2. JSONや引数からデータ取得
+            1. common（共通バフ）取得
+            2. 遺物レベル
+            3. キャラ個別数値
+        3. ペット
+        4. ブロッブ人形
+        5. ルーン
+        6. 数値計算
+            1. 防御から物理バフを計算
+            2. 攻撃力/攻撃速度計算
+            3. カテゴリ別バフ値加算
+    2. キャラDPS計算
+        1. 洗剤再度計算
+        2. ./simulate/*.py丸投げ
+        2. キャラパッシブ（覚醒ヘイリーの異種神話数など）
+    3. その他
+        1. デバッグメッセージの定義
+        2. 対ボス、対気絶、物理増加などを乗算
+    
+    """
+    # ======= 変数の初期化 =======
     DebugMessage = dict()
-    DebugMessage["blobFigures"] = common.get("blobFigures", [])
-    pet = common.get("pet")
-    if isinstance(pet, dict) and str(pet.get("id", "") or ""):
-        DebugMessage["pet"] = pet
-        DebugMessage["petId"] = str(pet.get("id", pet.get("petId", "")) or "")
-        DebugMessage["petLv"] = int(pet.get("level", pet.get("petLv", 1)) or 1)
-    if pet1_id:
-        DebugMessage["pet1"] = common.get("pet1")
-        DebugMessage["pet1Id"] = pet1_id
-        DebugMessage["pet1Lv"] = pet1_lv
-        DebugMessage["pet1Param1"] = pet1_param1
-        DebugMessage["pet1Param2"] = pet1_param2
-        DebugMessage["pet1Param3"] = pet1_param3
-    if pet2_id:
-        DebugMessage["pet2"] = common.get("pet2")
-        DebugMessage["pet2Id"] = pet2_id
-        DebugMessage["pet2Lv"] = pet2_lv
-        DebugMessage["pet2Param1"] = pet2_param1
-        DebugMessage["pet2Param2"] = pet2_param2
-        DebugMessage["pet2Param3"] = pet2_param3
-    if pet3_id:
-        DebugMessage["pet3"] = common.get("pet3")
-        DebugMessage["pet3Id"] = pet3_id
-        DebugMessage["pet3Lv"] = pet3_lv
-        DebugMessage["pet3Param1"] = pet3_param1
-        DebugMessage["pet3Param2"] = pet3_param2
-        DebugMessage["pet3Param3"] = pet3_param3
+    t_buff1,t_buff2,t_buff3 = 0,0,0
+    ans = 0
+    basic, skill1, skill2, skill3, ult = 0,0,0,0,0
+
+    # ======= common（共通バフ）取得 =======
     duration_sec = int(common.get("durationSec", 60))
     trials = int(common.get("trials", 1))
     all_relic_lv = int(common.get("allRelicLv", 1))
@@ -535,18 +525,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     enemy = str(common.get("enemy", "ノーマル80Wボス"))
     mythEnhanceLv = int(common.get("mythEnhanceLv", 1))
 
-    if enemy == "ノーマル80Wボス":
-        enemy_def = 148
-    if enemy == "ハード80Wボス":
-        enemy_def = 158
-    if enemy == "地獄80Wボス":
-        enemy_def = 158
-    if enemy == "神80Wボス":
-        enemy_def = 175
-    
-    def_mult = 1 + sign(defDown - enemy_def)*(1 - 50/(3*abs(defDown - enemy_def) + 50))
-    def_mult_prim_bamba = 1 + sign(defDown - enemy_def*0.75)*(1 - 50/(3*abs(defDown - enemy_def*0.75) + 50))
-
+    # ======= 遺物レベル =======
     treasure_lv = int(member.get("treasureLv", 1))
     money_gun_lv = int(common.get("moneyGunLv", all_relic_lv))
     power_potion_lv = int(common.get("powerPotionLv", all_relic_lv))
@@ -560,8 +539,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     old_book_lv = int(common.get("oldBookLv", all_relic_lv))
     sage_yogurt_lv = int(common.get("sageYogurtLv", all_relic_lv))
     magic_gauntlet_lv = int(common.get("magicGauntletLv", all_relic_lv))
-    t_buff1,t_buff2,t_buff3 = 0,0,0
-
+    mana_buff = int(common.get("manaRegenBuffPct", 0))
     PowerPotion   = float(ARTIFACTS_DB["力のポーション"]["effects"]["lv" + str(power_potion_lv)]) / 100
     MoneyGun      = float(ARTIFACTS_DB["マネーガン"]["effects"]["lv" + str(money_gun_lv)]) / 100
     FairyBow      = float(ARTIFACTS_DB["妖精の弓"]["effects"][f"lv{fairy_bow_lv}"]) / 100
@@ -574,95 +552,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     OldBook       = float(ARTIFACTS_DB["古びた本"]["effects"][f"lv{old_book_lv}"])
     SageYogurt    = float(ARTIFACTS_DB["賢者のヨーグルト"]["effects"][f"lv{sage_yogurt_lv}"]) / 100
     MagicGauntlet = float(ARTIFACTS_DB["マジック籠手"]["effects"][f"lv{magic_gauntlet_lv}"]) / 100
-
-    MagicBuff1 = 1 + SecretBook + WizardHat
-    PhysicBuff1 = 1 + SecretBook + Bat
-
-    mana_buff_pct_raw = int(common.get("manaRegenBuffPct", 0))
-    upgrade_atk = int(CHAR_DB[character_id]["upgrade_attack_damage"])
-    base_speed = float(CHAR_DB[character_id]["attack_speed"])
-    ult_mana = int(CHAR_DB[character_id]["sp"])
-    lv1_atk = int(CHAR_DB[character_id]["attack_damage"])
-    base_atk = lv1_atk + ((char_lv - 1) * upgrade_atk)
-    crit_rate = 5 + BambaDoll
-    crit_dmg = 2.5
-    basic, skill1, skill2, skill3, ult = 0,0,0,0,0
-
-    # === Rune buffs (immortal only) ===
-    rune_name = str(member.get("runeName", "なし") or "なし")
-    rune_rarity = str(member.get("runeRarity", "なし") or "なし")
-    rune_effects: Dict[str, float] = {}
-    rune_warnings: List[str] = []
-
-    # only immortal characters can use runes (same idea as mythic-only treasure)
-    if str(CHAR_DB.get(character_id, {}).get("rarity", "")) != "immortal":
-        rune_name = "なし"
-        rune_rarity = "なし"
-
-    if rune_name != "なし" and rune_rarity != "なし":
-        entry = RUNES_DB.get(rune_name)
-        if not entry:
-            rune_warnings.append(f"unknown rune: {rune_name}")
-        else:
-            data = entry.get("data", {}) if isinstance(entry, dict) else {}
-            rr = data.get(rune_rarity) if isinstance(data, dict) else None
-            if not rr or not isinstance(rr, dict):
-                rune_warnings.append(f"unknown rarity for rune: {rune_rarity}")
-            else:
-                buff = rr.get("buff", []) or []
-                desc = str(rr.get("description", "") or "")
-                lines = [ln.strip() for ln in desc.splitlines() if ln.strip()]
-                for i, ln in enumerate(lines):
-                    if i >= len(buff):
-                        break
-                    try:
-                        val = float(buff[i])
-                    except Exception:
-                        continue
-
-                    key = None
-                    # NOTE: these are "simple additive" effects. conditional effects are ignored safely.
-                    if "攻撃力" in ln:
-                        atkBuffPct += val / 100
-                        key = "atkBuffPct"
-                    elif "攻撃速度" in ln:
-                        speedBuffPct += val / 100
-                        key = "speedBuffPct"
-                    elif "物理ダメージ" in ln:
-                        PhysicBuff1 *= (1 + val / 100)
-                        key = "physDmgPct"
-                    elif "魔法ダメージ" in ln:
-                        MagicBuff1 *= (1 + val / 100)
-                        key = "magicDmgPct"
-                    elif "ダメージ" in ln:
-                        MagicBuff1 *= (1 + val / 100)
-                        PhysicBuff1 *= (1 + val / 100)
-                        key = "allDmgPct"
-                    elif ("会心率" in ln) or ("クリ率" in ln):
-                        crit_rate += val
-                        key = "critRate"
-                    elif ("会心ダメージ" in ln) or ("クリダメ" in ln):
-                        MagicGauntlet += val / 100
-                        key = "critDmgPct"
-                    elif ("マナ" in ln and "回復" in ln):
-                        mana_buff_pct_raw += int(round(val))
-                        key = "manaRegenBuffPct"
-                    else:
-                        rune_warnings.append(f"unhandled rune line: {ln}")
-
-                    if key:
-                        rune_effects[key] = rune_effects.get(key, 0.0) + float(val)
-
-        if rune_name != "なし":
-            DebugMessage["rune"] = {
-                "name": rune_name,
-                "rarity": rune_rarity,
-                "effects": rune_effects,
-                "warnings": rune_warnings,
-            }
-    # mana regen multiplier (from common + rune)
-    mana_buff = 1 if mana_buff_pct_raw == 0 else mana_buff_pct_raw // 100 + 1
-
+    
+    # ======= キャラ個別数値 =======
     mythCount = int(member.get("mythCount", 0))
     starPower = int(member.get("starPower", 0))
     energyCount = int(member.get("energyCount", 0))
@@ -678,6 +569,116 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     StrongestCreature *= 0.3 if character_id == "5106" else 0.4
     score = int(member.get("score", 0)) / 100
 
+    # ======= ペット =======
+    pet_buff = {
+        "AttackDamage": 0.0, # 攻撃力増加
+        "SpRegen": 0.0, # マナ回復増加
+        "BasicAttackDamage": 0.0, # 基本攻撃ダメ増加
+        "UltimateDamage": 0.0, # 究極ダメ増加
+        "BossMonsterDamage": 0.0, # 対ボスダメ増加
+        "MovementSpeed": 0.0, # 移動相度増加（未実装）
+        "SlowMovementSpeed": 0.0, # 鈍化（未実装）
+        "DecreaseDefenseValue": 0.0, # 防御減少
+        "StunAttack": 0.0, # 気絶攻撃（未実装）
+        "GetStartFreeUnit": 0.0, # ユニットおまけ（未実装）
+        "CooltimeRegen": 0.0, # クールタイム減少
+        "HpPercentageAttack": 0.0, # ギガグラ（未実装）
+        "FreeSummon": 0.0, # 無料召喚（未実装）
+        "PhysicalDamage": 0.0, # 物理ダメ
+        "MagicalDamage": 0.0, # 魔法ダメ
+        "CriticalDamage": 0.0, # クリダメ
+        "GetStartAdditionalPoint": 0.0, # コイン獲得（未実装）
+        "AttackSpeed": 0.0, # 攻撃速度増加
+        "GetSpecialPoint": 0.0, # 幸運石獲得（未実装）
+        "CriticalPercentage": 0.0, # クリ率
+        "GetAdditionalPointWhenSell": 0.0, # 販売時コイン（未実装）
+        "KillWaveMonsterAtWaveCount": 0.0, # きあいのタスキ（未実装）
+        "TotalAttackDamagePercentageBuff": 0.0, # 謎バフ（未実装）
+    }
+    pet_slots: Dict[str, Dict[str, Any]] = {}
+    for slot_key in ("pet1", "pet2", "pet3"):
+        p = common.get(slot_key)
+        if not isinstance(p, dict):
+            pid, plv = "", 1
+        else:
+            pid = str(p.get("id", p.get("petId", "")) or "")
+            plv = clamp_int(p.get("level", p.get("petLv", 1)), 1, 50, 1)
+        skill_idx = 0
+        get_start_free_unit = ""
+        if pid:
+            row = PET_DB_BY_ID.get(pid, {})
+            raw = row.get("raw") if isinstance(row, dict) else None
+            skills = raw.get("skills", []) if isinstance(raw, dict) else []
+            for idx, skill in enumerate(skills):
+                PetSkillType = skill.get("PetSkillType", "")
+                param = skill.get("Paramter_1", [0]*50)[plv - 1] / 100
+                if PetSkillType in ["SpRegen", "CriticalPercentage"]:
+                    param = skill.get("Paramter_1", [0]*50)[plv - 1]
+                pet_buff[PetSkillType] += param
+    DebugMessage["pet_buff"] = pet_buff
+
+    # ======= ブロッブ人形 =======
+    BlobFigureBuff = {
+        "片目": 0.0, # 未実装
+        "仮面": 0.0, # 未実装
+        "ぺたんこ": 0.0, # 未実装
+        "肉": 0.0, # 未実装（変数定義済み、物理キャラへの反映が未済）
+        "ハロウィン": 0.0,
+        "パン": 0.0, 
+        "軍人": 0.0,
+        "バンバ": 0.0,
+        "バット": 0.0, # 未実装
+        "魔法使い": 0.0,
+        "ドラゴン": 0.0,
+        "スカル": 0.0,
+        "サイボーグ": 0.0,
+        "溶岩": 0.0,
+        "ウォーター": 0.0,
+        "ファイヤー": 0.0, # 未実装
+        "ゴールド": 0.0,
+        "ダイヤ": 0.0,
+    }
+
+    for blobFigure in common.get("blobFigures", []):
+        name = blobFigure.get("name")
+        if name in BlobFigureBuff:
+            BlobFigureBuff[name] = float(blobFigure.get("value", 0)) / 100
+            if name in ["ドラゴン"] :
+                BlobFigureBuff[name] = float(blobFigure.get("value", 0))
+    DebugMessage["blobFigures"] = BlobFigureBuff
+
+    # ======= ルーン =======
+    RuneAtkSum = 0
+    rune_name = str(member.get("runeName", "なし") or "なし")
+    rune_rarity = str(member.get("runeRarity", "なし") or "なし")
+    rune_effects: Dict[str, float] = {}
+    if rune_name != "なし" and rune_rarity != "なし":
+        rune_buff = RUNES_DB.get(rune_name).get("data").get(rune_rarity).get("buff")
+        if rune_name == "hoge":
+            pass
+        if rune_name == "hoge":
+            pass
+
+    # ======= 防御から物理バフを計算 =======
+    if enemy == "ノーマル80Wボス":
+        enemy_def = 148
+    if enemy == "ハード80Wボス":
+        enemy_def = 158
+    if enemy == "地獄80Wボス":
+        enemy_def = 158
+    if enemy == "神80Wボス":
+        enemy_def = 175
+    def_dec_per = 1 - BlobFigureBuff["軍人"] + pet_buff["DecreaseDefenseValue"] # 専用じゃない遺物どうするか
+    enemy_def *= def_dec_per
+    def_mult = 1 + sign(defDown - enemy_def)*(1 - 50/(3*abs(defDown - enemy_def) + 50))
+    def_mult_prim_bamba = 1 + sign(defDown - enemy_def*0.75)*(1 - 50/(3*abs(defDown - enemy_def*0.75) + 50))
+
+    # ======= 緑字攻撃力/攻撃速度計算 =======
+    upgrade_atk = int(CHAR_DB[character_id]["upgrade_attack_damage"])
+    base_speed = float(CHAR_DB[character_id]["attack_speed"])
+    ult_mana = int(CHAR_DB[character_id]["sp"])
+    lv1_atk = int(CHAR_DB[character_id]["attack_damage"])
+    base_atk = lv1_atk + ((char_lv - 1) * upgrade_atk)
     if char_lv < 3:
         lv_buff_atk, lv_buff_speed = 1.0, 1.0
     elif char_lv < 9:
@@ -686,12 +687,10 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         lv_buff_atk, lv_buff_speed = 1.1, 1.1
     else:
         lv_buff_atk, lv_buff_speed = 1.2, 1.2
-    
     base_atk *= lv_buff_atk
     base_speed *= lv_buff_speed
-
     atk = base_atk + member.get("blobintake", 0)
-    atk *= 1 + PowerPotion*2 + member.get("cannibalCount", 0) + unitLevelSumBuff # ユニットレベル合計
+    atk *= 1 + PowerPotion*2 + member.get("cannibalCount", 0) + unitLevelSumBuff + RuneAtkSum + BlobFigureBuff["ダイヤ"] + pet_buff["AttackDamage"]
     atk *= 1 + (int(common.get("mythEnhanceLv", 1)) - 1)*0.5 + int(member.get("ヴェイン", 0))
     if character_id in ["5023", "15004", "15011", "15024"]:
         atkBuffPct += 10
@@ -702,12 +701,23 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     atk *= 1 + coins*MoneyGun/100 + atkBuffPct + int(member.get("StrongestCreature", 0))*0.3 + batEnhance + emotionControl_db[emotionControl] + ace_batman_attack_enhance[batEnhance_] / 100
     atk *= 1 + guildBuff_atk
     atk += base_atk
-    speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow)
-    
-    RateBuff1 = OldBook
+    speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow*2 + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
+
+    # ======= その他数値計算 =======
+    crit_rate = 5 + BambaDoll + BlobFigureBuff["ドラゴン"] + pet_buff["CriticalPercentage"]
+    crit_dmg = 2.5 + BlobFigureBuff["魔法使い"] + pet_buff["CriticalDamage"]
+    mana_buff += BlobFigureBuff["ハロウィン"] + pet_buff["SpRegen"]
+    mana_buff = 1 if mana_buff == 0 else mana_buff // 100 + 1
+    MagicBuff1 = 1 + SecretBook + WizardHat + BlobFigureBuff["溶岩"] + BlobFigureBuff["スカル"] + pet_buff["MagicalDamage"]
+    PhysicBuff1 = 1 + SecretBook + Bat + BlobFigureBuff["溶岩"] + BlobFigureBuff["サイボーグ"] + pet_buff["PhysicalDamage"]
+    CooltimeBuff1 = 1 - BlobFigureBuff["肉"] - pet_buff["CooltimeRegen"]
+    RateBuff1 = OldBook + BlobFigureBuff["パン"]
+    UltBuff1 = 1 + pet_buff["UltimateDamage"]
+    BasicAttackBuff1 = 1 + pet_buff["BasicAttackDamage"]
+    BossBuff1 = 1 + GreatSword + BlobFigureBuff["ウォーター"] + pet_buff["BossMonsterDamage"] + guildBuff_boss
+    StunBuff1 = 1 + Bomb + BlobFigureBuff["バンバ"]
     ticks = int(speed * duration_sec* TICK_COEFF)
 
-    ans = 0
     if character_id == "1001":  # 弓兵
         ans = 1000
     elif character_id == "1002":  # 榴弾兵
@@ -756,8 +766,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 10+OldBook,
-            "skill2_rate": 12+OldBook if 6 <= char_lv else 0,
+            "skill1_rate": 10+RateBuff1,
+            "skill2_rate": 12+RateBuff1 if 6 <= char_lv else 0,
             "react_rate": 55+t_buff1,
             "skill1_mult": 40*PhysicBuff1,
             "skill2_mult": 50*(PhysicBuff1+t_buff2),
@@ -836,7 +846,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 5.0,
-            "skill1_rate": 8 + OldBook,
+            "skill1_rate": 8 + RateBuff1,
             "skill1_mult": 40*(t_buff1+MagicBuff1) if char_lv < 12 else 60*(t_buff1+MagicBuff1),
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -874,7 +884,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 5.0,
-            "skill1_rate": 8 + OldBook if 6 <= char_lv else 0,
+            "skill1_rate": 8 + RateBuff1 if 6 <= char_lv else 0,
             "skill1_mult": 15*(MagicBuff1+t_buff1) if char_lv < 12 else 30*(MagicBuff1+t_buff1),
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -910,7 +920,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 12 + OldBook,
+            "skill1_rate": 12 + RateBuff1,
             "skill1_mult": 40*PhysicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -1011,7 +1021,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 10 + OldBook if char_lv < 12 else 20 + OldBook,
+            "skill1_rate": 10 + RateBuff1 if char_lv < 12 else 20 + RateBuff1,
             "skill1_mult": 75*(t_buff1+MagicBuff1),
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -1056,8 +1066,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "base_attack_mult": 1.0,
             "skill1_mult": 5.5*(MagicBuff1)*t_buff1 if char_lv < 12 else 5.5*(MagicBuff1 + 0.5)*t_buff1,
             "skill2_mult": 50*(MagicBuff1) if char_lv < 12 else 50*(MagicBuff1 + 0.5)*1.5,
-            "skill1_rate": 6 + OldBook + t_buff2 if 6 <= char_lv else 0,
-            "skill2_rate": 8 + OldBook + t_buff2,
+            "skill1_rate": 6 + RateBuff1 + t_buff2 if 6 <= char_lv else 0,
+            "skill2_rate": 8 + RateBuff1 + t_buff2,
             "skill3_rate": 0,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg + MagicGauntlet,
@@ -1079,7 +1089,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "seed": seed,
             "attack_power": atk,
             "attack_speed": speed,
-            "skill1_rate": 15 + OldBook + t_buff2 if 6 <= char_lv else 10 + OldBook + t_buff2,
+            "skill1_rate": 15 + RateBuff1 + t_buff2 if 6 <= char_lv else 10 + RateBuff1 + t_buff2,
             "skill1_mult": 60*PhysicBuff1,
             "skill2_mult": 70*PhysicBuff1,
             "ult_mult": 750*PhysicBuff1 if char_lv < 12 else ult_mult_*PhysicBuff1,
@@ -1098,9 +1108,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 10 + OldBook + t_buff1,
+            "skill1_rate": 10 + RateBuff1 + t_buff1,
             "skill1_mult": 0,
-            "skill2_rate": 10+OldBook+t_buff1 if char_lv < 6 else 15+OldBook+t_buff1,
+            "skill2_rate": 10+RateBuff1+t_buff1 if char_lv < 6 else 15+RateBuff1+t_buff1,
             "skill2_mult": 60*PhysicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1115,8 +1125,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5021":  # ヘイリー
         t_buff1 = float(TREASURE_DB["ヘイリー"][treasure_lv][2]) / 100
-        skill1_rate = 10 + OldBook
-        skill2_rate = 0 if char_lv < 12 else 12 + OldBook
+        skill1_rate = 10 + RateBuff1
+        skill2_rate = 0 if char_lv < 12 else 12 + RateBuff1
         skill1_mult = 50*MagicBuff1
         skill2_mult = 50*MagicBuff1
         ult_mana = 250*(1 - SageYogurt)
@@ -1178,7 +1188,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "skill1_mult": 40*PhysicBuff1 if 12 <= char_lv else 20*PhysicBuff1,
             "skill2_mult": 10 if 6 <= char_lv else 6,
-            "skill2_rate": 7 + OldBook,
+            "skill2_rate": 7 + RateBuff1,
             "skill3_mult": 65*PhysicBuff1,
             "ult_mult": 200*PhysicBuff1,
             "ult_mana": 50,
@@ -1198,9 +1208,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 8 + OldBook + t_buff2,
+            "skill1_rate": 8 + RateBuff1 + t_buff2,
             "skill1_mult": 35*(MagicBuff1) if score < 0.3 else 105*(MagicBuff1),
-            "skill2_rate": 6 + OldBook + t_buff2 if 12 <= char_lv else 0,
+            "skill2_rate": 6 + RateBuff1 + t_buff2 if 12 <= char_lv else 0,
             "skill2_mult": 24*(MagicBuff1) if score < 0.7 else 40*(MagicBuff1),
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1223,7 +1233,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 5.0,
-            "skill1_rate": 8 + OldBook,
+            "skill1_rate": 8 + RateBuff1,
             "skill1_mult": 40*(t_buff1+MagicBuff1) if char_lv < 12 else 60*(t_buff1+MagicBuff1),
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -1248,9 +1258,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 8 + OldBook,
+            "skill1_rate": 8 + RateBuff1,
             "skill1_mult": 50*(MagicBuff1+t_buff2),
-            "skill2_rate": 10 + OldBook,
+            "skill2_rate": 10 + RateBuff1,
             "skill2_mult": 60*(MagicBuff1+t_buff2),
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1319,7 +1329,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "seed": seed,
             "attack_power": atk,
             "attack_speed": speed,
-            "skill1_rate": 10 + OldBook,
+            "skill1_rate": 10 + RateBuff1,
             "skill1_mult": 60*PhysicBuff1,
             "skill2_mult": 160*PhysicBuff1,
             "skill2_stack": t_buff1 if 12 <= char_lv else 10**100,
@@ -1345,7 +1355,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 5.0,
-            "skill1_rate": 8 + OldBook,
+            "skill1_rate": 8 + RateBuff1,
             "skill1_mult": 50*(MagicBuff1+t_buff1+techEnhance) if char_lv < 12 else 75*(MagicBuff1+t_buff1+techEnhance),
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -1371,9 +1381,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1,
-            "skill1_rate": 12 + OldBook,
+            "skill1_rate": 12 + RateBuff1,
             "skill1_mult": 200*PhysicBuff1,
-            "skill2_rate": 12 + OldBook,
+            "skill2_rate": 12 + RateBuff1,
             "skill2_mult": 50*PhysicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1398,9 +1408,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 8 + OldBook,
+            "skill1_rate": 8 + RateBuff1,
             "skill1_mult": (50*MagicBuff1 + 25*MagicBuff2),
-            "skill2_rate": 10 + OldBook,
+            "skill2_rate": 10 + RateBuff1,
             "skill2_mult": (60*MagicBuff1 + 25*MagicBuff2),
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1421,9 +1431,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.5,
-            "skill1_rate": 7 + OldBook,
+            "skill1_rate": 7 + RateBuff1,
             "skill1_mult": 50*MagicBuff1,
-            "skill2_rate": 11 + OldBook,
+            "skill2_rate": 11 + RateBuff1,
             "skill2_mult": 40*MagicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1458,7 +1468,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_13007(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "14002":  # ドクターパルス
-        skill1_rate = 10 + OldBook
+        skill1_rate = 10 + RateBuff1
         skill1_mult = 70*MagicBuff1
         ult_mana = 550*(1 - SageYogurt)
         ult_mult = 120*(1 - SageYogurt)
@@ -1506,8 +1516,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15001(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15004":  # アイアムニャン
-        skill1_rate = 11 + OldBook if 12 <= char_lv else 7 + OldBook
-        skill2_rate = 11 + OldBook if 12 <= char_lv else 7 + OldBook
+        skill1_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
+        skill2_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
         skill1_mult = 180*MagicBuff1
         skill2_mult = 100*MagicBuff1
         ult_mana = 300*(1 - SageYogurt)
@@ -1579,9 +1589,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 8 + OldBook,
+            "skill1_rate": 8 + RateBuff1,
             "skill1_mult": 120*MagicBuff1,
-            "skill2_rate": 12 + OldBook,
+            "skill2_rate": 12 + RateBuff1,
             "skill2_mult": 90*MagicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1628,8 +1638,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 69000
     elif character_id == "15021":  # 覚醒ヘイリー
-        skill1_rate = 10 + OldBook
-        skill2_rate = 15 + OldBook if 12 <= char_lv else 10 + OldBook
+        skill1_rate = 10 + RateBuff1
+        skill2_rate = 15 + RateBuff1 if 12 <= char_lv else 10 + RateBuff1
         skill1_mult = 180*MagicBuff1
         skill2_mult = 100*MagicBuff1
         skill3_mult = 1125*MagicBuff1
@@ -1676,7 +1686,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "seed": seed,
             "attack_power": atk,
             "attack_speed": speed,
-            "skill1_rate": 9 + OldBook,
+            "skill1_rate": 9 + RateBuff1,
             "skill1_mult": 467.5*PhysicBuff1 if 12 <= char_lv else 330*PhysicBuff1,
             "skill2_mult": 40*PhysicBuff1,
             "skill3_mult": 150*PhysicBuff1,
@@ -1688,8 +1698,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15023(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15024":  # ボス選鳥師
-        skill1_rate = 11 + OldBook 
-        skill2_rate = 10 + OldBook
+        skill1_rate = 11 + RateBuff1 
+        skill2_rate = 10 + RateBuff1
         skill1_mult = 330*MagicBuff1
         skill2_mult = 160*MagicBuff1
         skill3_mult = 5*MagicBuff1 + 5 if 6 <= char_lv else 5*MagicBuff1
@@ -1724,7 +1734,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 20.0,
-            "skill1_rate": 8 + OldBook if char_lv < 6 else 13 + OldBook,
+            "skill1_rate": 8 + RateBuff1 if char_lv < 6 else 13 + RateBuff1,
             "skill1_mult": 350*MagicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
@@ -1747,7 +1757,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_rate": 10 + OldBook,
+            "skill1_rate": 10 + RateBuff1,
             "skill1_mult": 160*PhysicBuff1,
             "skill1_react": 1,
             "ult_mana": ult_mana if 6 <= char_lv else 10**100,
@@ -1801,17 +1811,12 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     DebugMessage["t_buff3"] = t_buff3
     DebugMessage["isPhisics"] = isPhisics
     DebugMessage["StrongestCreature"] = StrongestCreature
-    dps_ratio = {"basic":basic, "skill1":skill1, "skill2":skill2, "skill3":skill3, "ult":ult}
-    return (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * (1 + GreatSword) * (1 + Bomb), dps_ratio, str(DebugMessage)
-
-
-
-ALLOWED_ENEMIES = {
-    "ノーマル80Wボス",
-    "ハード80Wボス",
-    "地獄80Wボス",
-    "神80Wボス",
-}
+    dps_ratio = {"basic": basic, "skill1": skill1, "skill2": skill2, "skill3": skill3, "ult": ult}
+    return (
+        (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * BossBuff1 * StunBuff1,
+        dps_ratio,
+        DebugMessage,
+    )
 
 @app.post("/api/calc")
 def api_calc():
@@ -1827,35 +1832,17 @@ def api_calc():
     enemy = str(common.get("enemy", "ノーマル80Wボス"))
     if enemy not in ALLOWED_ENEMIES:
         enemy = "ノーマル80Wボス"
-
     duration_sec = clamp_float(common.get("durationSec", 60), 1, 24 * 3600, 60)
-
-    # 全遺物レベル (1..11)
     all_relic_lv = clamp_int(common.get("allRelicLv", common.get("relicLv", 1)), 1, 11, 1)
-
-    # 神話強化レベル
     mythEnhanceLv = clamp_int(common.get("mythEnhanceLv", 0), 1, 35, 1)
-
-    # trials (1,3,10,30,100)
     trials = clamp_int(common.get("trials", 3), 1, 100, 3)
-    if trials not in (1, 3, 10, 30, 100):
-        trials = 3
-
-    # SEED値
     seed = clamp_int(common.get("seed", 1), -2_147_483_648, 2_147_483_647, 1)
-
-    # buffs / params
     atk_buff_pct = clamp_float(common.get("atkBuffPct", 0), -1000, 10000, 0)
     speed_buff_pct = clamp_float(common.get("speedBuffPct", 0), -1000, 10000, 0)
     multiplier = clamp_float(common.get("multiplier", 1), -2_147_483_648, 2_147_483_647, 1)
-
     mana_regen_buff_pct = clamp_int(common.get("manaRegenBuffPct", 0), 0, 700, 0)
-    if mana_regen_buff_pct not in (0, 100, 200, 300, 400, 500, 600, 700):
-        mana_regen_buff_pct = 0
-
     def_down = clamp_float(common.get("defDown", 190), -10_000_000, 10_000_000, 190)
     coins = clamp_int(common.get("coins", 300000), 0, 2_000_000_000, 300000)
-
     guildBlessing = clamp_int(common.get("guildBlessing", 0), 0, 2, 0)
     unitLevelSumBuff = clamp_float(common.get("unitLevelSumBuff", 0), 0, 25, 0)
 
@@ -1948,102 +1935,34 @@ def api_calc():
             "runeRarity": rune_rarity,
         }
 # === Extra per-character parameters (UI dropdowns) ===
-        # 既存の計算ロジック（compute_member_dps）は変更せず、
-        # ここで入力の正規化・バリデーションと、既存キーへのエイリアス付与だけ行う。
         cname = str(CHAR_DB.get(cid, {}).get("name", ""))
-
-        # 覚醒ヘイリー：異種神話数
-        if cid == "15021" or cname == "覚醒ヘイリー":
-            member_s["mythCount"] = clamp_int(m.get("mythCount", 0), 0, 30, 1)
-
-        # ブロッブ：摂取値
-        if cid == "5005" or cname == "ブロッブ":
-            v = clamp_float(m.get("intake", 0), 0, 1_000_000, 0)
-            member_s["intake"] = v
-            # 既存実装の参照キー（compute_member_dps 内で blobintake を参照）
-            member_s["blobintake"] = v
-
-        # ウチ：マス数（1..5）
-        if cid == "5016" or cname == "ウチ":
-            member_s["uchiCells"] = clamp_int(m.get("uchiCells", 1), 1, 5, 1)
-
-        # エースバットマン：バット強化（1..20）
-        if cid in ["15110", "15210"] or cname == "エースバットマン打者" or cname == "エースバットマン投手":
-            member_s["batEnhance_"] = clamp_int(m.get("batEnhance_", 1), 1, 20, 1)
-
-        # バットマン：バット強化（1..20）
-        if cid == "5010" or cname == "バットマン":
-            member_s["batEnhance"] = clamp_int(m.get("batEnhance", 1), 1, 20, 1)
-
-        # ヘイリー：星の力（0..10）
-        if cid == "5021" or cname == "ヘイリー":
-            member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
-
-        # マスタークン：感情コントロール（0..99）
-        if cid == "5018" or cname == "マスタークン":
-            member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
-
-        # ランスロット：火花追加ダメージ（0.0..3.0）
-        if cid == "5003" or cname == "ランスロット":
-            member_s["sparkBonusDmg"] = clamp_float(m.get("sparkBonusDmg", 0.0), 0.0, 3.0, 0.0)
-
-        # ワット（究極発動中）：エネルギー個数（1以上）
-        if cid == "5013" or cname == "ワット":
-            ec = clamp_int(m.get("energyCount", 1), 1, 2_000_000_000, 1)
-            member_s["energyCount"] = ec
-            # 既存実装の参照キー（compute_member_dps 内で "ワットスタック" を参照）
-            #member_s["ワットスタック"] = ec
-
-        # アイアンニャンv2：技術強化（0..10）
-        if cid == "5204" or ("アイアンニャンv2" in cname):
-            member_s["techEnhance"] = clamp_int(m.get("techEnhance", 0), 0, 10, 0)
-
-        # 選鳥師：スコア（0..100）
-        if ("選鳥師" in cname) or (cid in ("5024", "15024")):
-            member_s["score"] = clamp_int(m.get("score", 0), 0, 100, 0)
-
-        # タール：共食い回数（0以上）※タール小/中/大をまとめて適用
-        if ("タール" in cname) or (cid in ("5014", "5114", "5214")):
-            cc = clamp_int(m.get("cannibalCount", 0), 0, 2_000_000_000, 0)
-            member_s["cannibalCount"] = cc
-            # 既存実装の参照キー（compute_member_dps 内で "タール共食い" を参照）
-            #member_s["タール共食い"] = cc
-
-        # バンバ：鍛錬（0..30）
-        if cid == "5001" or cname == "バンバ":
-            member_s["training"] = clamp_int(m.get("training", 0), 0, 30, 0)
-        
-        # ドラゴン：最強の生物
-        if cid == "5106" or cname == "ドラゴン" or cid == "15006" or cname == "魔王ドラゴン":
-            member_s["StrongestCreature"] = clamp_int(m.get("StrongestCreature", 1), 1, 1000, 0)
-
-        # ドクターパルス：ドローン数
-        if cid == "14002" or cname == "ドクターパルス":
-            member_s["robots"] = clamp_int(m.get("robots", 1), 1, 4, 1)
-
-        # ロカ：精密射撃
-        if cid == "15023" or cname == "キャプテンロカ":
-            member_s["roka_crit_"] = clamp_int(m.get("roka_crit_", 1), 1, 30, 30)
-
-        # ロカ：精密射撃
-        if cid == "5023" or cname == "ロカ":
-            member_s["roka_crit"] = clamp_int(m.get("roka_crit", 1), 1, 30, 30)
-
-        # === per-member common option aliases ===
-        # 既存実装が common["バットマン"/"ヘイリー"/"マスタークン"] を参照しているため、
-        # member 由来の値をこのメンバー計算時だけ注入する（他メンバーへ影響しない）。
+        member_s["mythCount"] = clamp_int(m.get("mythCount", 0), 0, 30, 0)
+        v = clamp_float(m.get("intake", 0), 0, 1_000_000, 0)
+        member_s["intake"] = v
+        member_s["blobintake"] = v
+        member_s["uchiCells"] = clamp_int(m.get("uchiCells", 0), 1, 5, 0)
+        member_s["batEnhance_"] = clamp_int(m.get("batEnhance_", 0), 1, 20, 0)
+        member_s["batEnhance"] = clamp_int(m.get("batEnhance", 1), 1, 20, 0)
+        member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
+        member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
+        member_s["sparkBonusDmg"] = clamp_float(m.get("sparkBonusDmg", 0.0), 0.0, 3.0, 0.0)
+        ec = clamp_int(m.get("energyCount", 1), 1, 2_000_000_000, 1)
+        member_s["energyCount"] = ec
+        member_s["techEnhance"] = clamp_int(m.get("techEnhance", 0), 0, 10, 0)
+        member_s["score"] = clamp_int(m.get("score", 0), 0, 100, 0)
+        cc = clamp_int(m.get("cannibalCount", 0), 0, 2_000_000_000, 0)
+        member_s["cannibalCount"] = cc
+        member_s["training"] = clamp_int(m.get("training", 0), 0, 30, 0)
+        member_s["StrongestCreature"] = clamp_int(m.get("StrongestCreature", 1), 1, 1000, 0)
+        member_s["robots"] = clamp_int(m.get("robots", 1), 1, 4, 0)
+        member_s["roka_crit_"] = clamp_int(m.get("roka_crit_", 1), 1, 30, 0)
+        member_s["roka_crit"] = clamp_int(m.get("roka_crit", 1), 1, 30, 0)
         common_m = dict(common_s)
-        #if "batEnhance" in member_s:
-            #common_m["バットマン"] = member_s["batEnhance"]
-        #if "starPower" in member_s:
-            #common_m["ヘイリー"] = member_s["starPower"]
-        #if "emotionControl" in member_s:
-            #common_m["マスタークン"] = member_s["emotionControl"]
 
-        dps, dps_ratio, DebugMessage = compute_member_dps(cid, common_m, member_s)
+        dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
         dps_list.append(dps)
         dps_ratio_list.append(dps_ratio)
-        DebugMessages[cname] = str(DebugMessage)
+        DebugMessages[cname or cid] = debug_message
 
         members_out.append(
             {
