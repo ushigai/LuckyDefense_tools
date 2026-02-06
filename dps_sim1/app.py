@@ -698,7 +698,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         atkBuffPct += 12
     if character_id in ["15021"]:
         atkBuffPct += 20
-    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + int(member.get("StrongestCreature", 0))*0.3 + batEnhance + emotionControl_db[emotionControl] + ace_batman_attack_enhance[batEnhance_] / 100
+    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + StrongestCreature + batEnhance + emotionControl_db[emotionControl] + ace_batman_attack_enhance[batEnhance_] / 100
     atk *= 1 + guildBuff_atk
     atk += base_atk
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow*2 + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
@@ -1940,23 +1940,23 @@ def api_calc():
         v = clamp_float(m.get("intake", 0), 0, 1_000_000, 0)
         member_s["intake"] = v
         member_s["blobintake"] = v
-        member_s["uchiCells"] = clamp_int(m.get("uchiCells", 0), 1, 5, 0)
-        member_s["batEnhance_"] = clamp_int(m.get("batEnhance_", 0), 1, 20, 0)
-        member_s["batEnhance"] = clamp_int(m.get("batEnhance", 1), 1, 20, 0)
+        member_s["uchiCells"] = clamp_int(m.get("uchiCells", 0), 0, 5, 0)
+        member_s["batEnhance_"] = clamp_int(m.get("batEnhance_", 0), 0, 20, 0)
+        member_s["batEnhance"] = clamp_int(m.get("batEnhance", 0), 0, 20, 0)
         member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
         member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
         member_s["sparkBonusDmg"] = clamp_float(m.get("sparkBonusDmg", 0.0), 0.0, 3.0, 0.0)
-        ec = clamp_int(m.get("energyCount", 1), 1, 2_000_000_000, 1)
+        ec = clamp_int(m.get("energyCount", 0), 0, 2_000_000_000, 1)
         member_s["energyCount"] = ec
         member_s["techEnhance"] = clamp_int(m.get("techEnhance", 0), 0, 10, 0)
         member_s["score"] = clamp_int(m.get("score", 0), 0, 100, 0)
         cc = clamp_int(m.get("cannibalCount", 0), 0, 2_000_000_000, 0)
         member_s["cannibalCount"] = cc
         member_s["training"] = clamp_int(m.get("training", 0), 0, 30, 0)
-        member_s["StrongestCreature"] = clamp_int(m.get("StrongestCreature", 1), 1, 1000, 0)
-        member_s["robots"] = clamp_int(m.get("robots", 1), 1, 4, 0)
-        member_s["roka_crit_"] = clamp_int(m.get("roka_crit_", 1), 1, 30, 0)
-        member_s["roka_crit"] = clamp_int(m.get("roka_crit", 1), 1, 30, 0)
+        member_s["StrongestCreature"] = clamp_int(m.get("StrongestCreature", 0), 0, 1000, 0)
+        member_s["robots"] = clamp_int(m.get("robots", 0), 0, 4, 0)
+        member_s["roka_crit_"] = clamp_int(m.get("roka_crit_", 0), 0, 30, 0)
+        member_s["roka_crit"] = clamp_int(m.get("roka_crit", 0), 0, 30, 0)
         common_m = dict(common_s)
 
         dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
