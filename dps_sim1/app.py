@@ -772,7 +772,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill1_mult": 40*PhysicBuff1,
             "skill2_mult": 50*(PhysicBuff1+t_buff2),
             "ult_mult": 180*PhysicBuff1,
-            "ult_mana": ult_mana if 12 <= char_lv else 10**100,
+            "ult_mana": ult_mana*CooltimeBuff1 if 12 <= char_lv else 10**100,
             "mana_buff": 1,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg,
@@ -926,7 +926,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana,
+            "ult_mana": ult_mana*CooltimeBuff1,
             "ult_mult": 70*PhysicBuff1,
             "attack_mana_recov": 0,
             "mana_buff": 1,
@@ -936,8 +936,6 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5011":  # ヴェイン
-        
-        
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
             trials=int(common.get("trials", 1)),
@@ -1078,7 +1076,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5018(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5019":  # チョナ
-        t_buff1 = 1 - float(TREASURE_DB["チョナ"][treasure_lv][1]) / 100
+        t_buff1 = float(TREASURE_DB["チョナ"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["チョナ"][treasure_lv][2])
         ult_rate = 0.12
         ult_rate += t_buff2/100
@@ -1093,7 +1091,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill1_mult": 60*PhysicBuff1,
             "skill2_mult": 70*PhysicBuff1,
             "ult_mult": 750*PhysicBuff1 if char_lv < 12 else ult_mult_*PhysicBuff1,
-            "ult_mana": 40*t_buff1,
+            "ult_mana": 40*(CooltimeBuff1 - t_buff1),
             "crit_rate": crit_rate,
             "crit_dmg": 2.5,
         }
@@ -1191,7 +1189,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_rate": 7 + RateBuff1,
             "skill3_mult": 65*PhysicBuff1,
             "ult_mult": 200*PhysicBuff1,
-            "ult_mana": 50,
+            "ult_mana": ult_mana*CooltimeBuff1,
             "crit_rate": roka_crit + crit_rate,
             "bomb_rate": t_buff1,
             "crit_dmg": 2.5 + t_buff2,
@@ -1334,17 +1332,13 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 160*PhysicBuff1,
             "skill2_stack": t_buff1 if 12 <= char_lv else 10**100,
             "ult_mult": 700*PhysicBuff1,
-            "ult_mana": 25,
+            "ult_mana": 25*CooltimeBuff1,
             "crit_rate": crit_rate,
             "crit_dmg": 2.5,
         }
         basic, skill1, skill2, skill3, ult = mean_total_damage_5115(params)
-        basic *= 1.5
-        skill1 *= 1.5
-        skill2 *= 1.5
-        skill3 *= 1.5
-        ult *= 1.5
         ans = basic + skill1 + skill2 + skill3 + ult
+        ans *= 1.5
     elif character_id == "5204":  # アイアンニャンv2
         t_buff1 = float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
@@ -1462,7 +1456,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "crit_rate": crit_rate if char_lv < 12 else crit_rate + 15,
             "crit_dmg": crit_dmg,
             "ult_mult": 350*PhysicBuff1,
-            "ult_mana": ult_mana,
+            "ult_mana": ult_mana*CooltimeBuff1,
             "mana_buff": 1,
         }
         basic, skill1, skill2, skill3, ult = mean_total_damage_13007(params)
@@ -1510,7 +1504,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg,
-            "ult_mana": ult_mana if 6 <= char_lv else 10**100,
+            "ult_mana": ult_mana*CooltimeBuff1 if 6 <= char_lv else 10**100,
             "ult_time": 10 if char_lv < 12 else 20,
         }
         basic, skill1, skill2, skill3, ult = mean_total_damage_15001(params)
@@ -1617,7 +1611,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill1_mult": 70*PhysicBuff1,
             "skill2_mult": 330*PhysicBuff1,
             "skill2_going": True if 6 <= char_lv else False,
-            "ult_mana": ult_mana,
+            "ult_mana": ult_mana*CooltimeBuff1,
             "ult_buff": 2.5 if char_lv < 12 else 3.5,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg,
@@ -1691,7 +1685,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 40*PhysicBuff1,
             "skill3_mult": 150*PhysicBuff1,
             "ult_mult": 350*PhysicBuff1 if 6 <= char_lv else 233.333*PhysicBuff1,
-            "ult_mana": 80,
+            "ult_mana": ult_mana**CooltimeBuff1,
             "crit_rate": roka_crit_ + crit_rate,
             "crit_dmg": 2.5,
         }
@@ -1760,7 +1754,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill1_rate": 10 + RateBuff1,
             "skill1_mult": 160*PhysicBuff1,
             "skill1_react": 1,
-            "ult_mana": ult_mana if 6 <= char_lv else 10**100,
+            "ult_mana": ult_mana*CooltimeBuff1 if 6 <= char_lv else 10**100,
             "ult_mult": 400*PhysicBuff1,
             "add_rate": 10 if char_lv < 12 else 20,
             "add_mult": 100*PhysicBuff1,
@@ -1786,7 +1780,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_mult": 250*PhysicBuff1,
-            "ult_mana": ult_mana if 6 <= char_lv else 10**100,
+            "ult_mana": ult_mana*CooltimeBuff1 if 6 <= char_lv else 10**100,
             "ult_mult": ult_mult,
             "ult_ticks": ace_batman_attack_ult_ticks[batEnhance_],
             "crit_rate": crit_rate,
@@ -1832,7 +1826,7 @@ def api_calc():
     enemy = str(common.get("enemy", "ノーマル80Wボス"))
     if enemy not in ALLOWED_ENEMIES:
         enemy = "ノーマル80Wボス"
-    duration_sec = clamp_float(common.get("durationSec", 60), 1, 24 * 3600, 60)
+    duration_sec = clamp_float(common.get("durationSec", 60), 60, 24 * 3600, 60)
     all_relic_lv = clamp_int(common.get("allRelicLv", common.get("relicLv", 1)), 1, 11, 1)
     mythEnhanceLv = clamp_int(common.get("mythEnhanceLv", 0), 1, 35, 1)
     trials = clamp_int(common.get("trials", 3), 1, 100, 3)
@@ -1946,7 +1940,7 @@ def api_calc():
         member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
         member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
         member_s["sparkBonusDmg"] = clamp_float(m.get("sparkBonusDmg", 0.0), 0.0, 3.0, 0.0)
-        ec = clamp_int(m.get("energyCount", 0), 0, 2_000_000_000, 1)
+        ec = clamp_int(m.get("energyCount", 0), 0, 2_000_000_000, 0)
         member_s["energyCount"] = ec
         member_s["techEnhance"] = clamp_int(m.get("techEnhance", 0), 0, 10, 0)
         member_s["score"] = clamp_int(m.get("score", 0), 0, 100, 0)
