@@ -6,6 +6,8 @@ import os
 import hashlib
 import random
 from typing import Any, Dict, List, Callable, Tuple
+from datetime import datetime, timezone
+from functools import lru_cache
 
 from data.treasure_db import load_treasure_db
 from data.char_params import *
@@ -593,7 +595,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         "CriticalPercentage": 0.0, # クリ率
         "GetAdditionalPointWhenSell": 0.0, # 販売時コイン（未実装）
         "KillWaveMonsterAtWaveCount": 0.0, # きあいのタスキ（未実装）
-        "TotalAttackDamagePercentageBuff": 0.0, # 謎バフ（未実装）
+        "TotalAttackDamagePercentageBuff": 0.0, # 謎バフ
     }
     pet_slots: Dict[str, Dict[str, Any]] = {}
     for slot_key in ("pet1", "pet2", "pet3"):
@@ -622,7 +624,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         "片目": 0.0, # 未実装
         "仮面": 0.0, # 未実装
         "ぺたんこ": 0.0, # 未実装
-        "肉": 0.0, # 未実装（変数定義済み、物理キャラへの反映が未済）
+        "肉": 0.0,
         "ハロウィン": 0.0,
         "パン": 0.0, 
         "軍人": 0.0,
@@ -634,7 +636,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         "サイボーグ": 0.0,
         "溶岩": 0.0,
         "ウォーター": 0.0,
-        "ファイヤー": 0.0, # 未実装
+        "ファイヤー": 0.0,
         "ゴールド": 0.0,
         "ダイヤ": 0.0,
     }
@@ -711,11 +713,13 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     MagicBuff1 = 1 + SecretBook + WizardHat + BlobFigureBuff["溶岩"] + BlobFigureBuff["スカル"] + pet_buff["MagicalDamage"]
     PhysicBuff1 = 1 + SecretBook + Bat + BlobFigureBuff["溶岩"] + BlobFigureBuff["サイボーグ"] + pet_buff["PhysicalDamage"]
     CooltimeBuff1 = 1 - BlobFigureBuff["肉"] - pet_buff["CooltimeRegen"]
+    UltManaBuff1 = 1 - SageYogurt
     RateBuff1 = OldBook + BlobFigureBuff["パン"]
     UltBuff1 = 1 + pet_buff["UltimateDamage"]
-    BasicAttackBuff1 = 1 + pet_buff["BasicAttackDamage"]
+    BasicAttackBuff1 = 1 + pet_buff["BasicAttackDamage"] + BlobFigureBuff["ファイヤー"]
     BossBuff1 = 1 + GreatSword + BlobFigureBuff["ウォーター"] + pet_buff["BossMonsterDamage"] + guildBuff_boss
     StunBuff1 = 1 + Bomb + BlobFigureBuff["バンバ"]
+    PartyCat = 1 + pet_buff["TotalAttackDamagePercentageBuff"]
     ticks = int(speed * duration_sec* TICK_COEFF)
 
     if character_id == "1001":  # 弓兵
@@ -852,7 +856,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 180*(t_buff1+MagicBuff1) if char_lv < 12 else 270*(t_buff1+MagicBuff1),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -890,7 +894,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 20*(MagicBuff1+t_buff1) if char_lv < 12 else 40*(MagicBuff1+t_buff1),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1025,7 +1029,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 398*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1127,7 +1131,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill2_rate = 0 if char_lv < 12 else 12 + RateBuff1
         skill1_mult = 50*MagicBuff1
         skill2_mult = 50*MagicBuff1
-        ult_mana = 250*(1 - SageYogurt)
+        ult_mana = 250*UltManaBuff1
         crit_dmg = 2.5 + MagicGauntlet + t_buff1
 
         starPower_mult = 2 if char_lv < 6 else 4
@@ -1237,7 +1241,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 180*(t_buff1+MagicBuff1) if char_lv < 12 else 270*(t_buff1+MagicBuff1),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1262,7 +1266,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 60*(MagicBuff1+t_buff2),
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": 100*(1 - SageYogurt) if 12 <= char_lv else 10**100,
+            "ult_mana": 100*UltManaBuff1 if 12 <= char_lv else 10**100,
             "ult_mult": 180*(MagicBuff1+t_buff2),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1298,7 +1302,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 1000*(MagicBuff1+t_buff1),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1355,7 +1359,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 360*(MagicBuff1+t_buff1+techEnhance) if char_lv < 12 else 540*(MagicBuff1+t_buff1+techEnhance),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1381,7 +1385,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 50*PhysicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 150*PhysicBuff1*1.3,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1408,7 +1412,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": (60*MagicBuff1 + 25*MagicBuff2),
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt) if 12 <= char_lv else 10**100,
+            "ult_mana": ult_mana*UltManaBuff1 if 12 <= char_lv else 10**100,
             "ult_mult": (180*MagicBuff1 + 75*MagicBuff2),
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1464,8 +1468,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "14002":  # ドクターパルス
         skill1_rate = 10 + RateBuff1
         skill1_mult = 70*MagicBuff1
-        ult_mana = 550*(1 - SageYogurt)
-        ult_mult = 120*(1 - SageYogurt)
+        ult_mana = 550*UltManaBuff1
+        ult_mult = 120*MagicBuff1
         crit_dmg = 2.5 + MagicGauntlet
         basic, skill1, skill2, skill3, ult = mean_total_damage_14002(
             ticks=ticks,
@@ -1514,7 +1518,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill2_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
         skill1_mult = 180*MagicBuff1
         skill2_mult = 100*MagicBuff1
-        ult_mana = 300*(1 - SageYogurt)
+        ult_mana = 300*UltManaBuff1
         ult_mult = 1000*MagicBuff1 if char_lv < 6 else 1500*MagicBuff1
         ult_cooldown = int(speed*3) if char_lv < 6 else int(speed*4.5)
         crit_dmg = 2.5 + MagicGauntlet
@@ -1637,7 +1641,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill1_mult = 180*MagicBuff1
         skill2_mult = 100*MagicBuff1
         skill3_mult = 1125*MagicBuff1
-        ult_mana = 250*(1 - SageYogurt)
+        ult_mana = 250*UltManaBuff1
         crit_dmg = 2.5 + MagicGauntlet
         basic, skill1, skill2, skill3, ult = mean_total_damage_15021(
             ticks=ticks,
@@ -1697,7 +1701,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill1_mult = 330*MagicBuff1
         skill2_mult = 160*MagicBuff1
         skill3_mult = 5*MagicBuff1 + 5 if 6 <= char_lv else 5*MagicBuff1
-        ult_mana = 250*(1 - SageYogurt)
+        ult_mana = 250*UltManaBuff1
         ult_mult = 300*MagicBuff1
         crit_dmg = 2.5 + MagicGauntlet
         ult_buff = 5 if char_lv < 12 else 10
@@ -1734,7 +1738,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 0,
             "skill3_rate": 0,
             "skill3_mult": 0,
-            "ult_mana": ult_mana*(1 - SageYogurt),
+            "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 1200*MagicBuff1,
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
@@ -1807,7 +1811,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     DebugMessage["StrongestCreature"] = StrongestCreature
     dps_ratio = {"basic": basic, "skill1": skill1, "skill2": skill2, "skill3": skill3, "ult": ult}
     return (
-        (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * BossBuff1 * StunBuff1,
+        (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * BossBuff1 * StunBuff1 * PartyCat,
         dps_ratio,
         DebugMessage,
     )
@@ -1846,7 +1850,6 @@ def api_calc():
     pet1, pet2, pet3 = _to_pet_slots(pets)
     pet = pet1  # backward compatible alias
 
-    # tick秒はUIから削除したので固定扱い（必要ならゲーム仕様に合わせて変更）
     tick_sec = 1.0
     ticks = int(duration_sec / tick_sec)
 
@@ -2010,3 +2013,151 @@ def api_calc():
             "Debug": DebugMessages,
         }
     )
+
+def _survey_env(name: str, default: str = "") -> str:
+    try:
+        return str(os.environ.get(name, default) or default).strip()
+    except Exception:
+        return default
+
+def _survey_enabled() -> bool:
+    # Enable only when Spreadsheet ID is present.
+    return bool(_survey_env("SURVEY_SHEETS_SPREADSHEET_ID"))
+
+def _client_ip() -> str:
+    # Behind Caddy/reverse-proxy, the original IP is typically in X-Forwarded-For.
+    xff = request.headers.get("X-Forwarded-For", "")
+    if xff:
+        # take the left-most (original client)
+        ip = xff.split(",")[0].strip()
+        if ip:
+            return ip
+    xri = request.headers.get("X-Real-IP", "").strip()
+    if xri:
+        return xri
+    return (request.remote_addr or "").strip()
+
+def _hash_ip(ip: str) -> str:
+    # Store hashed IP only (optional). Avoid storing raw IP in Sheets.
+    salt = _survey_env("SURVEY_IP_SALT")
+    ip = (ip or "").strip()
+    if not ip or not salt:
+        return ""
+    h = hashlib.sha256((salt + "|" + ip).encode("utf-8")).hexdigest()
+    return h
+
+@lru_cache(maxsize=1)
+def _sheets_service():
+    # Lazy import so the app can still run without survey deps installed.
+    try:
+        from google.oauth2 import service_account
+        from googleapiclient.discovery import build
+    except Exception as e:  # pragma: no cover
+        raise RuntimeError("google sheets dependencies are not installed") from e
+
+    cred_path = _survey_env("GOOGLE_APPLICATION_CREDENTIALS")
+    if not cred_path:
+        raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS is not set")
+    if not os.path.exists(cred_path):
+        raise RuntimeError(f"credentials file not found: {cred_path}")
+
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = service_account.Credentials.from_service_account_file(cred_path, scopes=scopes)
+    # cache_discovery=False to avoid writing discovery cache files in containers.
+    return build("sheets", "v4", credentials=creds, cache_discovery=False)
+
+def _append_survey_row(row: List[Any]) -> None:
+    try:
+        from googleapiclient.errors import HttpError
+    except Exception:
+        HttpError = Exception  # type: ignore
+
+    spreadsheet_id = _survey_env("SURVEY_SHEETS_SPREADSHEET_ID")
+    range_a1 = _survey_env("SURVEY_SHEETS_RANGE", "responses!A:Z")
+    if not spreadsheet_id:
+        raise RuntimeError("SURVEY_SHEETS_SPREADSHEET_ID is not set")
+
+    svc = _sheets_service()
+    body = {"values": [row]}
+    try:
+        (
+            svc.spreadsheets()
+            .values()
+            .append(
+                spreadsheetId=spreadsheet_id,
+                range=range_a1,
+                valueInputOption="RAW",
+                insertDataOption="INSERT_ROWS",
+                body=body,
+            )
+            .execute()
+        )
+    except HttpError as e:  # pragma: no cover
+        # Bubble up but keep original message for logging.
+        raise RuntimeError(f"sheets append failed: {e}") from e
+
+@app.post("/api/survey")
+def api_survey():
+    """Append a survey response to Google Sheets.
+
+    Env:
+      - SURVEY_SHEETS_SPREADSHEET_ID: required
+      - SURVEY_SHEETS_RANGE: optional (default: responses!A:Z)
+      - GOOGLE_APPLICATION_CREDENTIALS: required (service account JSON path)
+      - SURVEY_IP_SALT: optional (if set, hashed IP will be stored)
+    """
+    if not _survey_enabled():
+        return jsonify({"error": "survey is not configured"}), 503
+
+    data = request.get_json(force=True, silent=False)
+    if not isinstance(data, dict):
+        return jsonify({"error": "invalid json"}), 400
+
+    # required
+    if "rating" not in data:
+        return jsonify({"error": "rating is required"}), 400
+    rating = clamp_int(data.get("rating"), 1, 5, -1)
+    if rating < 1 or rating > 5:
+        return jsonify({"error": "rating must be 1..5"}), 400
+
+    # optional fields
+    category = str(data.get("category", "other") or "other").strip()
+    if len(category) > 50:
+        category = category[:50]
+
+    message = str(data.get("message", "") or "")
+    message = message.replace("\x00", "")
+    if len(message) > 2000:
+        message = message[:2000]
+
+    page = str(data.get("page", "") or "").strip()
+    if not page:
+        page = str(request.headers.get("Referer", "") or "").strip()
+    if len(page) > 300:
+        page = page[:300]
+
+    tool = str(data.get("tool", "dps") or "dps").strip()
+    if len(tool) > 50:
+        tool = tool[:50]
+
+    tool_version = str(data.get("toolVersion", "") or "").strip()
+    if len(tool_version) > 100:
+        tool_version = tool_version[:100]
+
+    ua = str(request.headers.get("User-Agent", "") or "")
+    ua = ua.replace("\x00", "")
+    if len(ua) > 400:
+        ua = ua[:400]
+
+    ip_hash = _hash_ip(_client_ip())
+    ts = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+    row = [ts, tool, tool_version, rating, category, message, page, ua, ip_hash]
+
+    try:
+        _append_survey_row(row)
+    except Exception as e:
+        print(f"[survey] append failed: {e}")
+        return jsonify({"error": "failed to save survey"}), 503
+
+    return jsonify({"ok": True})

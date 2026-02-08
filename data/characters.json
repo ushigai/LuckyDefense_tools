@@ -1003,6 +1003,22 @@
       "ult": "オメガブラスター"
     },
     {
+      "id": 15005,
+      "name": "ブロッブ団",
+      "rarity": "immortal",
+      "attack_damage": 43200,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 2160,
+      "attack_speed": 1.9,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 500,
+      "skill1": "",
+      "skill2": "",
+      "skill3": "",
+      "ult": ""
+    },
+    {
       "name": "魔王ドラゴン",
       "rarity": "immortal",
       "id": 15006,
