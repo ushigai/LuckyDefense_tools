@@ -2096,6 +2096,66 @@ def _append_survey_row(row: List[Any]) -> None:
         # Bubble up but keep original message for logging.
         raise RuntimeError(f"sheets append failed: {e}") from e
 
+def _read_survey_rows() -> List[List[Any]]:
+    try:
+        from googleapiclient.errors import HttpError
+    except Exception:
+        HttpError = Exception  # type: ignore
+
+    spreadsheet_id = _survey_env("SURVEY_SHEETS_SPREADSHEET_ID")
+    range_a1 = _survey_env("SURVEY_SHEETS_RANGE", "responses!A:Z")
+    if not spreadsheet_id:
+        raise RuntimeError("SURVEY_SHEETS_SPREADSHEET_ID is not set")
+
+    svc = _sheets_service()
+    try:
+        result = (
+            svc.spreadsheets()
+            .values()
+            .get(spreadsheetId=spreadsheet_id, range=range_a1)
+            .execute()
+        )
+    except HttpError as e:  # pragma: no cover
+        raise RuntimeError(f"sheets read failed: {e}") from e
+    values = result.get("values", [])
+    if not isinstance(values, list):
+        return []
+    return values
+
+@app.get("/api/survey")
+def api_survey_list():
+    if not _survey_enabled():
+        return jsonify({"error": "survey is not configured"}), 503
+
+    limit = clamp_int(request.args.get("limit"), 1, 100, 30)
+    page_filter = str(request.args.get("page", "") or "").strip()
+
+    try:
+        rows = _read_survey_rows()
+    except Exception as e:
+        print(f"[survey] read failed: {e}")
+        return jsonify({"error": "failed to load survey"}), 503
+
+    items = []
+    for row in rows:
+        if not isinstance(row, list):
+            continue
+        ts = str(row[0]) if len(row) > 0 else ""
+        page = str(row[1]) if len(row) > 1 else ""
+        version = str(row[2]) if len(row) > 2 else ""
+        message = str(row[3]) if len(row) > 3 else ""
+        message = message.replace("\x00", "")
+        if not message:
+            continue
+        if page_filter and page_filter not in page:
+            continue
+        items.append({"ts": ts, "page": page, "version": version, "message": message})
+
+    if len(items) > limit:
+        items = items[-limit:]
+
+    return jsonify({"items": items})
+
 @app.post("/api/survey")
 def api_survey():
     """Append a survey response to Google Sheets.

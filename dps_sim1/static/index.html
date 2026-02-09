@@ -115,6 +115,57 @@
       color: var(--bs-secondary-color);
     }
 
+    .survey-textarea {
+      resize: none;
+      overflow: hidden;
+      min-height: 120px;
+    }
+    .survey-textarea::placeholder {
+      font-size: .85rem;
+      line-height: 1.3;
+    }
+    .survey-counter {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .3px;
+    }
+    .survey-responses summary {
+      cursor: pointer;
+      color: var(--bs-secondary-color);
+    }
+    .survey-responses summary:hover {
+      color: var(--bs-body-color);
+    }
+    .survey-item {
+      background: rgba(255,255,255,.85);
+      border: 1px solid var(--bs-border-color);
+      border-radius: .75rem;
+      padding: .5rem .75rem;
+    }
+    .survey-item-body {
+      white-space: normal;
+      word-break: break-word;
+      margin: 0;
+      line-height: 1.3;
+    }
+    .survey-quote {
+      margin: 1px;
+      padding: .2rem .5rem;
+      border: 0;
+      border-left: 0;
+      background: rgba(0,0,0,.03);
+      border-radius: .5rem;
+    }
+    .survey-qa {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      font-size: .8rem;
+    }
+    .survey-answer {
+      margin: 1px;
+    }
+
   </style>
 </head>
 
@@ -129,6 +180,40 @@
   </nav>
 
   <main class="container py-4">
+
+    <!-- ✅ アンケートフォーム（ヘッダー直下 / 注意文の上） -->
+    <div class="card shadow-sm border-0 rounded-4 mb-3">
+      <div class="card-body p-4">
+        <div class="fw-semibold mb-2">
+          <i class="bi bi-chat-square-text me-1"></i>匿名お客様アンケート
+        </div>
+        <textarea id="surveyText" class="form-control rounded-3 survey-textarea"
+                  maxlength="500" rows="3" inputmode="text"
+                  placeholder="なんでもお書きください。この機能がほしい。このキャラDPS低くない？このキャラのスキルはどういうロジックで計算している？などなんでも回答します。なければ「テスト」でもいいです！"></textarea>
+        <div class="d-flex align-items-center justify-content-between mt-2 gap-2">
+          <button id="surveySubmit" class="btn btn-dark btn-sm rounded-3" type="button" disabled>
+            <i class="bi bi-send me-1"></i>送信
+          </button>
+          <div class="text-secondary small survey-counter"><span id="surveyCount">0</span>/500</div>
+        </div>
+        <div id="surveySubmitStatus" class="small text-secondary mt-2"></div>
+        <details id="surveyResponsesPanel" class="survey-responses mt-3">
+          <summary class="small">回答済み（クリックで展開）</summary>
+          <div id="surveyResponses" class="mt-1 vstack gap-1">
+            <div class="survey-item">
+              <div class="survey-item-body">
+                <div class="survey-qa">
+                  <blockquote class="survey-quote">Q. 今日のばんごはんは？</blockquote>
+                  <div class="survey-answer">　A. みそスープ</div>
+                  <blockquote class="survey-quote">Q. 1+1は？</blockquote>
+                  <div class="survey-answer">　A. みそスープ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
 
     <!-- ✅ 注意文（ヘッダー直下 / 編成&合計の上） -->
     <div class="card shadow-sm border-0 rounded-4 mb-3">
@@ -588,25 +673,40 @@
 
     <!-- LOG -->
     <div class="card shadow-sm border-0 rounded-4 mt-3">
-      <div class="card-body p-4">
-        <div class="fw-semibold mb-2"><i class="bi bi-receipt me-1"></i>計算ログ</div>
-        <pre id="log" class="bg-body rounded-3 p-3 mb-0 small" style="min-height: 140px; overflow:auto; white-space: pre-wrap; word-break: break-word;">—</pre>
-      </div>
-    </div>
+      <div class="card-body p-0">
+        <div class="accordion" id="logAccordion">
+          <div class="accordion-item border-0">
+            <h2 class="accordion-header" id="logHeading">
+              <button class="accordion-button collapsed rounded-4 fw-semibold"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#logPanel"
+                      aria-expanded="false" aria-controls="logPanel">
+                <i class="bi bi-receipt me-1"></i>計算ログ
+              </button>
+            </h2>
+            <div id="logPanel" class="accordion-collapse collapse" aria-labelledby="logHeading"
+                 data-bs-parent="#logAccordion">
+              <div class="accordion-body pt-2">
+                <pre id="log" class="bg-body rounded-3 p-3 mb-0 small" style="min-height: 140px; overflow:auto; white-space: pre-wrap; word-break: break-word;">—</pre>
+              </div>
+            </div>
+          </div>
+        </div><!-- /accordion -->
+      </div><!-- /card-body -->
+    </div><!-- /card -->
 
     <!-- Release notes -->
     <div class="mt-3 d-flex flex-wrap justify-content-center align-items-start gap-3">
       <details class="release-notes d-inline-block text-start">
         <summary class="small">リリースノート</summary>
         <div class="rn-body small">
-          <!-- Release notes
           <div class="mb-2">
-            <div class="rn-ver">vX.X.X (2026/02/08 10:45)</div>
+            <div class="rn-ver">v1.1.0 (2026/02/09 10:50)</div>
             <ul class="mb-0 ps-3">
+              <li>匿名アンケートフォームを作成</li>
               <li>ドクターパルスの自爆ダメージに遺物効果が乗らないミスを修正</li>
+              <li>ペット実装</li>
             </ul>
           </div>
-        -->
           <div class="mb-2">
             <div class="rn-ver">v1.0.2 (2026/02/07 10:45)</div>
             <ul class="mb-0 ps-3">
@@ -638,5 +738,91 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="/static/js/main.js"></script>
+  <script>
+    (() => {
+      const textarea = document.getElementById("surveyText");
+      const counter = document.getElementById("surveyCount");
+      const submitBtn = document.getElementById("surveySubmit");
+      const statusEl = document.getElementById("surveySubmitStatus");
+      if (!textarea || !counter || !submitBtn || !statusEl) return;
+
+      const digitRegex = /[0-9０-９]/g;
+      const maxLen = 500;
+      const endpoint = "/api/survey";
+      const pagePath = window.location.pathname || "/dps_sim1";
+      const versionText = document.querySelector(".navbar-brand .small")?.textContent?.trim() || "";
+
+      const setStatus = (text, kind) => {
+        statusEl.textContent = text || "";
+        statusEl.classList.remove("text-secondary", "text-danger", "text-success");
+        if (kind === "error") {
+          statusEl.classList.add("text-danger");
+        } else if (kind === "success") {
+          statusEl.classList.add("text-success");
+        } else {
+          statusEl.classList.add("text-secondary");
+        }
+      };
+
+      const updateSurvey = () => {
+        const original = textarea.value;
+        const before = original.slice(0, textarea.selectionStart ?? original.length);
+        const filtered = original.replace(digitRegex, "");
+        if (filtered !== original) {
+          const beforeFiltered = before.replace(digitRegex, "");
+          const newPos = beforeFiltered.length;
+          textarea.value = filtered;
+          textarea.setSelectionRange(newPos, newPos);
+        }
+
+        if (textarea.value.length > maxLen) {
+          textarea.value = textarea.value.slice(0, maxLen);
+        }
+
+        counter.textContent = String(textarea.value.length);
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+        const canSubmit = textarea.value.trim().length > 0;
+        submitBtn.disabled = !canSubmit;
+        if (!canSubmit) {
+          setStatus("", "info");
+        }
+      };
+
+      const handleSubmit = async () => {
+        const message = textarea.value.trim();
+        if (!message) return;
+        submitBtn.disabled = true;
+        setStatus("送信中…", "info");
+        try {
+          const payload = {
+            page: pagePath,
+            version: versionText,
+            message,
+          };
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            throw new Error(`status ${res.status}`);
+          }
+          textarea.value = "";
+          updateSurvey();
+          setStatus("送信しました。ありがとうございます。", "success");
+        } catch (err) {
+          setStatus("送信に失敗しました。", "error");
+        } finally {
+          submitBtn.disabled = textarea.value.trim().length === 0;
+        }
+      };
+
+      textarea.addEventListener("input", updateSurvey);
+      submitBtn.addEventListener("click", handleSubmit);
+      window.addEventListener("load", updateSurvey);
+      updateSurvey();
+    })();
+  </script>
 </body>
 </html>
