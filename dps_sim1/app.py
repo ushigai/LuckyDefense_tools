@@ -2114,11 +2114,11 @@ def api_survey():
         return jsonify({"error": "invalid json"}), 400
 
     # required
-    if "rating" not in data:
-        return jsonify({"error": "rating is required"}), 400
-    rating = clamp_int(data.get("rating"), 1, 5, -1)
-    if rating < 1 or rating > 5:
-        return jsonify({"error": "rating must be 1..5"}), 400
+    #if "rating" not in data:
+        #return jsonify({"error": "rating is required"}), 400
+    #rating = clamp_int(data.get("rating"), 1, 5, -1)
+    #if rating < 1 or rating > 5:
+        #return jsonify({"error": "rating must be 1..5"}), 400
 
     # optional fields
     category = str(data.get("category", "other") or "other").strip()
@@ -2127,8 +2127,8 @@ def api_survey():
 
     message = str(data.get("message", "") or "")
     message = message.replace("\x00", "")
-    if len(message) > 2000:
-        message = message[:2000]
+    if len(message) > 500:
+        message = message[:500]
 
     page = str(data.get("page", "") or "").strip()
     if not page:
@@ -2136,13 +2136,13 @@ def api_survey():
     if len(page) > 300:
         page = page[:300]
 
-    tool = str(data.get("tool", "dps") or "dps").strip()
-    if len(tool) > 50:
-        tool = tool[:50]
+    #tool = str(data.get("tool", "dps") or "dps").strip()
+    #if len(tool) > 50:
+        #tool = tool[:50]
 
-    tool_version = str(data.get("toolVersion", "") or "").strip()
-    if len(tool_version) > 100:
-        tool_version = tool_version[:100]
+    version = str(data.get("version", "") or "").strip()
+    if len(version) > 100:
+        version = version[:100]
 
     ua = str(request.headers.get("User-Agent", "") or "")
     ua = ua.replace("\x00", "")
@@ -2152,7 +2152,8 @@ def api_survey():
     ip_hash = _hash_ip(_client_ip())
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
-    row = [ts, tool, tool_version, rating, category, message, page, ua, ip_hash]
+    #row = [ts, tool, tool_version, rating, category, message, page, ua, ip_hash]
+    row = [ts, page, version, message, ua, ip_hash]
 
     try:
         _append_survey_row(row)
