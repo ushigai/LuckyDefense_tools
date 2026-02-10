@@ -21,29 +21,38 @@ export const EXTRA_KEY_LABEL = {
 };
 
 // name -> fields
-export const EXTRA_FIELDS_BY_NAME = {
-  "覚醒ヘイリー": [{ key: "mythCount", label: "異種神話数", kind: "number", min: 0, step: 1, def: 0 }],
-  "ブロッブ":     [{ key: "intake", label: "摂取値", kind: "number", min: 0, step: 1, def: 0 }],
+// name -> fields（重複キーを許可するため、まずは配列で列挙する）
+const EXTRA_FIELDS_ENTRIES = [
+  ["覚醒ヘイリー", [{ key: "mythCount", label: "異種神話数", kind: "number", min: 0, step: 1, def: 0 }]],
+  ["ブロッブ",     [{ key: "intake", label: "摂取値", kind: "number", min: 0, step: 1, def: 0 }]],
+  ["ウチ",         [{ key: "uchiCells", label: "敵との距離（マス数）", kind: "select-float", min: 1.0, max: 5.0, step: 0.1, def: 1.0 }]],
+  ["バットマン",   [{ key: "batEnhance", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }]],
+  ["エースバットマン打者", [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }]],
+  ["エースバットマン投手", [{ key: "strikeout", label: "ストライクアウト平均回数", kind: "select-float", min: 1.0, max: 3.0, step: 0.1, def: 1.0 }]],
+  ["エースバットマン投手", [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }]],
+  ["ヘイリー",     [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }]],
+  ["マスタークン", [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }]],
+  ["ランスロット", [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }]],
+  ["ワット",       [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }]],
+  ["ワット（究極発動中）", [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }]],
+  ["アイアンニャンv2", [{ key: "techEnhance", label: "技術強化", kind: "select-int", min: 0, max: 10, def: 0 }]],
+  ["選鳥師",       [{ key: "score", label: "スコア", kind: "select-int", min: 0, max: 100, def: 0 }]],
+  ["タール",       [{ key: "cannibalCount", label: "共食い回数", kind: "number", min: 0, step: 1, def: 0 }]],
+  ["バンバ",       [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }]],
+  ["ドラゴン",     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }]],
+  ["魔王ドラゴン", [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }]],
+  ["ドクターパルス", [{ key: "robots", label: "ドローン", kind: "select-int", min: 1, max: 4, def: 1 }]],
+  ["ロカ",         [{ key: "roka_crit", label: "クリティカル率増加", kind: "select-int", min: 1, max: 30, def: 30 }]],
+  ["キャプテンロカ", [{ key: "roka_crit_", label: "クリティカル率増加", kind: "select-int", min: 1, max: 30, step: 1, def: 30 }]],
+];
 
-  "バットマン":   [{ key: "batEnhance", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
-  "エースバットマン打者":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }],
-  "エースバットマン投手":   [{ key: "strikeout", label: "ストライクアウト回数", kind: "select-int", min: 1, max: 3, def: 1 }],
-  "エースバットマン投手":   [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }],
-  "ヘイリー":     [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }],
-  "マスタークン": [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }],
-  "ランスロット": [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }],
-  "ワット":       [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }],
-  "ワット（究極発動中）": [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }],
-  "アイアンニャンv2": [{ key: "techEnhance", label: "技術強化", kind: "select-int", min: 0, max: 10, def: 0 }],
-  "選鳥師":       [{ key: "score", label: "スコア", kind: "select-int", min: 0, max: 100, def: 0 }],
-  "タール":       [{ key: "cannibalCount", label: "共食い回数", kind: "number", min: 0, step: 1, def: 0 }],
-  "バンバ":       [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }],
-  "ドラゴン":     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
-  "魔王ドラゴン":     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
-  "ドクターパルス":     [{ key: "robots", label: "ドローン", kind: "number", min: 1, max: 4, def: 1 }],
-  "ロカ":     [{ key: "roka_crit", label: "クリティカル率増加", kind: "number", min: 1, max: 30, def: 30 }],
-  "キャプテンロカ":     [{ key: "roka_crit_", label: "クリティカル率増加", kind: "number", min: 1, max: 30, def: 30 }],
-};
+// name -> fields（同名は配列連結でマージ）
+export const EXTRA_FIELDS_BY_NAME = EXTRA_FIELDS_ENTRIES.reduce((acc, [name, fields]) => {
+  if (!acc[name]) acc[name] = [];
+  acc[name].push(...fields);
+  return acc;
+}, {});
+
 
 export function getCharNameById(characterId) {
   return (state.CHARACTERS.find(c => String(c.id) === String(characterId))?.name) ?? String(characterId);

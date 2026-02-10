@@ -1,225 +1,311 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 import math
 import random
-from dataclasses import dataclass
-from typing import Any, Dict, Tuple, Optional
-
-DamageTuple = Tuple[float, float, float, float, float]
 
 
-def _round_half_up(x: float) -> int:
-    # 0.5 は切り上げ（例: 12.5 -> 13）
-    return int(math.floor(x + 0.5))
+# -----------------------------
+# Utilities
+# -----------------------------
+def _pct_to_prob(x: float) -> float:
+    """0~100 (%) -> 0~1 probability"""
+    return max(0.0, min(1.0, x / 100.0))
 
 
-def _clamp01(p: float) -> float:
-    if p < 0.0:
-        return 0.0
-    if p > 1.0:
-        return 1.0
-    return p
+def _as_float(x: Any, name: str) -> float:
+    try:
+        return float(x)
+    except Exception as e:
+        raise ValueError(f"{name} must be a number, got {x!r}") from e
 
 
-def _crit_multiplier(rng: random.Random, crit_rate_pct: float, crit_dmg: float) -> float:
-    # crit_rate_pct は 0~100（%）
-    p = _clamp01(crit_rate_pct / 100.0)
-    return crit_dmg if rng.random() < p else 1.0
+def _as_int(x: Any, name: str) -> int:
+    try:
+        v = int(x)
+    except Exception as e:
+        raise ValueError(f"{name} must be an int, got {x!r}") from e
+    return v
 
 
+def _validate_nonneg(v: float, name: str) -> None:
+    if v < 0:
+        raise ValueError(f"{name} must be >= 0, got {v}")
+
+
+def _validate_rate_0_100(v: float, name: str) -> None:
+    if not (0.0 <= v <= 100.0):
+        raise ValueError(f"{name} must be in [0, 100], got {v}")
+
+
+# -----------------------------
+# Params
+# -----------------------------
 @dataclass(frozen=True)
 class AceBatmanPitcherParams15110:
-    tick: int
-
-    attack_power: float
-    attack_speed: float
-
+    # core
     base_attack_mult: float
-
-    skill1_rate: float          # 0~100 (%)
-    skill1_react: int           # 1~3
+    skill1_rate: float  # percent 0..100
+    attack_speed: float
+    attack_power: float
     skill1_mult: float
-
-    ult_mana: float
     ult_mult: float
+    ult_mana: float
 
-    add_rate: float             # 0~100 (%)
-    add_mult: float
+    # crit
+    crit_rate: float  # percent 0..100
+    crit_dmg: float   # multiplier (e.g., 2.5)
 
-    crit_rate: float            # 0~100 (%)
-    crit_dmg: float             # multiplier (e.g. 2.5)
+    # strikeout chaining
+    skill1_react1: float  # percent 0..100 (1st->2nd)
+    skill1_react2: float  # percent 0..100 (2nd->3rd)
 
-    seed: Optional[int] = None
-    trials: int = 20000
-
-    def validated(self) -> "AceBatmanPitcherParams15110":
-        if self.tick < 0:
-            raise ValueError("tick must be >= 0")
-        if self.attack_power < 0:
-            raise ValueError("attack_power must be >= 0")
-        if self.attack_speed <= 0:
-            raise ValueError("attack_speed must be > 0")
-
-        for name, v in [
-            ("base_attack_mult", self.base_attack_mult),
-            ("skill1_mult", self.skill1_mult),
-            ("ult_mult", self.ult_mult),
-            ("add_mult", self.add_mult),
-            ("crit_dmg", self.crit_dmg),
-            ("ult_mana", self.ult_mana),
-        ]:
-            if v < 0:
-                raise ValueError(f"{name} must be >= 0")
-
-        for name, v in [
-            ("skill1_rate", self.skill1_rate),
-            ("add_rate", self.add_rate),
-            ("crit_rate", self.crit_rate),
-        ]:
-            if not (0 <= v <= 100):
-                raise ValueError(f"{name} must be in [0, 100]")
-
-        if not (1 <= int(self.skill1_react) <= 3):
-            raise ValueError("skill1_react must be an integer in [1, 3]")
-
-        if self.trials <= 0:
-            raise ValueError("trials must be > 0")
-
-        return self
+    # buff add-on during ult buff state
+    add_rate: float  # percent 0..100
+    add_mult: float  # multiplier to be ADDED to base_attack_mult when proc
 
     @staticmethod
     def from_dict(d: Dict[str, Any]) -> "AceBatmanPitcherParams15110":
-        return AceBatmanPitcherParams15110(
-            tick=int(d.get("tick", 0)),
-            attack_power=float(d["attack_power"]),
-            attack_speed=float(d["attack_speed"]),
-            base_attack_mult=float(d["base_attack_mult"]),
-            skill1_rate=float(d["skill1_rate"]),
-            skill1_react=int(d["skill1_react"]),
-            skill1_mult=float(d["skill1_mult"]),
-            ult_mana=float(d["ult_mana"]),
-            ult_mult=float(d["ult_mult"]),
-            add_rate=float(d["add_rate"]),
-            add_mult=float(d["add_mult"]),
-            crit_rate=float(d["crit_rate"]),
-            crit_dmg=float(d["crit_dmg"]),
-            seed=(None if d.get("seed", None) is None else int(d["seed"])),
-            trials=int(d.get("trials", 20000)),
+        # Required keys (you can add defaults here if you want)
+        p = AceBatmanPitcherParams15110(
+            base_attack_mult=_as_float(d["base_attack_mult"], "base_attack_mult"),
+            skill1_rate=_as_float(d["skill1_rate"], "skill1_rate"),
+            attack_speed=_as_float(d["attack_speed"], "attack_speed"),
+            attack_power=_as_float(d["attack_power"], "attack_power"),
+            skill1_mult=_as_float(d["skill1_mult"], "skill1_mult"),
+            ult_mult=_as_float(d["ult_mult"], "ult_mult"),
+            ult_mana=_as_float(d["ult_mana"], "ult_mana"),
+            crit_rate=_as_float(d["crit_rate"], "crit_rate"),
+            crit_dmg=_as_float(d["crit_dmg"], "crit_dmg"),
+            skill1_react1=_as_float(d["skill1_react1"], "skill1_react1"),
+            skill1_react2=_as_float(d["skill1_react2"], "skill1_react2"),
+            add_rate=_as_float(d["add_rate"], "add_rate"),
+            add_mult=_as_float(d["add_mult"], "add_mult"),
         )
+        p.validate()
+        return p
+
+    def validate(self) -> None:
+        _validate_nonneg(self.base_attack_mult, "base_attack_mult")
+        _validate_nonneg(self.attack_speed, "attack_speed")
+        _validate_nonneg(self.attack_power, "attack_power")
+        _validate_nonneg(self.skill1_mult, "skill1_mult")
+        _validate_nonneg(self.ult_mult, "ult_mult")
+        _validate_nonneg(self.ult_mana, "ult_mana")
+        _validate_nonneg(self.crit_dmg, "crit_dmg")
+        _validate_nonneg(self.add_mult, "add_mult")
+
+        if self.attack_speed <= 0:
+            raise ValueError(f"attack_speed must be > 0, got {self.attack_speed}")
+
+        _validate_rate_0_100(self.skill1_rate, "skill1_rate")
+        _validate_rate_0_100(self.crit_rate, "crit_rate")
+        _validate_rate_0_100(self.skill1_react1, "skill1_react1")
+        _validate_rate_0_100(self.skill1_react2, "skill1_react2")
+        _validate_rate_0_100(self.add_rate, "add_rate")
 
 
-def _simulate_once(p: AceBatmanPitcherParams15110, rng: random.Random) -> DamageTuple:
+# -----------------------------
+# Core simulation
+# -----------------------------
+def _roll_crit(rng: random.Random, crit_p: float, crit_dmg: float) -> float:
+    return crit_dmg if (rng.random() < crit_p) else 1.0
+
+
+def _damage(attack_power: float, mult: float, crit_mul: float) -> float:
+    return attack_power * mult * crit_mul
+
+
+def simulate_total_damage_15110_once(
+    params: AceBatmanPitcherParams15110,
+    ticks: int,
+    rng: random.Random,
+) -> Dict[str, float]:
     """
-    1 tick = 1 行動（基本攻撃 or skill1の1回攻撃 or ult）
-    mana回復は各tickの最後に +1/attack_speed
+    1試行ぶんの tick シミュレーション。
+    返り値は:
+      - basic: 基本攻撃の合計ダメージ（※追加分を除いた“基礎分”だけ）
+      - skill1: ストライクアウト合計ダメージ
+      - ult_add: フィニッシュピッチ(ult) + 追加攻撃(= add_mult 部分) の合計ダメージ
+      - total: 全合計
     """
-    tick_n = p.tick
-    if tick_n == 0:
-        return (0.0, 0.0, 0.0, 0.0, 0.0)
+    if ticks <= 0:
+        return {"basic": 0.0, "skill1": 0.0, "ult_add": 0.0, "total": 0.0}
 
+    # probabilities
+    p_skill1 = _pct_to_prob(params.skill1_rate)
+    p_react1 = _pct_to_prob(params.skill1_react1)
+    p_react2 = _pct_to_prob(params.skill1_react2)
+    p_add = _pct_to_prob(params.add_rate)
+    p_crit = _pct_to_prob(params.crit_rate)
+
+    # state
     mana = 0.0
+    buff_remaining = 0  # ticks remaining in buff state
+    # strikeout chain state:
+    # 0: not in chain
+    # 1: next action is skill1 1st hit (only occurs when selected from basic)
+    # 2: next action is skill1 2nd hit
+    # 3: next action is skill1 3rd hit
+    chain_next = 0
 
-    # バフ残りtick数（このtick開始時点で >0 ならバフ有効）
-    buff_remain = 0
+    # results
+    dmg_basic = 0.0
+    dmg_skill1 = 0.0
+    dmg_ult_add = 0.0
 
-    # ストライクアウト残り攻撃回数（このtickで実行する分も含めた残数）
-    skill1_remain = 0
+    # regen per tick end
+    mana_regen = 1.0 / params.attack_speed
 
-    basic_total = 0.0
-    skill1_total = 0.0
-    ult_total = 0.0  # ult + add をここに合算
+    # buff duration ticks
+    # NOTE: spec says "8*attck_speed tick". We interpret as 8*attack_speed ticks, integerized.
+    buff_duration_ticks = int(math.ceil(8.0 * params.attack_speed))
 
-    p_skill1 = _clamp01(p.skill1_rate / 100.0)
-    p_add = _clamp01(p.add_rate / 100.0)
+    for _t in range(ticks):
+        # 1) choose action (1 tick consumes exactly one action)
+        # Priority:
+        #   - If currently continuing strikeout chain => do skill1 hit
+        #   - Else if mana >= ult_mana => do ult
+        #   - Else pick basic vs skill1 by skill1_rate
+        if chain_next != 0:
+            # perform strikeout hit
+            crit_mul = _roll_crit(rng, p_crit, params.crit_dmg)
+            dmg = _damage(params.attack_power, params.skill1_mult, crit_mul)
+            dmg_skill1 += dmg
 
-    # バフ時間: 8 * attack_speed tick（整数化の仕方は仕様が曖昧なので half-up 丸め）
-    buff_duration = _round_half_up(8.0 * p.attack_speed)
-    if buff_duration < 0:
-        buff_duration = 0
-
-    mana_regen = 1.0 / p.attack_speed
-
-    for _ in range(tick_n):
-        buff_active = buff_remain > 0
-        dec_buff_after = 1 if buff_active else 0
-
-        # --- 行動選択（優先度: ult > 継続skill1 > 通常抽選） ---
-        # ult_mana が 0 の場合の挙動は危険なので、validatedで ult_mana>=0 は許してるが、
-        # 実運用では ult_mana>0 を推奨。ここでは ult_mana>0 のときのみ発動判定にする。
-        if p.ult_mana > 0 and mana >= p.ult_mana:
-            # フィニッシュピッチ
-            cm = _crit_multiplier(rng, p.crit_rate, p.crit_dmg)
-            ult_total += p.attack_power * p.ult_mult * cm
-
-            # マナ0、バフ開始
-            mana = 0.0
-            buff_remain = buff_duration
-
-            # ※ここで skill1 を中断するかは仕様が曖昧。ここでは「中断（キャンセル）」扱い。
-            skill1_remain = 0
-
-        elif skill1_remain > 0:
-            # ストライクアウト継続（1tickで1回攻撃）
-            cm = _crit_multiplier(rng, p.crit_rate, p.crit_dmg)
-            skill1_total += p.attack_power * p.skill1_mult * cm
-            skill1_remain -= 1
+            # advance chain
+            if chain_next == 1:
+                # after 1st hit, decide whether 2nd triggers
+                if rng.random() < p_react1:
+                    chain_next = 2
+                else:
+                    chain_next = 0
+            elif chain_next == 2:
+                # after 2nd hit, decide whether 3rd triggers
+                if rng.random() < p_react2:
+                    chain_next = 3
+                else:
+                    chain_next = 0
+            else:
+                # chain_next == 3 ends after 3rd
+                chain_next = 0
 
         else:
-            # 通常: skill1抽選 or basic
-            if rng.random() < p_skill1:
-                # ストライクアウト開始
-                skill1_remain = int(p.skill1_react)
-                cm = _crit_multiplier(rng, p.crit_rate, p.crit_dmg)
-                skill1_total += p.attack_power * p.skill1_mult * cm
-                skill1_remain -= 1
+            if mana >= params.ult_mana and params.ult_mana > 0:
+                # ult
+                crit_mul = _roll_crit(rng, p_crit, params.crit_dmg)
+                dmg = _damage(params.attack_power, params.ult_mult, crit_mul)
+                dmg_ult_add += dmg
+
+                mana = 0.0
+                buff_remaining = buff_duration_ticks
+
             else:
-                # 基本攻撃（バフ中のみ add 抽選で追加ダメージ）
-                add_proc = buff_active and (rng.random() < p_add)
+                # decide basic vs starting skill1
+                if rng.random() < p_skill1:
+                    # start skill1 chain: this tick is 1st hit
+                    chain_next = 1
+                    # execute immediately by looping logic once:
+                    # do the same as chain branch without duplicating too much
+                    crit_mul = _roll_crit(rng, p_crit, params.crit_dmg)
+                    dmg = _damage(params.attack_power, params.skill1_mult, crit_mul)
+                    dmg_skill1 += dmg
+                    # after 1st hit, decide whether 2nd triggers
+                    if rng.random() < p_react1:
+                        chain_next = 2
+                    else:
+                        chain_next = 0
+                else:
+                    # basic
+                    # base part
+                    crit_mul = _roll_crit(rng, p_crit, params.crit_dmg)
+                    dmg_base = _damage(params.attack_power, params.base_attack_mult, crit_mul)
+                    dmg_basic += dmg_base
 
-                cm = _crit_multiplier(rng, p.crit_rate, p.crit_dmg)
+                    # add-on (only during buff state) => counts into ult_add bucket as "追加攻撃(= add_mult 部分)"
+                    if buff_remaining > 0 and (rng.random() < p_add):
+                        dmg_add = _damage(params.attack_power, params.add_mult, crit_mul)
+                        dmg_ult_add += dmg_add
 
-                # 仕様どおり「add は basic に加算される」けど、集計上は
-                # basic部分と add部分を分けて返したいので、同一クリティカル倍率で分割計上する
-                basic_total += p.attack_power * p.base_attack_mult * cm
-                if add_proc:
-                    ult_total += p.attack_power * p.add_mult * cm
-
-        # --- tick末処理 ---
-        if dec_buff_after:
-            buff_remain -= 1
-
+        # 2) tick end: mana regen applies always (including buff state)
         mana += mana_regen
 
-    return (basic_total, skill1_total, 0.0, 0.0, ult_total)
+        # 3) decrement buff
+        if buff_remaining > 0:
+            buff_remaining -= 1
+
+    total = dmg_basic + dmg_skill1 + dmg_ult_add
+    return {"basic": dmg_basic, "skill1": dmg_skill1, "ult_add": dmg_ult_add, "total": total}
 
 
-def mean_total_damage_15110(params: Dict[str, Any]) -> DamageTuple:
+def mean_total_damage_15110(
+    params_dict: Dict[str, Any],
+    ticks: int,
+    n_trials: int = 20000,
+    seed: Optional[int] = 0,
+) -> Dict[str, float]:
     """
-    外部から呼ぶ用。
-    params は dict を受け取り、平均ダメージ(5-tuple)を返す。
-      (basic, skill1, skill2, skill3, ult)
-    ※ ult は「フィニッシュピッチ + バフ中の追加攻撃(add)」の合算
+    外部から参照するための関数。
+    - params_dict: 仕様で指定されたパラメータ辞書
+    - ticks: 任意 tick 数
+    - n_trials: モンテカルロ試行回数
+    - seed: 再現性のための乱数 seed
+
+    返り値:
+      - basic: 基本攻撃(基礎分のみ)の平均ダメージ合計
+      - skill1: ストライクアウトの平均ダメージ合計
+      - ult_add: フィニッシュピッチ + 追加攻撃(add_mult分)の平均ダメージ合計
+      - total: 全平均合計
     """
-    p = AceBatmanPitcherParams15110.from_dict(params).validated()
+    if n_trials <= 0:
+        raise ValueError(f"n_trials must be > 0, got {n_trials}")
+    if ticks < 0:
+        raise ValueError(f"ticks must be >= 0, got {ticks}")
 
-    rng = random.Random(p.seed)
+    params = AceBatmanPitcherParams15110.from_dict(params_dict)
+    rng = random.Random(seed)
 
-    b = s1 = u = 0.0
-    for _ in range(p.trials):
-        tb, ts1, _, _, tu = _simulate_once(p, rng)
-        b += tb
-        s1 += ts1
-        u += tu
+    sum_basic = 0.0
+    sum_skill1 = 0.0
+    sum_ult_add = 0.0
+    sum_total = 0.0
 
-    inv = 1.0 / float(p.trials)
-    return (b * inv, s1 * inv, 0.0, 0.0, u * inv)
+    for _ in range(n_trials):
+        out = simulate_total_damage_15110_once(params, ticks, rng)
+        sum_basic += out["basic"]
+        sum_skill1 += out["skill1"]
+        sum_ult_add += out["ult_add"]
+        sum_total += out["total"]
+
+    inv = 1.0 / n_trials
+    return sum_basic * inv, sum_skill1 * inv, 0, 0, sum_ult_add * inv
+    return {
+        "basic": sum_basic * inv,
+        "skill1": sum_skill1 * inv,
+        "ult_add": sum_ult_add * inv,
+        "total": sum_total * inv,
+    }
 
 
-def mean_total_damage_15110_compact(params: Dict[str, Any]) -> Tuple[float, float, float]:
-    """
-    要求仕様の「3項目だけほしい」場合のショートカット。
-      (basic_total, skill1_total, ult_plus_add_total)
-    """
-    basic, skill1, _, _, ult = mean_total_damage_15110(params)
-    return (basic, skill1, ult)
+# -----------------------------
+# Example usage (remove if not needed)
+# -----------------------------
+if __name__ == "__main__":
+    params = {
+        "base_attack_mult": 1.0,
+        "skill1_rate": 30,
+        "attack_speed": 1.5,
+        "attack_power": 1000,
+        "skill1_mult": 2.0,
+        "crit_rate": 20,
+        "crit_dmg": 2.5,
+        "ult_mult": 10.0,
+        "ult_mana": 20,
+        "skill1_react1": 100,
+        "skill1_react2": 20,
+        "add_rate": 50,
+        "add_mult": 0.5,
+    }
+    print(mean_total_damage_15110(params, ticks=40*60, n_trials=5000, seed=123))
 

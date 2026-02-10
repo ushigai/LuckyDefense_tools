@@ -10,6 +10,15 @@ function charImgUrl(id) {
   return `/data/img/char/${id}.png`;
 }
 
+function treasureLevelOptions(max, selected = 0) {
+  const sel = Number(selected ?? 0);
+  let s = `<option value="0" ${sel === 0 ? "selected" : ""}>なし</option>`;
+  for (let i = 1; i <= max; i++) {
+    s += `<option value="${i}" ${i === sel ? "selected" : ""}>${i}</option>`;
+  }
+  return s;
+}
+
 function makeCharDropdown(selectedId) {
   const selected = (state.CHARACTERS ?? []).find(c => String(c.id) === String(selectedId));
   const selectedName = selected?.name ?? String(selectedId);
@@ -93,7 +102,7 @@ function makeRuneRarityOptions(runeName, selectedRarity = "なし") {
 export function addMember(recalcFn, {
   characterId = (state.CHARACTERS[0]?.id ?? "15024"),
   charLv = 1,
-  treasureLv = 1,
+  treasureLv = 0,
   runeName = "なし",
   runeRarity = "なし",
   intake = 0,
@@ -126,7 +135,7 @@ export function addMember(recalcFn, {
           <div class="col-6 member-treasure-wrap">
             <label class="form-label text-secondary small mb-1">専用財宝レベル</label>
             <select class="form-select member-treasurelv rounded-3">
-              ${levelOptions(11, treasureLv)}
+              ${treasureLevelOptions(11, treasureLv)}
             </select>
           </div>
 
@@ -163,6 +172,27 @@ export function addMember(recalcFn, {
     </div>
   `;
 
+  function updateTreasureVisibility() {
+    const ch = getSelectedCharacterObj();
+    const isMythic = (ch?.rarity === "mythic");
+    const wrap = row.querySelector(".member-treasure-wrap");
+    const sel = row.querySelector(".member-treasurelv");
+    if (!wrap || !sel) return;
+
+    if (isMythic) {
+      // 復元（なければ 0=なし）
+      sel.value = row.dataset.savedTreasureLv ?? "0";
+      wrap.classList.remove("d-none");
+      sel.disabled = false;
+    } else {
+      row.dataset.savedTreasureLv = sel.value;
+      // mythic以外は財宝を送らない（0=なし）
+      sel.value = "0";
+      sel.disabled = true;
+      wrap.classList.add("d-none");
+    }
+  }
+
   enhanceCharacterDropdown(row, { characters: state.CHARACTERS, imgBase: "/data/img/char" });
 
   function getSelectedCharacterObj() {
@@ -178,12 +208,14 @@ export function addMember(recalcFn, {
     if (!wrap || !sel) return;
 
     if (isMythic) {
-      if (row.dataset.savedTreasureLv) sel.value = row.dataset.savedTreasureLv;
+      // 復元（なければ 0=なし）
+      sel.value = row.dataset.savedTreasureLv ?? "0";
       wrap.classList.remove("d-none");
       sel.disabled = false;
     } else {
       row.dataset.savedTreasureLv = sel.value;
-      sel.value = "1";
+      // mythic以外は財宝を送らない（0=なし）
+      sel.value = "0";
       sel.disabled = true;
       wrap.classList.add("d-none");
     }
@@ -291,8 +323,8 @@ export function getPartyMembers() {
     const charLv = Number(r.querySelector(".member-charlv").value || 1);
 
     const treasureSel = r.querySelector(".member-treasurelv");
-    let treasureLv = Number(treasureSel?.value || 1);
-    if (treasureSel?.disabled) treasureLv = 1;
+    let treasureLv = Number(treasureSel?.value || 0);
+    if (treasureSel?.disabled) treasureLv = 0;
 
     const runeNameSel = r.querySelector(".member-rune-name");
     const runeRaritySel = r.querySelector(".member-rune-rarity");

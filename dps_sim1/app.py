@@ -528,7 +528,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     mythEnhanceLv = int(common.get("mythEnhanceLv", 1))
 
     # ======= 遺物レベル =======
-    treasure_lv = int(member.get("treasureLv", 1))
+    treasure_lv = int(member.get("treasureLv", 0))
     money_gun_lv = int(common.get("moneyGunLv", all_relic_lv))
     power_potion_lv = int(common.get("powerPotionLv", all_relic_lv))
     fairy_bow_lv = int(common.get("fairyBowLv", all_relic_lv))
@@ -563,9 +563,11 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     roka_crit_ = int(member.get("roka_crit_", 0))
     roka_crit = int(member.get("roka_crit", 0))
     techEnhance = 1 + int(member.get("techEnhance", 0)) / 10
+    uchiCells = float(member.get("uchiCells", 0))
     batEnhance = int(member.get("batEnhance", 0))
     batEnhance = batEnhance_db[batEnhance]
     batEnhance_ = int(member.get("batEnhance_", 0))
+    strikeout = float(member.get("strikeout", 1.0))
     emotionControl = int(member.get("emotionControl", 0))
     StrongestCreature = int(member.get("StrongestCreature", 0))
     StrongestCreature *= 0.3 if character_id == "5106" else 0.4
@@ -704,6 +706,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     atk *= 1 + guildBuff_atk
     atk += base_atk
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow*2 + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
+    # ウチの攻撃速度も変更すること！
 
     # ======= その他数値計算 =======
     crit_rate = 5 + BambaDoll + BlobFigureBuff["ドラゴン"] + pet_buff["CriticalPercentage"]
@@ -1015,7 +1018,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "5016":  # ウチ
         t_buff1 = 1 + float(TREASURE_DB["ウチ"][treasure_lv][1])
         t_buff2 = float(TREASURE_DB["ウチ"][treasure_lv][2]) / 100
-        speed = base_speed*(1 + speedBuffPct + t_buff2)*(1 + FairyBow)
+        speed = base_speed*(1 + speedBuffPct + t_buff2)*(1 + FairyBow + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
         params = {
             "ticks": ticks,
             "trials": trials,
@@ -1024,7 +1027,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 10 + RateBuff1 if char_lv < 12 else 20 + RateBuff1,
-            "skill1_mult": 75*(t_buff1+MagicBuff1),
+            "skill1_mult": 75*t_buff1*MagicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
@@ -1038,13 +1041,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         }
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
-        if 6 <= char_lv:
-            basic *= 8
-            skill1 *= 8
-            skill2 *= 8
-            skill3 *= 8
-            ult *= 8
-            ans = basic + skill1 + skill2 + skill3 + ult
+        ans *= uchiCells * 1.41421356 + 1 if 6 <= char_lv else 1
     elif character_id == "5017":  # ビリ
         
         
@@ -1226,7 +1223,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5104":  # アイアンニャン
-        t_buff1 = 1 + float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
+        t_buff1 = float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
         params = {
             "ticks": ticks,
@@ -1288,7 +1285,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         ans = 52000
     elif character_id == "5109":  # キングダイアン
-        t_buff1 = 1 + float(TREASURE_DB["キングダイアン"][treasure_lv][2]) / 100
+        t_buff1 = float(TREASURE_DB["キングダイアン"][treasure_lv][2]) / 100
         params = {
             "ticks": ticks,
             "trials": trials,
@@ -1379,9 +1376,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1,
-            "skill1_rate": 12 + RateBuff1,
+            "skill1_rate": 12 + RateBuff1 + t_buff1,
             "skill1_mult": 200*PhysicBuff1,
-            "skill2_rate": 12 + RateBuff1,
+            "skill2_rate": 12 + RateBuff1 + t_buff1,
             "skill2_mult": 50*PhysicBuff1,
             "skill3_rate": 0,
             "skill3_mult": 0,
@@ -1395,10 +1392,10 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "5306":  # ドレイン
-        t_buff1 = float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
-        t_buff2 = float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100
-        MagicBuff1 += t_buff1
-        MagicBuff2 = MagicBuff1 + t_buff2
+        t_buff1 = float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100 # 火花
+        t_buff2 = float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100 # スキル
+        MagicBuff1 += t_buff2
+        MagicBuff2 = MagicBuff1 + t_buff1
         params = {
             "ticks": ticks,
             "trials": trials,
@@ -1748,16 +1745,19 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15110":  # バットマン投手
+        strikeout = int(strikeout*100)
+        skill1_react1 = min(strikeout - 100, 100) if strikeout < 200 else 100
+        skill1_react2 = max(strikeout - 200, 0) if strikeout < 300 else 100
+        DebugMessage["skill1_react1"] = skill1_react1
+        DebugMessage["skill1_react2"] = skill1_react2
         params = {
-            "tick": ticks,
-            "trials": trials,
-            "seed": seed,
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 10 + RateBuff1,
             "skill1_mult": 160*PhysicBuff1,
-            "skill1_react": 1,
+            "skill1_react1": skill1_react1,
+            "skill1_react2": skill1_react2,
             "ult_mana": ult_mana*CooltimeBuff1 if 6 <= char_lv else 10**100,
             "ult_mult": 400*PhysicBuff1,
             "add_rate": 10 if char_lv < 12 else 20,
@@ -1765,7 +1765,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "crit_rate": crit_rate,
             "crit_dmg": 2.5,
         }
-        basic, skill1, skill2, skill3, ult = mean_total_damage_15110(params)
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15110(params, ticks=ticks, n_trials=trials, seed=seed)
         ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15210":  # バットマン打者
         # この式（乗算でさらに複利で働く式）は間違い
@@ -1919,7 +1919,7 @@ def api_calc():
             return jsonify({"error": f"unknown character: {cid}"}), 400
 
         char_lv = clamp_int(m.get("charLv", 1), 1, 15, 1)
-        treasure_lv = clamp_int(m.get("treasureLv", 1), 1, 15, 1)
+        treasure_lv = clamp_int(m.get("treasureLv", 0), 0, 15, 0)
 
         rune_name = str(m.get("runeName", "なし") or "なし")
         rune_rarity = str(m.get("runeRarity", "なし") or "なし")
@@ -1937,9 +1937,10 @@ def api_calc():
         v = clamp_float(m.get("intake", 0), 0, 1_000_000, 0)
         member_s["intake"] = v
         member_s["blobintake"] = v
-        member_s["uchiCells"] = clamp_int(m.get("uchiCells", 0), 0, 5, 0)
+        member_s["uchiCells"] = clamp_float(m.get("uchiCells", 1.0), 1.0, 5.0, 1.0)
         member_s["batEnhance_"] = clamp_int(m.get("batEnhance_", 0), 0, 20, 0)
         member_s["batEnhance"] = clamp_int(m.get("batEnhance", 0), 0, 20, 0)
+        member_s["strikeout"] = clamp_float(m.get("strikeout", 1.0), 1.0, 3.0, 1.0)
         member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
         member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
         member_s["sparkBonusDmg"] = clamp_float(m.get("sparkBonusDmg", 0.0), 0.0, 3.0, 0.0)
@@ -1973,6 +1974,7 @@ def api_calc():
                 "uchiCells": member_s.get("uchiCells"),
                 "batEnhance": member_s.get("batEnhance"),
                 "batEnhance_": member_s.get("batEnhance_"),
+                "strikeout": member_s.get("strikeout"),
                 "starPower": member_s.get("starPower"),
                 "emotionControl": member_s.get("emotionControl"),
                 "sparkBonusDmg": member_s.get("sparkBonusDmg"),
