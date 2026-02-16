@@ -2,6 +2,7 @@ import { PET_NAME_SELECTS, PET_LEVEL_SELECTS } from "./dom.js";
 import { state } from "./state.js";
 import { levelOptions } from "./utils.js";
 import { upgradeSelectToImageDropdown } from "./blob_figure_image_select.js";
+import { t, translateGameText } from "./i18n.js";
 
 const PET_IMAGE_DROPDOWN_SIZE = {
   buttonIconSizePx: 26,
@@ -22,7 +23,7 @@ function populatePetNameSelects() {
 
     const noneOption = document.createElement("option");
     noneOption.value = "";
-    noneOption.textContent = "なし";
+    noneOption.textContent = t("none");
     select.appendChild(noneOption);
 
     pets.forEach(pet => {
@@ -31,7 +32,7 @@ function populatePetNameSelects() {
 
       const option = document.createElement("option");
       option.value = id;
-      option.textContent = String(pet.name ?? id);
+      option.textContent = translateGameText(String(pet.name ?? id));
       option.dataset.petId = id;
       select.appendChild(option);
     });

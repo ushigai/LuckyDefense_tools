@@ -1,5 +1,28 @@
 import { el } from "./dom.js";
 
+const BUFF_CHARACTER_INPUTS = [
+  { key: "penguin", name: "ペンギン", prefix: "buffPenguin" },
+  { key: "tiger", name: "虎", prefix: "buffTiger" },
+  { key: "ato", name: "アト", prefix: "buffAto" },
+  { key: "chronoAto", name: "時空アト", prefix: "buffChronoAto" },
+  { key: "tar", name: "タール", prefix: "buffTar" },
+  { key: "kitty", name: "猫の魔法使い", prefix: "buffKitty" },
+  { key: "grandmama", name: "グランドママ", prefix: "buffGrandmama" },
+  { key: "supergravity", name: "スーパー重力弾", prefix: "buffSupergravity" },
+  { key: "chad", name: "チャド", prefix: "buffChad" },
+  { key: "gigachad", name: "ギガチャド", prefix: "buffGigachad" },
+];
+
+function readBuffCharacterSettings() {
+  return BUFF_CHARACTER_INPUTS.map(({ key, name, prefix }) => {
+    const lv = Number(document.getElementById(`${prefix}Lv`)?.value || 6);
+    const treasure = String(document.getElementById(`${prefix}Treasure`)?.value || "なし");
+    const count = Number(document.getElementById(`${prefix}Count`)?.value || 1);
+    const increase = Number(document.getElementById(`${prefix}Increase`)?.value || 0);
+    return { key, name, lv, treasure, count, increase };
+  });
+}
+
 export function collectOptions() {
   const readPet = (nameSel, levelSel) => {
     const id = String(nameSel?.value ?? "");
@@ -51,6 +74,7 @@ export function collectOptions() {
     guildBlessing: String(el.guildBlessing.value),
     unitLevelSumBuff: String(el.unitLevelSumBuff.value),
     petLevelSum: String(el.petLevelSum.value),
+    buffCharacters: readBuffCharacterSettings(),
 
     durationSec: Number(el.durationSec.value),
     trials: Number(el.trials.value),

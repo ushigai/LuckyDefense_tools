@@ -91,6 +91,34 @@
       flex: 0 0 auto;
     }
 
+    .relic-select-with-icon {
+      position: relative;
+    }
+    .relic-select-icon-frame {
+      position: absolute;
+      left: .7rem;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      overflow: hidden;
+      border-radius: 6px;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .relic-select-icon {
+      width: 132%;
+      height: 132%;
+      object-fit: cover;
+      transform-origin: center center;
+    }
+    .relic-select-with-icon .relic-lv {
+      padding-left: 2.95rem;
+    }
+
     /* release notes */
     .release-notes {
       max-width: 720px;
@@ -171,11 +199,19 @@
 
 <body class="bg-body-tertiary">
   <nav class="navbar navbar-expand-lg bg-white border-bottom">
-    <div class="container py-1">
+    <div class="container py-1 d-flex align-items-center justify-content-between gap-3">
       <a class="navbar-brand fw-semibold" href="#">
         <i class="bi bi-speedometer2 me-1"></i>DPS Calculator
-        <span class="ms-2 small text-muted fw-normal">v1.1.1</span>
+        <span class="ms-2 small text-muted fw-normal">v1.2.0</span>
       </a>
+      <div class="d-flex align-items-center gap-2" data-i18n-skip>
+        <label class="small text-secondary mb-0" for="langSelect">Lang</label>
+        <select id="langSelect" class="form-select form-select-sm rounded-3" style="width: 110px;">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+          <option value="kr">한국어</option>
+        </select>
+      </div>
     </div>
   </nav>
 
@@ -242,10 +278,12 @@
                     </ul>
                   <li>DPS算出のロジック</li>
                     <ul class="mb-0">
-                      <li>緑字攻撃力=白字攻撃力*(力のポーション+ユニットレベル合計バフ)*神話強化*(マネガン+攻撃力バフ)*ギルド加護</li>
-                      <li>ダメージ=大剣*爆弾*スキル倍率*(秘伝書+バットor魔法使いの帽子)*(白字攻撃力 + 緑字攻撃力)</li>
+                      <li>緑字攻撃力 = 白字攻撃力 * (力のポーション + ユニットレベル合計バフ + ペット攻撃力) * 神話強化 * (マネガン + 攻撃力バフ) * ギルド加護</li>
+                      <li>バフ = 秘伝書 + バットor魔法使いの帽子 + その他魔法or物理ダメージ増加バフ</li>
+                      <li>ダメージ = 対ボスバフ合計 * 対気絶バフ合計 * スキル倍率 * バフ * (白字攻撃力 + 緑字攻撃力) * パテ猫 * ダメージ量増加パッシブ</li>
                       <li>仮想敵はボス2体で常に気絶中</li>
                       <li>財宝などのダメージ増加全般は加算として計算（e.g. アイアンニャンv2の場合、秘伝書+魔法使いの帽子+技術強化+Lv12パッシブ+洗剤）</li>
+                      <li>「ダメージ量増加パッシブ」はヘイリーの異種神話数やパルスLv12パッシブなどのこと</li>
                       <li>キャラのモーションフレーム数は反映していなく全て基本攻撃と同じ速度で発動している</li>
                     </ul>
                   <li>要検証項目</li>
@@ -285,10 +323,6 @@
               </button>
             </div>
 
-            <div class="row g-2 align-items-center mb-2">
-              <div class="col-8 text-secondary small">キャラ / 設定</div>
-              <div class="col-4 text-secondary small text-end">DPS / share</div>
-            </div>
 
             <div id="partyList" class="vstack gap-2"></div>
 
@@ -315,7 +349,7 @@
             </div>
 
             <div class="mt-3">
-              <div class="text-secondary small mb-1">合計（各キャラDPSの加算）</div>
+              <div class="text-secondary small mb-1">合計</div>
               <div class="display-5 fw-semibold metric">
                 <span id="totalValue">—</span>
               </div>
@@ -393,16 +427,7 @@
 
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="manaRegenBuffPct">マナ回復速度バフ%</label>
-                    <select id="manaRegenBuffPct" class="form-select rounded-3">
-                      <option value="0" selected>0</option>
-                      <option value="100">100</option>
-                      <option value="200">200</option>
-                      <option value="300">300</option>
-                      <option value="400">400</option>
-                      <option value="500">500</option>
-                      <option value="600">600</option>
-                      <option value="700">700</option>
-                    </select>
+                    <input id="manaRegenBuffPct" type="number" class="form-control rounded-3" value="0" step="1" min="0" max="700">
                   </div>
 
                   <!-- 既存項目（リストに無かったけど残す） -->
@@ -440,53 +465,53 @@
                   <!-- 1..11 は JS で流し込み -->
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="moneyGunLv">マネーガン</label>
-                    <select id="moneyGunLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="moneyGunLv" class="form-select rounded-3 relic-lv" data-artifact-name="マネーガン"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="powerPotionLv">力のポーション</label>
-                    <select id="powerPotionLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="powerPotionLv" class="form-select rounded-3 relic-lv" data-artifact-name="力のポーション"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="fairyBowLv">妖精の弓</label>
-                    <select id="fairyBowLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="fairyBowLv" class="form-select rounded-3 relic-lv" data-artifact-name="妖精の弓"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="greatSwordLv">大剣</label>
-                    <select id="greatSwordLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="greatSwordLv" class="form-select rounded-3 relic-lv" data-artifact-name="大剣"></select>
                   </div>
 
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="secretBookLv">秘伝書</label>
-                    <select id="secretBookLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="secretBookLv" class="form-select rounded-3 relic-lv" data-artifact-name="秘伝書"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="bambaDollLv">バンバの人形</label>
-                    <select id="bambaDollLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="bambaDollLv" class="form-select rounded-3 relic-lv" data-artifact-name="バンバの人形"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="batLv">バット</label>
-                    <select id="batLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="batLv" class="form-select rounded-3 relic-lv" data-artifact-name="バット"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="wizardHatLv">魔法使いの帽子</label>
-                    <select id="wizardHatLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="wizardHatLv" class="form-select rounded-3 relic-lv" data-artifact-name="魔法使いの帽子"></select>
                   </div>
 
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="bombLv">爆弾</label>
-                    <select id="bombLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="bombLv" class="form-select rounded-3 relic-lv" data-artifact-name="爆弾"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="oldBookLv">古びた本</label>
-                    <select id="oldBookLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="oldBookLv" class="form-select rounded-3 relic-lv" data-artifact-name="古びた本"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="sageYogurtLv">賢者のヨーグルト</label>
-                    <select id="sageYogurtLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="sageYogurtLv" class="form-select rounded-3 relic-lv" data-artifact-name="賢者のヨーグルト"></select>
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="magicGauntletLv">マジック籠手</label>
-                    <select id="magicGauntletLv" class="form-select rounded-3 relic-lv"></select>
+                    <select id="magicGauntletLv" class="form-select rounded-3 relic-lv" data-artifact-name="マジック籠手"></select>
                   </div>
                 </div>
               </div>
@@ -507,21 +532,18 @@
                 <div class="row g-3">
                   <div class="col-12 col-md-4">
                     <label class="form-label text-secondary small" for="pet1">ペット1</label>
-                    <label class="form-label text-secondary small mt-2" for="pet1">名前</label>
                     <select id="pet1" class="form-select rounded-3"></select>
                     <label class="form-label text-secondary small mt-2" for="pet1Level">レベル</label>
                     <select id="pet1Level" class="form-select rounded-3"></select>
                   </div>
                   <div class="col-12 col-md-4">
                     <label class="form-label text-secondary small" for="pet2">ペット2</label>
-                    <label class="form-label text-secondary small mt-2" for="pet2">名前</label>
                     <select id="pet2" class="form-select rounded-3"></select>
                     <label class="form-label text-secondary small mt-2" for="pet2Level">レベル</label>
                     <select id="pet2Level" class="form-select rounded-3"></select>
                   </div>
                   <div class="col-12 col-md-4">
                     <label class="form-label text-secondary small" for="pet3">ペット3</label>
-                    <label class="form-label text-secondary small mt-2" for="pet3">名前</label>
                     <select id="pet3" class="form-select rounded-3"></select>
                     <label class="form-label text-secondary small mt-2" for="pet3Level">レベル</label>
                     <select id="pet3Level" class="form-select rounded-3"></select>
@@ -579,6 +601,327 @@
             </div>
           </div>
 
+          <!-- バフキャラ設定 -->
+          <div class="accordion-item border-0 mt-2">
+            <h2 class="accordion-header" id="optBuffCharacterHeading">
+              <button class="accordion-button collapsed rounded-3" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#optBuffCharacterPanel"
+                      aria-expanded="false" aria-controls="optBuffCharacterPanel">
+                <i class="bi bi-person-gear me-2"></i>バフキャラ設定（未実装）
+              </button>
+            </h2>
+            <div id="optBuffCharacterPanel" class="accordion-collapse collapse" data-bs-parent="#commonOptionsAccordion">
+              <div class="accordion-body pt-3">
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th scope="col">キャラ名</th>
+                        <th scope="col">Lv</th>
+                        <th scope="col">財宝</th>
+                        <th scope="col">数</th>
+                        <th scope="col">平均増加量</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">ペンギン</th>
+                        <td>
+                          <select id="buffPenguinLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffPenguinTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="専用" selected>専用</option>
+                            <option value="幸運のお守り">幸運のお守り</option>
+                            <option value="ブーストドリンク">ブーストドリンク</option>
+                            <option value="なし">なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffPenguinCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffPenguinIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">虎</th>
+                        <td>
+                          <select id="buffTigerLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffTigerTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="なし" selected>なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffTigerCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffTigerIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">アト</th>
+                        <td>
+                          <select id="buffAtoLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffAtoTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="専用" selected>専用</option>
+                            <option value="幸運のお守り">幸運のお守り</option>
+                            <option value="ブーストドリンク">ブーストドリンク</option>
+                            <option value="なし">なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffAtoCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffAtoIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">時空アト</th>
+                        <td>
+                          <select id="buffChronoAtoLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffChronoAtoTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="なし" selected>なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffChronoAtoCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffChronoAtoIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">タール</th>
+                        <td>
+                          <select id="buffTarLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffTarTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="専用" selected>専用</option>
+                            <option value="幸運のお守り">幸運のお守り</option>
+                            <option value="ブーストドリンク">ブーストドリンク</option>
+                            <option value="なし">なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffTarCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffTarIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">猫の魔法使い</th>
+                        <td>
+                          <select id="buffKittyLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffKittyTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="専用" selected>専用</option>
+                            <option value="幸運のお守り">幸運のお守り</option>
+                            <option value="ブーストドリンク">ブーストドリンク</option>
+                            <option value="ペンライト">ペンライト</option>
+                            <option value="風車">風車</option>
+                            <option value="なし">なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffKittyCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffKittyIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">グランドママ</th>
+                        <td>
+                          <select id="buffGrandmamaLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffGrandmamaTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="なし" selected>なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffGrandmamaCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffGrandmamaIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">スーパー重力弾</th>
+                        <td>
+                          <select id="buffSupergravityLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffSupergravityTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="なし" selected>なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffSupergravityCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffSupergravityIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">チャド</th>
+                        <td>
+                          <select id="buffChadLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffChadTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="専用" selected>専用</option>
+                            <option value="幸運のお守り">幸運のお守り</option>
+                            <option value="ブーストドリンク">ブーストドリンク</option>
+                            <option value="なし">なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffChadCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffChadIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">ギガチャド</th>
+                        <td>
+                          <select id="buffGigachadLv" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="6" selected>6</option>
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffGigachadTreasure" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="なし" selected>なし</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select id="buffGigachadCount" class="form-select form-select-sm rounded-3 buff-character-select">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input id="buffGigachadIncrease" type="number" class="form-control form-control-sm rounded-3 buff-character-select" value="0" step="0.1">
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- その他バフ -->
           <div class="accordion-item border-0 mt-2">
             <h2 class="accordion-header" id="optOtherHeading">
@@ -596,7 +939,7 @@
                     <select id="guildBlessing" class="form-select rounded-3">
                       <option value="0">ギルド加入無しorギルドレベル7未満</option>
                       <option value="1" selected>ギルドレベル7~9</option>
-                      <option value="2">ギルドレベル10（未実装）</option>
+                      <option value="2">ギルドレベル10</option>
                     </select>
                   </div>
                   <div class="col-12 col-md-4">
@@ -642,7 +985,7 @@
                   </div>
 
                   <div class="col-12 col-md-3">
-                    <label class="form-label text-secondary small" for="trials">試行回数（trials）</label>
+                    <label class="form-label text-secondary small" for="trials">試行回数</label>
                     <select id="trials" class="form-select rounded-3">
                       <option value="1">1</option>
                       <option value="3" selected>3</option>
@@ -699,13 +1042,23 @@
     <!-- Release notes -->
     <!-- vX.Y.Z 
      Xは後方互換がなくかつ全体に影響する変更（e.g. 全体のバフ計算式の変更）
-     Yは後方互換がなくかつ個別に影響する変更or互換があるが全体に影響する変更
+     Yは後方互換がなくかつ個別に影響する変更or互換があるが全体に影響する変更or互換がある個別の変更だがDPS増減割合が10%を超えるもの
      Zは互換が保証される個別の変更
     -->
     <div class="mt-3 d-flex flex-wrap justify-content-center align-items-start gap-3">
       <details class="release-notes d-inline-block text-start">
         <summary class="small">リリースノート</summary>
         <div class="rn-body small">
+          <div class="mb-2">
+            <div class="rn-ver">v1.2.0 (2026/02/10 13:30)</div>
+            <ul class="mb-0 ps-3">
+              <li>英語、韓国語表示を追加</li>
+              <li>ボス選鳥師のフィナーレバフ中にトリックトークンだけでなくプライムサークル発動でもバフ期間が延長されていた問題を修正（Lv6で2.48%, Lv12で11.00%のDPS減少）</li>
+              <li>コルディ、ブロッブ団の実装</li>
+              <li>編成、主要バフをURLに保存できるように追加</li>
+              <li>計算量削減のためシミュレーション期間を短く設定（DPS差異は1%未満に調整）</li>
+            </ul>
+          </div>
           <div class="mb-2">
             <div class="rn-ver">v1.1.1 (2026/02/10 13:30)</div>
             <ul class="mb-0 ps-3">
@@ -768,6 +1121,13 @@
       const endpoint = "/api/survey";
       const pagePath = window.location.pathname || "/dps_sim1";
       const versionText = document.querySelector(".navbar-brand .small")?.textContent?.trim() || "";
+      const tr = (text) => {
+        const i18n = window.__dpsI18n;
+        if (i18n && typeof i18n.translateGameText === "function") {
+          return i18n.translateGameText(text);
+        }
+        return text;
+      };
 
       const setStatus = (text, kind) => {
         statusEl.textContent = text || "";
@@ -810,7 +1170,7 @@
         const message = textarea.value.trim();
         if (!message) return;
         submitBtn.disabled = true;
-        setStatus("送信中…", "info");
+        setStatus(tr("送信中…"), "info");
         try {
           const payload = {
             page: pagePath,
@@ -827,9 +1187,9 @@
           }
           textarea.value = "";
           updateSurvey();
-          setStatus("送信しました。ありがとうございます。", "success");
+          setStatus(tr("送信しました。ありがとうございます。"), "success");
         } catch (err) {
-          setStatus("送信に失敗しました。", "error");
+          setStatus(tr("送信に失敗しました。"), "error");
         } finally {
           submitBtn.disabled = textarea.value.trim().length === 0;
         }

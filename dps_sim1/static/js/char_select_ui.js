@@ -1,4 +1,6 @@
 // static/char_select_ui.js
+import { translateGameText } from "./i18n.js";
+
 export function enhanceCharacterDropdown(row, { characters, imgBase = "/data/img/char" }) {
   const charImgUrl = (id) => `${imgBase}/${id}.png`;
 
@@ -59,7 +61,7 @@ export function enhanceCharacterDropdown(row, { characters, imgBase = "/data/img
   function setSelected(id) {
     hidden.value = String(id);
     const ch = (characters ?? []).find((x) => String(x.id) === String(id));
-    btnLabel.textContent = ch?.name ?? String(id);
+    btnLabel.textContent = translateGameText(ch?.name ?? String(id));
 
     menu.querySelectorAll(".member-character-item.active").forEach((x) => x.classList.remove("active"));
     const active = menu.querySelector(`.member-character-item[data-char-id="${String(id)}"]`);
@@ -84,4 +86,3 @@ export function enhanceCharacterDropdown(row, { characters, imgBase = "/data/img
     hidden.dispatchEvent(new Event("change", { bubbles: true })); // 既存ロジックに繋ぐ
   });
 }
-

@@ -1,5 +1,7 @@
 export const state = {
   CHARACTERS: [],
+  ARTIFACTS: [],
+  ARTIFACT_MAP: new Map(),
   RUNES: [],
   RUNE_MAP: new Map(),
   BLOB_FIGURES: [],
@@ -13,6 +15,7 @@ export const state = {
 
 export const ALLOWED_CHARACTER_IDS = [
   "3007",  // 忍者
+  "5002",  // コルディ
   "5008",  // ママ
   "5010",  // バットマン
   "5013",  // ワット
@@ -30,9 +33,10 @@ export const ALLOWED_CHARACTER_IDS = [
   "5204",  // アイアンニャンv2
   "5306",  // ドレイン
   "13007", // 鬼神忍者
+  "14002", // ドクターパルス
   "15001", // 原始バンバ
   "15004", // アイアムニャン
-  "14002", // ドクターパルス
+  "15005", // ブロッブ団
   "15006", // 魔王ドラゴン
   "15021", // 覚醒ヘイリー
   "15023", // キャプテンロカ

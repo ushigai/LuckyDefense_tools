@@ -5,13 +5,14 @@ import { collectOptions } from "./options.js";
 import { getPartyMembers } from "./party_ui.js";
 import { updateEnemyHpUI } from "./enemy_ui.js";
 import { state } from "./state.js";
+import { t, translateGameText } from "./i18n.js";
 
 function setBusy(isBusy) {
   el.btnCalc.disabled = isBusy;
-  el.calcStatus.textContent = isBusy ? "計算中…" : "";
+  el.calcStatus.textContent = isBusy ? t("calculatingStatus") : "";
   el.btnCalc.innerHTML = isBusy
-    ? '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>計算中'
-    : '<i class="bi bi-cpu me-1"></i>計算する';
+    ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t("calculating")}`
+    : `<i class="bi bi-cpu me-1"></i>${t("calculate")}`;
 }
 
 
@@ -48,13 +49,13 @@ function _renderDpsRatio(characterId, ratioObj) {
 
   // If everything is 0, show a small placeholder
   if (!isFinite(total) || total <= 0) {
-    return `<div class="text-secondary small">内訳: —</div>`;
+    return `<div class="text-secondary small">${t("breakdown")}: —</div>`;
   }
 
   const items = [];
 
   // basic is always shown
-  items.push({ key: "basic", label: "基本攻撃", value: Number(ratioObj.basic ?? 0) });
+  items.push({ key: "basic", label: t("basicAttack"), value: Number(ratioObj.basic ?? 0) });
 
   // skill labels come from characters.json; if empty string, don't show that row
   const s1name = String(ch.skill1 ?? "").trim();
@@ -76,7 +77,7 @@ function _renderDpsRatio(characterId, ratioObj) {
     const v = isFinite(it.value) ? it.value : 0;
     const pct = (v / total) * 100;
     const pctStr = _formatPct(pct);
-    const safeLabel = String(it.label ?? it.key);
+    const safeLabel = translateGameText(String(it.label ?? it.key));
     const width = Math.max(0, Math.min(100, pct));
     return `
       <div class="mb-2">
@@ -141,7 +142,7 @@ export async function recalc() {
       members[i].dpsEl.textContent = fmtNumber(dps);
 
       const share = (total > 0) ? (dps / total) * 100 : (100 / members.length);
-      members[i].shareEl.textContent = `share: ${share.toFixed(3)}%`;
+      members[i].shareEl.textContent = `${t("share")}: ${share.toFixed(3)}%`;
 
       // DPS 内訳（basic/skill/ult）
       let ratioObj = null;

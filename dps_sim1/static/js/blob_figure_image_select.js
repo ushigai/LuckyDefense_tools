@@ -1,3 +1,5 @@
+import { t } from "./i18n.js";
+
 const IMG_BASE = "/data/img/blob_figure";
 const UNKNOWN_IMG = `${IMG_BASE}/unknown.png`;
 
@@ -85,7 +87,7 @@ export function upgradeSelectToImageDropdown(selectEl, config = {}) {
   function syncFromSelect() {
     const opt = selectEl.selectedOptions?.[0];
     icon.src = imgUrlFromOption(opt, idDatasetKey, imgBase, unknownImg);
-    label.textContent = opt?.textContent ?? "なし";
+    label.textContent = opt?.textContent ?? t("none");
   }
 
   function rebuildMenu() {

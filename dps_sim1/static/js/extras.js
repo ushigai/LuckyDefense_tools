@@ -1,66 +1,43 @@
 import { el } from "./dom.js";
-import { state } from "./state.js";
+import { translateGameText } from "./i18n.js";
 
-export const EXTRA_KEY_LABEL = {
-  intake: "摂取値",
-  mythCount: "異種神話数",
-  uchiCells: "マス数",
-  batEnhance: "バット強化",
-  starPower: "星の力",
-  emotionControl: "感情コントロール",
-  sparkBonusDmg: "火花追加ダメージ",
-  energyCount: "エネルギー個数（究極中）",
-  techEnhance: "技術強化",
-  score: "スコア",
-  cannibalCount: "共食い回数",
-  training: "鍛錬",
-  StrongestCreature: "動物ユニット数",
-  robots: "ドローン",
-  roka_crit_: "クリティカル率増加",
-  roka_crit: "クリティカル率増加",
+export const EXTRA_FIELDS_BY_CHARACTER_ID = {
+  "15021": [{ key: "mythCount", label: "異種神話数", kind: "number", min: 0, step: 1, def: 0 }],
+  //"5005": [{ key: "intake", label: "摂取値", kind: "number", min: 0, step: 1, def: 0 }],
+  "5016": [{ key: "uchiCells", label: "敵との距離（マス数）", kind: "select-float", min: 1.0, max: 5.0, step: 0.1, def: 5.0 }],
+  "5010": [{ key: "batEnhance", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }],
+  "15210": [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }],
+  "15110": [
+    { key: "strikeout", label: "ストライクアウト平均回数", kind: "select-float", min: 1.0, max: 3.0, step: 0.1, def: 1.0 },
+    { key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 },
+  ],
+  "5021": [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }],
+  "5018": [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }],
+  "5003": [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }],
+  "5013": [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }],
+  "5204": [{ key: "techEnhance", label: "技術強化", kind: "select-int", min: 0, max: 10, def: 0 }],
+  "5024": [{ key: "score", label: "スコア", kind: "select-int", min: 0, max: 100, def: 0 }],
+  "5306": [{ key: "cannibalCount", label: "共食い回数", kind: "number", min: 0, step: 1, def: 0 }],
+  "5001": [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }],
+  "5106": [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
+  "15006": [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
+  "14002": [{ key: "robots", label: "ドローン", kind: "select-int", min: 1, max: 4, def: 1 }],
+  "5023": [{ key: "roka_crit", label: "クリティカル率増加", kind: "select-int", min: 1, max: 30, def: 30 }],
+  "15023": [{ key: "roka_crit_", label: "クリティカル率増加", kind: "select-int", min: 1, max: 30, step: 1, def: 30 }],
+  "15005": [
+    { key: "intake", label: "摂取値", kind: "number", min: 0, max: 10000000000, step: 1, def: 25000 },
+    { key: "blueBlob", label: "青ブロッブレベル", kind: "select-int", min: 0, max: 20, step: 1, def: 3 },
+    { key: "redBlob", label: "赤ブロッブレベル", kind: "select-int", min: 0, max: 20, step: 1, def: 3 },
+    { key: "greenBlob", label: "緑ブロッブレベル", kind: "select-int", min: 0, max: 20, step: 1, def: 3 },
+  ],
+  "5002": [
+    { key: "icecount", label: "氷河の合計個数", kind: "number", min: 10, max: 1000000000, step: 1, def: 20 },
+    { key: "icerate", label: "氷河命中確率%", kind: "select-int", min: 0, max: 100, step: 1, def: 40 },
+  ],
 };
 
-// name -> fields
-// name -> fields（重複キーを許可するため、まずは配列で列挙する）
-const EXTRA_FIELDS_ENTRIES = [
-  ["覚醒ヘイリー", [{ key: "mythCount", label: "異種神話数", kind: "number", min: 0, step: 1, def: 0 }]],
-  ["ブロッブ",     [{ key: "intake", label: "摂取値", kind: "number", min: 0, step: 1, def: 0 }]],
-  ["ウチ",         [{ key: "uchiCells", label: "敵との距離（マス数）", kind: "select-float", min: 1.0, max: 5.0, step: 0.1, def: 1.0 }]],
-  ["バットマン",   [{ key: "batEnhance", label: "バット強化", kind: "select-int", min: 1, max: 20, def: 1 }]],
-  ["エースバットマン打者", [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }]],
-  ["エースバットマン投手", [{ key: "strikeout", label: "ストライクアウト平均回数", kind: "select-float", min: 1.0, max: 3.0, step: 0.1, def: 1.0 }]],
-  ["エースバットマン投手", [{ key: "batEnhance_", label: "バット強化", kind: "select-int", min: 10, max: 20, def: 10 }]],
-  ["ヘイリー",     [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }]],
-  ["マスタークン", [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }]],
-  ["ランスロット", [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }]],
-  ["ワット",       [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }]],
-  ["ワット（究極発動中）", [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }]],
-  ["アイアンニャンv2", [{ key: "techEnhance", label: "技術強化", kind: "select-int", min: 0, max: 10, def: 0 }]],
-  ["選鳥師",       [{ key: "score", label: "スコア", kind: "select-int", min: 0, max: 100, def: 0 }]],
-  ["タール",       [{ key: "cannibalCount", label: "共食い回数", kind: "number", min: 0, step: 1, def: 0 }]],
-  ["バンバ",       [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }]],
-  ["ドラゴン",     [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }]],
-  ["魔王ドラゴン", [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }]],
-  ["ドクターパルス", [{ key: "robots", label: "ドローン", kind: "select-int", min: 1, max: 4, def: 1 }]],
-  ["ロカ",         [{ key: "roka_crit", label: "クリティカル率増加", kind: "select-int", min: 1, max: 30, def: 30 }]],
-  ["キャプテンロカ", [{ key: "roka_crit_", label: "クリティカル率増加", kind: "select-int", min: 1, max: 30, step: 1, def: 30 }]],
-];
-
-// name -> fields（同名は配列連結でマージ）
-export const EXTRA_FIELDS_BY_NAME = EXTRA_FIELDS_ENTRIES.reduce((acc, [name, fields]) => {
-  if (!acc[name]) acc[name] = [];
-  acc[name].push(...fields);
-  return acc;
-}, {});
-
-
-export function getCharNameById(characterId) {
-  return (state.CHARACTERS.find(c => String(c.id) === String(characterId))?.name) ?? String(characterId);
-}
-
 export function getExtraFieldsForCharacter(characterId) {
-  const name = getCharNameById(characterId);
-  return EXTRA_FIELDS_BY_NAME[name] ?? [];
+  return EXTRA_FIELDS_BY_CHARACTER_ID[String(characterId)] ?? [];
 }
 
 function selectOptionsInt(min, max, selected) {
@@ -101,8 +78,7 @@ export function readRowExtraValues(row) {
   return out;
 }
 
-export function renderExtraControls(row, characterId, initialExtras = {}, recalcFn) {
-  // 値の保持（キャラ切り替えでフォームを作り直すため）
+export function renderExtraControls(row, characterId, initialExtras = {}, recalcFn, onStateChangeFn = null) {
   row._extraValues = { ...(row._extraValues || {}), ...readRowExtraValues(row), ...initialExtras };
 
   const fields = getExtraFieldsForCharacter(characterId);
@@ -118,7 +94,7 @@ export function renderExtraControls(row, characterId, initialExtras = {}, recalc
 
     const label = document.createElement("label");
     label.className = "form-label text-secondary small mb-1";
-    label.textContent = f.label;
+    label.textContent = translateGameText(f.label);
 
     let input;
     const currentVal = (row._extraValues[f.key] ?? f.def);
@@ -146,6 +122,7 @@ export function renderExtraControls(row, characterId, initialExtras = {}, recalc
 
     input.addEventListener(input.tagName === "INPUT" ? "input" : "change", () => {
       row._extraValues[f.key] = input.value;
+      if (typeof onStateChangeFn === "function") onStateChangeFn();
       if (el.autoRecalc?.checked && typeof recalcFn === "function") recalcFn();
     });
 
@@ -154,4 +131,3 @@ export function renderExtraControls(row, characterId, initialExtras = {}, recalc
     container.appendChild(col);
   });
 }
-

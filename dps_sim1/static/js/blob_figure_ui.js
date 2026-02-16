@@ -1,6 +1,7 @@
 import { BLOB_FIGURE_NAME_SELECTS, BLOB_FIGURE_VALUE_SELECTS, el } from "./dom.js";
 import { state } from "./state.js";
 import { upgradeSelectToImageDropdown } from "./blob_figure_image_select.js";
+import { isEnglish, t, translateGameText } from "./i18n.js";
 
 const BLOB_IMAGE_DROPDOWN_SIZE = {
   buttonIconSizePx: 26,
@@ -46,14 +47,19 @@ function populateBlobFigureNameSelects() {
 
     const noneOption = document.createElement("option");
     noneOption.value = "";
-    noneOption.textContent = "なし";
+    noneOption.textContent = t("none");
     select.appendChild(noneOption);
 
     figures.forEach(figure => {
       const option = document.createElement("option");
       option.value = String(figure.name ?? "");
-      const desc = String(figure.description ?? "");
-      option.textContent = `${figure.name}（${desc}）`;
+      const name = translateGameText(String(figure.name ?? ""));
+      const desc = translateGameText(String(figure.description ?? ""));
+      if (desc) {
+        option.textContent = isEnglish() ? `${name} (${desc})` : `${name}（${desc}）`;
+      } else {
+        option.textContent = name;
+      }
       if (figure.id !== undefined && figure.id !== null) {
         option.dataset.figureId = String(figure.id);
       }

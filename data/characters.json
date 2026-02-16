@@ -1013,10 +1013,10 @@
       "attack_range": 4,
       "move_speed": 4,
       "sp": 500,
-      "skill1": "",
-      "skill2": "",
-      "skill3": "",
-      "ult": ""
+      "skill1": "青ブロッブ",
+      "skill2": "赤ブロッブ",
+      "skill3": "緑ブロッブ",
+      "ult": "三位一体"
     },
     {
       "name": "魔王ドラゴン",

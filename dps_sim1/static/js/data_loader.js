@@ -72,6 +72,15 @@ export async function loadEnemies() {
 
 export async function loadOptionalStateData() {
   await loadOptionalCollection({
+    path: "/data/artifacts_expanded.json",
+    label: "artifacts_expanded.json",
+    stateKey: "ARTIFACTS",
+    mapKey: "ARTIFACT_MAP",
+    arrayKey: "artifacts",
+    mapEntryKey: "name",
+  });
+
+  await loadOptionalCollection({
     path: "/data/pets.json",
     label: "pets.json",
     stateKey: "PETS",

@@ -1,345 +1,323 @@
-"""Boss 選鳥師 (ID:15024) Monte Carlo simulator.
-
-Internal action names
----------------------
-- basic  : 基本攻撃
-- skill1 : ハードシャッフル
-- skill2 : プライムサークル
-- skill3 : トリックトークン (no tick; simultaneous)
-- ult    : フィナーレ
-
-Notes
------
-- This model advances time in *integer ticks* (t = 0, 1, 2, ...).
-- Durations/windows that depend on attack_speed (e.g. 12*attack_speed, 0.8*attack_speed,
-  5*attack_speed) are kept as floats and are *not rounded*.
-- To support fractional tick windows, the ult buff is tracked as a float end-time
-  (buff_end_time). Buff is active at tick t if t < buff_end_time.
-
-Main exported helper
---------------------
-mean_total_damage_15024(...): returns the Monte-Carlo mean of total damage over the given
-number of ticks (or durationSec).
-"""
-
+# boss_senchoushi_15024.py
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
-import argparse
+from typing import Mapping, Any, Dict, Tuple, Optional
 import math
 import random
 
 
+def _clamp(x: float, lo: float, hi: float) -> float:
+    return lo if x < lo else hi if x > hi else x
+
+
 @dataclass(frozen=True)
-class BossParams15024:
-    attack_power: float
-    attack_speed: float
+class BossSenchoushiParams15024:
+    # rates are given in 0..100 (%)
     skill1_rate: float
     skill2_rate: float
+    crit_rate: float
+    ult_buff: float
+
+    # multipliers are given as raw multiplier (2 => x2, 150 => x150)
     skill1_mult: float
     skill2_mult: float
     skill3_mult: float
     ult_mult: float
-    ult_mana: float
-    mana_buff: float
-    ult_buff: float
-    crit_rate: float
     crit_dmg: float
 
+    # core stats
+    attack_speed: float
+    attack_power: float
 
-def _crit_multiplier(rng: random.Random, crit_rate: float, crit_dmg: float) -> tuple[float, float, float, float, float]:
-    """Return crit multiplier for a single damage event."""
-    if crit_rate <= 0.0:
-        return 1.0
-    if crit_rate >= 100.0:
-        return float(crit_dmg)
-    return float(crit_dmg) if (rng.random() * 100.0) < crit_rate else 1.0
+    # mana system (NOT listed in your "引数として与えられる" list, but required by your spec)
+    ult_mana: float
+    mana_buff: float
+
+    @staticmethod
+    def from_dict(d: Mapping[str, Any]) -> "BossSenchoushiParams15024":
+        # Required keys by this implementation
+        required = [
+            "skill1_rate", "skill2_rate", "attack_speed", "attack_power",
+            "skill1_mult", "skill2_mult", "skill3_mult",
+            "crit_rate", "crit_dmg",
+            "ult_mana", "mana_buff",
+            "ult_mult", "ult_buff",
+        ]
+        missing = [k for k in required if k not in d]
+        if missing:
+            raise KeyError(f"Missing keys in params: {missing}")
+
+        return BossSenchoushiParams15024(
+            skill1_rate=float(d["skill1_rate"]),
+            skill2_rate=float(d["skill2_rate"]),
+            attack_speed=float(d["attack_speed"]),
+            attack_power=float(d["attack_power"]),
+            skill1_mult=float(d["skill1_mult"]),
+            skill2_mult=float(d["skill2_mult"]),
+            skill3_mult=float(d["skill3_mult"]),
+            crit_rate=float(d["crit_rate"]),
+            crit_dmg=float(d["crit_dmg"]),
+            ult_mana=float(d["ult_mana"]),
+            mana_buff=float(d["mana_buff"]),
+            ult_mult=float(d["ult_mult"]),
+            ult_buff=float(d["ult_buff"]),
+        )
 
 
-def _choose_action(
-    rng: random.Random,
-    mana: float,
-    params: BossParams15024,
-    buff_active: bool,
-) -> str:
-    """Choose the main action for this tick."""
-    if mana >= params.ult_mana:
-        return "ult"
+def _roll_crit(rng: random.Random, crit_rate_pct: float, crit_dmg: float, base_damage: float) -> float:
+    if base_damage == 0:
+        return 0.0
+    p = _clamp(crit_rate_pct, 0.0, 100.0) / 100.0
+    if rng.random() < p:
+        return base_damage * crit_dmg
+    return base_damage
 
-    s1 = params.skill1_rate + (params.ult_buff if buff_active else 0.0)
-    s2 = params.skill2_rate + (params.ult_buff if buff_active else 0.0)
 
-    w1 = max(0.0, float(s1))
-    w2 = max(0.0, float(s2))
-    w_basic = 100.0 - w1 - w2
-    if w_basic < 0.0:
-        w_basic = 0.0
+def _choose_action(rng: random.Random, s1_pct: float, s2_pct: float) -> str:
+    """
+    Returns one of: 'basic', 'skill1', 'skill2'
+    Probability model:
+      skill1: s1_pct
+      skill2: s2_pct
+      basic: 100 - s1_pct - s2_pct
+    If s1_pct + s2_pct > 100, we renormalize skill1/skill2 to sum to 100 and set basic=0.
+    """
+    s1 = _clamp(s1_pct, 0.0, 100.0)
+    s2 = _clamp(s2_pct, 0.0, 100.0)
 
-    total = w1 + w2 + w_basic
-    if total <= 0.0:
-        return "basic"
+    total = s1 + s2
+    if total > 100.0:
+        # Renormalize to avoid negative basic probability
+        s1 = 100.0 * (s1 / total) if total > 0 else 0.0
+        s2 = 100.0 * (s2 / total) if total > 0 else 0.0
+        total = 100.0
 
-    r = rng.random() * total
-    if r < w1:
+    r = rng.random() * 100.0
+    if r < s1:
         return "skill1"
-    if r < w1 + w2:
+    if r < s1 + s2:
         return "skill2"
     return "basic"
 
 
-def simulate_trial_breakdown_15024(
-    params: BossParams15024,
-    ticks: int,
+def simulate_once_15024(
+    params: BossSenchoushiParams15024,
+    *,
+    num_ticks: int,
     rng: random.Random,
-) -> tuple[float, float, float, float, float]:
-    """Simulate one trial and return (basic, skill1, skill2, skill3, ult)."""
-    if ticks < 0:
-        raise ValueError("ticks must be >= 0")
-    if params.attack_speed <= 0.0:
+) -> Dict[str, float]:
+    """
+    Simulate one run for num_ticks ticks.
+
+    Internal action names:
+      basic, skill1, skill2, skill3, ult
+
+    Returns damage totals by category:
+      {'basic':..., 'skill1':..., 'skill2':..., 'skill3':..., 'ult':...}
+    """
+    if num_ticks <= 0:
+        return {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "skill3": 0.0, "ult": 0.0}
+
+    # State
+    mana = 0.0
+    mana_reset_next_tick = False
+
+    # Trick token counter: every 3 activations of (skill1 or skill2)
+    skill12_count = 0
+
+    # For skill3 bonus window
+    last_skill1_tick: float = -1e30
+    last_skill2_tick: float = -1e30
+
+    # Ult buff: use "expires_at" as a float tick index threshold, no rounding.
+    # Active if current_tick <= buff_expires_at.
+    buff_expires_at: float = -1e30  # inactive
+
+    dmg = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "skill3": 0.0, "ult": 0.0}
+
+    # Pre-calc for mana recovery
+    if params.attack_speed <= 0:
         raise ValueError("attack_speed must be > 0")
+    base_tick_mana = (1.0 / params.attack_speed) * params.mana_buff
+    basic_extra_mana = 1.0 * params.mana_buff
 
-    mana: float = 0.0
-    pending_mana_reset: bool = False
-    buff_end_time: float = 0.0
+    # Window sizes / durations (float, no rounding)
+    skill3_window = 5.0 * params.attack_speed
+    ult_base_duration = 12.0 * params.attack_speed
+    ult_extend = 0.8 * params.attack_speed
 
-    skill_count: int = 0
-    last_skill1_tick: Optional[int] = None
-    last_skill2_tick: Optional[int] = None
+    for t in range(num_ticks):
+        tf = float(t)
 
-    basic_sum = 0.0
-    skill1_sum = 0.0
-    skill2_sum = 0.0
-    skill3_sum = 0.0
-    ult_sum = 0.0
-
-    trick_window: float = 5.0 * params.attack_speed
-    ult_duration: float = 12.0 * params.attack_speed + 1.0
-    ult_extend: float = 0.8 * params.attack_speed
-
-    for t in range(ticks):
-        if pending_mana_reset:
+        # "フィナーレ発動後の次のtickでマナが0"
+        if mana_reset_next_tick:
             mana = 0.0
-            pending_mana_reset = False
+            mana_reset_next_tick = False
 
-        buff_active: bool = float(t) < buff_end_time
-        action = _choose_action(rng=rng, mana=mana, params=params, buff_active=buff_active)
+        buff_active = tf <= buff_expires_at
 
+        # Action decision
+        if mana >= params.ult_mana:
+            action = "ult"
+        else:
+            add = params.ult_buff if buff_active else 0.0
+            action = _choose_action(rng, params.skill1_rate + add, params.skill2_rate + add)
+
+        # Damage phase (and skill bookkeeping)
         if action == "basic":
-            dealt = params.attack_power * 1.0 * _crit_multiplier(rng, params.crit_rate, params.crit_dmg)
-            basic_sum += dealt
+            base = params.attack_power * 1.0
+            dealt = _roll_crit(rng, params.crit_rate, params.crit_dmg, base)
+            dmg["basic"] += dealt
 
         elif action == "skill1":
-            dealt = params.attack_power * params.skill1_mult * _crit_multiplier(rng, params.crit_rate, params.crit_dmg)
-            skill1_sum += dealt
-            skill_count += 1
-            last_skill1_tick = t
+            base = params.attack_power * params.skill1_mult
+            dealt = _roll_crit(rng, params.crit_rate, params.crit_dmg, base)
+            dmg["skill1"] += dealt
+
+            last_skill1_tick = tf
+            skill12_count += 1
 
         elif action == "skill2":
-            dealt = params.attack_power * params.skill2_mult * _crit_multiplier(rng, params.crit_rate, params.crit_dmg)
-            skill2_sum += dealt
-            skill_count += 1
-            last_skill2_tick = t
-            if buff_active:
-                buff_end_time += ult_extend
+            base = params.attack_power * params.skill2_mult
+            dealt = _roll_crit(rng, params.crit_rate, params.crit_dmg, base)
+            dmg["skill2"] += dealt
+
+            last_skill2_tick = tf
+            skill12_count += 1
 
         elif action == "ult":
-            dealt = params.attack_power * params.ult_mult * _crit_multiplier(rng, params.crit_rate, params.crit_dmg)
-            ult_sum += dealt
-            buff_end_time = float(t) + ult_duration
-            pending_mana_reset = True
+            base = params.attack_power * params.ult_mult
+            dealt = _roll_crit(rng, params.crit_rate, params.crit_dmg, base)
+            dmg["ult"] += dealt
+
+            # Start/refresh buff: active on ticks where tick <= t + 12*attack_speed
+            buff_expires_at = tf + ult_base_duration
+
+            # Mana resets at the next tick
+            mana_reset_next_tick = True
 
         else:
-            raise RuntimeError(f"unknown action: {action}")
+            raise RuntimeError(f"Unknown action: {action}")
 
-        # Trick token (skill3)
-        if action in ("skill1", "skill2"):
-            if skill_count % 3 == 0:
-                mult3 = float(params.skill3_mult)
-                if last_skill1_tick is not None and (float(t - last_skill1_tick) <= trick_window):
-                    mult3 += 5.0
-                if last_skill2_tick is not None and (float(t - last_skill2_tick) <= trick_window):
-                    mult3 += 1.1
+        # Trick token trigger (skill3) — simultaneous, consumes no tick, no mana change
+        # Trigger can happen multiple times if skill12_count jumps by >3 (not possible here, but keep robust).
+        while skill12_count >= 3:
+            skill12_count -= 3
 
-                dealt3 = params.attack_power * mult3 * _crit_multiplier(rng, params.crit_rate, params.crit_dmg)
-                skill3_sum += dealt3
+            # Compute skill3 multiplier with conditional bonuses
+            mult = params.skill3_mult
+            if (tf - last_skill1_tick) <= skill3_window:
+                mult += 5.0
+            if (tf - last_skill2_tick) <= skill3_window:
+                mult += 1.1
 
-                if buff_active:
-                    buff_end_time += ult_extend
+            base = params.attack_power * mult
+            dealt = _roll_crit(rng, params.crit_rate, params.crit_dmg, base)
+            dmg["skill3"] += dealt
 
-        mana += params.mana_buff * (1.0 / params.attack_speed)
+            # Extend buff duration if buff is active "when skill3 fires"
+            if tf <= buff_expires_at:
+                buff_expires_at += ult_extend
+
+        # End-of-tick mana recovery (all recovery multiplied by mana_buff already)
+        # - basic: +1 + (1/attack_speed)
+        # - skill1/skill2/ult: +(1/attack_speed)
         if action == "basic":
-            mana += params.mana_buff * 1.0
+            mana += base_tick_mana + basic_extra_mana
+        else:
+            mana += base_tick_mana
 
-    return (basic_sum, skill1_sum, skill2_sum, skill3_sum, ult_sum)
-
-
-def simulate_trial_total_damage_15024(
-    params: BossParams15024,
-    ticks: int,
-    rng: random.Random,
-) -> tuple[float, float, float, float, float]:
-    """Simulate one trial and return total damage (legacy wrapper)."""
-    return float(sum(simulate_trial_breakdown_15024(params=params, ticks=ticks, rng=rng)))
-
+    return dmg
 
 
 def mean_total_damage_15024(
+    params_dict: Mapping[str, Any],
     *,
-    attack_power: float,
-    attack_speed: float,
-    skill1_rate: float,
-    skill2_rate: float,
-    skill1_mult: float,
-    skill2_mult: float,
-    skill3_mult: float,
-    ult_mult: float,
-    ult_mana: float,
-    mana_buff: float = 1.0,
-    ult_buff: float = 0.0,
-    crit_rate: float = 0.0,
-    crit_dmg: float = 1.0,
-    ticks: Optional[int] = None,
-    durationSec: Optional[float] = None,
-    trials: int = 10_000,
-    seed: Optional[int] = 1,
-) -> tuple[float, float, float, float, float]:
-    """Return Monte-Carlo mean of total damage.
-
-    You can specify either:
-      - ticks: number of integer ticks to simulate
-      - durationSec: duration in seconds (interpreted as: ticks_per_second = attack_speed)
-
-    If durationSec yields a non-integer tick count, this simulates floor(durationSec * attack_speed)
-    ticks (no rounding up).
+    num_ticks: int,
+    trials: int = 20000,
+    seed: Optional[int] = 0,
+) -> Dict[str, Any]:
     """
-    if ticks is None:
-        if durationSec is None:
-            raise ValueError("either ticks or durationSec must be provided")
-        # Interpret: attack_speed = ticks per second.
-        ticks = int(math.floor(float(durationSec) * float(attack_speed)))
+    Monte Carlo mean damage for BossSenchoushi (15024).
 
+    Args:
+      params_dict: dict-like. Required keys:
+        - skill1_rate, skill2_rate, attack_speed, attack_power
+        - skill1_mult, skill2_mult, skill3_mult
+        - crit_rate, crit_dmg
+        - ult_mana, mana_buff
+        - ult_mult, ult_buff
+      num_ticks: simulation ticks per trial
+      trials: number of Monte Carlo trials
+      seed: RNG seed (None => non-deterministic)
+
+    Returns:
+      {
+        "mean_damage": {"basic":..., "skill1":..., "skill2":..., "skill3":..., "ult":...},
+        "mean_total": float,
+        "mean_ratio": {"basic":..., ...}  # each in 0..1
+      }
+    """
     if trials <= 0:
         raise ValueError("trials must be > 0")
 
-    params = BossParams15024(
-        attack_power=float(attack_power),
-        attack_speed=float(attack_speed),
-        skill1_rate=float(skill1_rate),
-        skill2_rate=float(skill2_rate),
-        skill1_mult=float(skill1_mult),
-        skill2_mult=float(skill2_mult),
-        skill3_mult=float(skill3_mult),
-        ult_mult=float(ult_mult),
-        ult_mana=float(ult_mana),
-        mana_buff=float(mana_buff),
-        ult_buff=float(ult_buff),
-        crit_rate=float(crit_rate),
-        crit_dmg=float(crit_dmg),
-    )
-
+    params = BossSenchoushiParams15024.from_dict(params_dict)
     rng = random.Random(seed)
-    sum_basic = sum_skill1 = sum_skill2 = sum_skill3 = sum_ult = 0.0
-    for _ in range(int(trials)):
-        b, s1, s2, s3, u = simulate_trial_breakdown_15024(params=params, ticks=int(ticks), rng=rng)
-        sum_basic += b
-        sum_skill1 += s1
-        sum_skill2 += s2
-        sum_skill3 += s3
-        sum_ult += u
-    return (sum_basic / float(trials), sum_skill1 / float(trials), sum_skill2 / float(trials), sum_skill3 / float(trials), sum_ult / float(trials))
 
+    acc = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "skill3": 0.0, "ult": 0.0}
+    for _ in range(trials):
+        one = simulate_once_15024(params, num_ticks=num_ticks, rng=rng)
+        for k in acc:
+            acc[k] += one[k]
 
-def mean_total_damage_15024_options(options: Dict[str, Any]) -> tuple[float, float, float, float, float]:
-    """Dict-based wrapper (handy for plugging into existing code that uses options dicts)."""
-    return mean_total_damage_15024(
-        attack_power=options["attack_power"],
-        attack_speed=options["attack_speed"],
-        skill1_rate=options["skill1_rate"],
-        skill2_rate=options["skill2_rate"],
-        skill1_mult=options["skill1_mult"],
-        skill2_mult=options["skill2_mult"],
-        skill3_mult=options["skill3_mult"],
-        ult_mult=options["ult_mult"],
-        ult_mana=options["ult_mana"],
-        mana_buff=options.get("mana_buff", 1.0),
-        ult_buff=options.get("ult_buff", 0.0),
-        crit_rate=options.get("crit_rate", 0.0),
-        crit_dmg=options.get("crit_dmg", 1.0),
-        ticks=options.get("ticks"),
-        durationSec=options.get("durationSec"),
-        trials=options.get("trials", 10_000),
-        seed=options.get("seed", 1),
-    )
-
-
-def _cli() -> int:
-    p = argparse.ArgumentParser(description="Boss 選鳥師(15024) Monte Carlo simulator")
-
-    p.add_argument("--attack_power", type=float, required=True)
-    p.add_argument("--attack_speed", type=float, required=True)
-
-    p.add_argument("--skill1_rate", type=float, required=True, help="percent (0-100)")
-    p.add_argument("--skill2_rate", type=float, required=True, help="percent (0-100)")
-
-    p.add_argument("--skill1_mult", type=float, required=True)
-    p.add_argument("--skill2_mult", type=float, required=True)
-    p.add_argument("--skill3_mult", type=float, required=True)
-
-    p.add_argument("--ult_mult", type=float, required=True)
-    p.add_argument("--ult_buff", type=float, required=True, help="percent to add to skill1/2 rates during buff")
-    p.add_argument("--ult_mana", type=float, required=True)
-
-    p.add_argument("--mana_buff", type=float, default=1.0)
-
-    p.add_argument("--crit_rate", type=float, required=True, help="percent (0-100)")
-    p.add_argument("--crit_dmg", type=float, required=True, help="multiplier")
-
-    g = p.add_mutually_exclusive_group(required=True)
-    g.add_argument("--ticks", type=int)
-    g.add_argument("--durationSec", type=float)
-
-    p.add_argument("--trials", type=int, default=10_000)
-    p.add_argument("--seed", type=int, default=1)
-
-    args = p.parse_args()
-
-    br = mean_total_damage_15024(
-        attack_power=args.attack_power,
-        attack_speed=args.attack_speed,
-        skill1_rate=args.skill1_rate,
-        skill2_rate=args.skill2_rate,
-        skill1_mult=args.skill1_mult,
-        skill2_mult=args.skill2_mult,
-        skill3_mult=args.skill3_mult,
-        ult_mult=args.ult_mult,
-        ult_mana=args.ult_mana,
-        mana_buff=args.mana_buff,
-        ult_buff=args.ult_buff,
-        crit_rate=args.crit_rate,
-        crit_dmg=args.crit_dmg,
-        ticks=args.ticks,
-        durationSec=args.durationSec,
-        trials=args.trials,
-        seed=args.seed,
-    )
-
-
-    mean_total = sum(br)
-    # Estimate DPS under a common interpretation: ticks_per_second = attack_speed.
-    # If ticks specified directly, durationSec = ticks / attack_speed.
-    if args.ticks is not None:
-        duration = float(args.ticks) / float(args.attack_speed)
+    mean_damage = {k: v / trials for k, v in acc.items()}
+    mean_total = sum(mean_damage.values())
+    if mean_total > 0:
+        mean_ratio = {k: mean_damage[k] / mean_total for k in mean_damage}
     else:
-        duration = float(args.durationSec)
+        mean_ratio = {k: 0.0 for k in mean_damage}
 
-    mean_dps = mean_total / duration if duration > 0.0 else float("nan")
+    return mean_damage["basic"],mean_damage["skill1"],mean_damage["skill2"],mean_damage["skill3"],mean_damage["ult"]
+    return {
+        "mean_damage": mean_damage,
+        "mean_total": mean_total,
+        "mean_ratio": mean_ratio,
+    }
 
-    print(f"mean_total_damage = {mean_total:.6f}")
-    print(f"durationSec        = {duration:.6f}")
-    print(f"mean_DPS           = {mean_dps:.6f}")
-    return 0
+
+# Optional convenience: raw tuple return (if you prefer positional)
+def mean_total_damage_tuple_15024(
+    params_dict: Mapping[str, Any],
+    *,
+    num_ticks: int,
+    trials: int = 20000,
+    seed: Optional[int] = 0,
+) -> Tuple[float, float, float, float, float]:
+    """
+    Returns (basic, skill1, skill2, skill3, ult)
+    """
+    out = mean_total_damage_15024(params_dict, num_ticks=num_ticks, trials=trials, seed=seed)
+    md = out["mean_damage"]
+    return (md["basic"], md["skill1"], md["skill2"], md["skill3"], md["ult"])
 
 
 if __name__ == "__main__":
-    raise SystemExit(_cli())
+    # Example usage
+    params = {
+        "skill1_rate": 20,
+        "skill2_rate": 10,
+        "attack_speed": 1.8599999999999999,
+        "attack_power": 3441300,
+        "skill1_mult": 3.0,
+        "skill2_mult": 4.0,
+        "skill3_mult": 2.0,
+        "crit_rate": 20,
+        "crit_dmg": 2.5,
+        "ult_mana": 30,
+        "mana_buff": 1.0,
+        "ult_mult": 10.0,
+        "ult_buff": 5.0,
+    }
+    print(mean_total_damage_15024(params, num_ticks=4000, trials=5000, seed=123))
+
