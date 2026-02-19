@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import copy
 import csv
 import json
 import math
 import os
 import hashlib
 import random
+import time
+from collections import OrderedDict
+from threading import Lock
 from typing import Any, Dict, List, Callable, Tuple
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -32,6 +36,8 @@ from dps_sim1.simulator.darkload_dragon import mean_total_damage_15006
 from dps_sim1.simulator.ace_batman_ball import mean_total_damage_15110
 from dps_sim1.simulator.ace_batman_bat import mean_total_damage_15210
 from dps_sim1.simulator.top_vein import mean_total_damage_15011
+from dps_sim1.simulator.bamba import mean_total_damage_5001
+from dps_sim1.simulator.queen_coldy import mean_total_damage_15002
 from dps_sim1.simulator.common_sim import mean_total_damage_common
 
 
@@ -99,6 +105,94 @@ ALLOWED_ENEMIES = {
 }
 
 app = Flask(__name__)
+
+_MEMBER_DPS_CACHE_VERSION = 1
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, default))
+    except Exception:
+        return int(default)
+
+
+MEMBER_DPS_CACHE_MAXSIZE = max(1, _env_int("MEMBER_DPS_CACHE_MAXSIZE", 10**6))
+MEMBER_DPS_CACHE_CLEAR_SEC = max(0, _env_int("MEMBER_DPS_CACHE_CLEAR_SEC", 1800))
+_MEMBER_DPS_CACHE: OrderedDict[str, Tuple[float, Dict[str, float], Dict[str, Any]]] = OrderedDict()
+_MEMBER_DPS_CACHE_LOCK = Lock()
+_MEMBER_DPS_CACHE_HITS = 0
+_MEMBER_DPS_CACHE_MISSES = 0
+_MEMBER_DPS_CACHE_CLEAR_COUNT = 0
+_MEMBER_DPS_CACHE_NEXT_CLEAR_TS = (
+    time.monotonic() + MEMBER_DPS_CACHE_CLEAR_SEC if MEMBER_DPS_CACHE_CLEAR_SEC > 0 else None
+)
+
+
+def _member_dps_cache_key(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> str:
+    payload = {
+        "v": _MEMBER_DPS_CACHE_VERSION,
+        "character": character_id,
+        "common": common,
+        "member": member,
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _member_dps_cache_get(key: str) -> Tuple[float, Dict[str, float], Dict[str, Any]] | None:
+    global _MEMBER_DPS_CACHE_HITS, _MEMBER_DPS_CACHE_MISSES
+    with _MEMBER_DPS_CACHE_LOCK:
+        cached = _MEMBER_DPS_CACHE.get(key)
+        if cached is None:
+            _MEMBER_DPS_CACHE_MISSES += 1
+            return None
+        _MEMBER_DPS_CACHE.move_to_end(key)
+        _MEMBER_DPS_CACHE_HITS += 1
+        dps, dps_ratio, debug_message = cached
+    return dps, copy.deepcopy(dps_ratio), copy.deepcopy(debug_message)
+
+
+def _member_dps_cache_put(key: str, value: Tuple[float, Dict[str, float], Dict[str, Any]]) -> None:
+    dps, dps_ratio, debug_message = value
+    stored = (float(dps), copy.deepcopy(dps_ratio), copy.deepcopy(debug_message))
+    with _MEMBER_DPS_CACHE_LOCK:
+        _MEMBER_DPS_CACHE[key] = stored
+        _MEMBER_DPS_CACHE.move_to_end(key)
+        while len(_MEMBER_DPS_CACHE) > MEMBER_DPS_CACHE_MAXSIZE:
+            _MEMBER_DPS_CACHE.popitem(last=False)
+
+
+def _maybe_clear_member_dps_cache(now_monotonic: float | None = None) -> None:
+    global _MEMBER_DPS_CACHE_NEXT_CLEAR_TS, _MEMBER_DPS_CACHE_CLEAR_COUNT
+    if MEMBER_DPS_CACHE_CLEAR_SEC <= 0:
+        return
+    now = time.monotonic() if now_monotonic is None else now_monotonic
+    with _MEMBER_DPS_CACHE_LOCK:
+        next_clear_ts = _MEMBER_DPS_CACHE_NEXT_CLEAR_TS
+        if next_clear_ts is None:
+            _MEMBER_DPS_CACHE_NEXT_CLEAR_TS = now + MEMBER_DPS_CACHE_CLEAR_SEC
+            return
+        if now < next_clear_ts:
+            return
+        _MEMBER_DPS_CACHE.clear()
+        _MEMBER_DPS_CACHE_CLEAR_COUNT += 1
+        _MEMBER_DPS_CACHE_NEXT_CLEAR_TS = now + MEMBER_DPS_CACHE_CLEAR_SEC
+
+
+def _member_dps_cache_info() -> Dict[str, Any]:
+    with _MEMBER_DPS_CACHE_LOCK:
+        next_clear_in_sec: int | None = None
+        if MEMBER_DPS_CACHE_CLEAR_SEC > 0 and _MEMBER_DPS_CACHE_NEXT_CLEAR_TS is not None:
+            next_clear_in_sec = max(0, int(_MEMBER_DPS_CACHE_NEXT_CLEAR_TS - time.monotonic()))
+        return {
+            "hits": _MEMBER_DPS_CACHE_HITS,
+            "misses": _MEMBER_DPS_CACHE_MISSES,
+            "size": len(_MEMBER_DPS_CACHE),
+            "maxSize": MEMBER_DPS_CACHE_MAXSIZE,
+            "clearEverySec": MEMBER_DPS_CACHE_CLEAR_SEC,
+            "nextClearInSec": next_clear_in_sec,
+            "clearCount": _MEMBER_DPS_CACHE_CLEAR_COUNT,
+        }
 
 
 def _clean_csv_cell(value: Any) -> str:
@@ -678,6 +772,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     BlobLvSum = blueBlob + redBlob + greenBlob
     icecount = int(member.get("icecount", 0))
     icerate = int(member.get("icerate", 0)) / 100
+    icecount_ = int(member.get("icecount_", 1))
 
     # ======= ペット =======
     pet_buff = {
@@ -939,15 +1034,20 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "4008":  # 謎のレジェンド
         ans = 25000
     elif character_id == "5001":  # バンバ
-        ans = mean_total_damage_15021(
-            ticks=int(speed * duration_sec * TICK_COEFF),
-            trials=int(common.get("trials", 1)),
-            seed=seed,
-            attack_power=atk,
-            attack_speed=speed,
-            mana_buff=mana_buff,
-        )
-        ans = 26000
+        params = {
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_times": 10,
+            "skill1_mult": 30*MagicBuff1,
+            "skill2_rate": 8 + RateBuff1,
+            "skill2_mult": 20*MagicBuff1,
+            "ult_mana": ult_mana*UltManaBuff1,
+            "ult_mult": 40,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg + MagicGauntlet,
+        }
+        ans = mean_total_damage_5001(params, ticks, trials, seed)
     elif character_id == "5002":  # コルディ
         params = {
             "ticks": ticks,
@@ -1663,6 +1763,29 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15001(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
+    elif character_id == "15002":  # 女王コルディ
+        params = {
+            "base_attack_mult": 1,
+            "skill1_rate": 8+RateBuff1,
+            "skill2_rate": 8+RateBuff1,
+            "skill1_mult": 25*MagicBuff1,
+            "skill1_count": icecount_,
+            "skill2_mult": 100*MagicBuff1,
+            "skill2_dot": 30*MagicBuff1,
+            "skill3_mult": 60*MagicBuff1 if char_lv < 12 else 120*MagicBuff1,
+            "attack_speed": speed,
+            "attack_power": atk,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg+MagicGauntlet,
+            "ult_mana": ult_mana*UltManaBuff1,
+            "ult_mult": 35*UltBuff1*MagicBuff1,
+            "ult_time": 10 if char_lv < 6 else 15,
+            "mana_buff": mana_buff, 
+            "attack_mana_recov": 1, 
+        }
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15002(params, ticks, trials, seed)
+        basic *= BasicAttackBuff1
+        ans = basic + skill1 + skill2 + skill3 + ult
     elif character_id == "15005":  # ブロッブ団
         # 多分まちがい
         #PassiveBuff = BlobLvSum / 10 if char_lv < 6 else max((BlobLvSum - 3) / 10, 0) 
@@ -2006,6 +2129,7 @@ def api_calc():
     data = request.get_json(force=True, silent=False)
     if not isinstance(data, dict):
         return jsonify({"error": "invalid json"}), 400
+    _maybe_clear_member_dps_cache()
 
     common = data.get("options", {})
     party = data.get("party", [])
@@ -2145,9 +2269,17 @@ def api_calc():
         member_s["greenBlob"] = clamp_int(m.get("greenBlob", 0), 0, 20, 0)
         member_s["icecount"] = clamp_int(m.get("icecount", 0), 10, 10**100, 0)
         member_s["icerate"] = clamp_int(m.get("icerate", 0), 0, 100, 0)
+        member_s["icecount_"] = clamp_int(m.get("icecount_", 6), 1, 15, 1)
         common_m = dict(common_s)
 
-        dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
+        cache_key = _member_dps_cache_key(cid, common_m, member_s)
+        cached = _member_dps_cache_get(cache_key)
+        if cached is None:
+            dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
+            _member_dps_cache_put(cache_key, (dps, dps_ratio, debug_message))
+        else:
+            dps, dps_ratio, debug_message = cached
+
         dps_list.append(dps)
         dps_ratio_list.append(dps_ratio)
         DebugMessages[cname or cid] = debug_message
@@ -2192,9 +2324,11 @@ def api_calc():
         for i in range(len(members_out)):
             members_out[i]["share"] = eq
 
+    cache_info = _member_dps_cache_info()
+
     return jsonify(
         {
-            "meta": {"ticks": ticks, "trials": trials},  # フロント表示はしないが、残してOK
+            "meta": {"ticks": ticks, "trials": trials, "memberCache": cache_info},  # フロント表示はしないが、残してOK
             "totalDps": total,
             "dpsRatio": dps_ratio_list,
             "members": members_out,

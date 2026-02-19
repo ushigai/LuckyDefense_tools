@@ -540,6 +540,22 @@
       "ult": "フルスイング"
     },
     {
+      "name": "ヴェイン（最速ダンブル）",
+      "rarity": "mythic",
+      "id": 501,
+      "attack_damage": 21600,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 1080,
+      "attack_speed": 0.5,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 90,
+      "skill1": "ダンブル",
+      "skill2": "金の矢",
+      "skill3": "",
+      "ult": "最後の決選"
+    },
+    {
       "name": "ヴェイン",
       "rarity": "mythic",
       "id": 5011,
@@ -985,6 +1001,22 @@
       "skill2": "アッパーカット",
       "skill3": "",
       "ult": "力の解放"
+    },
+    {
+      "name": "女王コルディ",
+      "rarity": "immortal",
+      "id": 15002,
+      "attack_damage": 59670,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 2983,
+      "attack_speed": 1.8,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 300,
+      "skill1": "氷河爆撃",
+      "skill2": "急速冷凍",
+      "skill3": "冷気",
+      "ult": "極寒期"
     },
     {
       "id": 15004,

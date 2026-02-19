@@ -34,6 +34,9 @@ export const EXTRA_FIELDS_BY_CHARACTER_ID = {
     { key: "icecount", label: "氷河の合計個数", kind: "number", min: 10, max: 1000000000, step: 1, def: 20 },
     { key: "icerate", label: "氷河命中確率%", kind: "select-int", min: 0, max: 100, step: 1, def: 40 },
   ],
+  "15002": [
+    { key: "icecount_", label: "氷河爆撃の命中数", kind: "select-int", min: 1, max: 15, step: 1, def: 6 }
+  ],
 };
 
 export function getExtraFieldsForCharacter(characterId) {
