@@ -15,7 +15,7 @@ import { loadInitialStateData } from "./data_loader.js";
 import { applyRelicIcons, initCommonOptionsUI, syncRelicLevelsFromAllRelic } from "./common_options_ui.js";
 import { initPetUI } from "./pet_ui.js";
 import { initBlobFigureUI } from "./blob_figure_ui.js";
-import { initI18n, translateDomTree } from "./i18n.js";
+import { getCurrentLang, initI18n, translateDomTree } from "./i18n.js";
 
 const URL_PERSIST_ELEMENT_IDS = new Set([
   "enemyMode",
@@ -36,6 +36,48 @@ const URL_PERSIST_ELEMENT_IDS = new Set([
   "unitLevelSumBuff",
   "petLevelSum",
 ]);
+
+const COIN_NUMBER_FORMATTERS = {
+  ja: new Intl.NumberFormat("ja-JP"),
+  en: new Intl.NumberFormat("en-US"),
+  kr: new Intl.NumberFormat("ko-KR"),
+};
+
+function formatCoinsDigitLabel(digits) {
+  const lang = getCurrentLang();
+  if (lang === "en") return `${digits} digits`;
+  if (lang === "kr") return `${digits}자리`;
+  return `${digits}桁`;
+}
+
+function buildCoinsPreviewText(rawValue) {
+  const raw = String(rawValue ?? "").trim();
+  const lang = getCurrentLang();
+  const formatter = COIN_NUMBER_FORMATTERS[lang] ?? COIN_NUMBER_FORMATTERS.ja;
+
+  if (!raw) {
+    if (lang === "en") return "Enter a value to preview";
+    if (lang === "kr") return "값을 입력하면 여기에 표시됩니다";
+    return "値を入力するとここに表示されます";
+  }
+
+  const n = Number(raw);
+  if (!Number.isFinite(n)) {
+    if (lang === "en") return "Invalid number";
+    if (lang === "kr") return "유효한 숫자를 입력하세요";
+    return "有効な数値を入力してください";
+  }
+
+  const normalized = Math.max(0, Math.trunc(n));
+  const grouped = formatter.format(normalized);
+  const digits = String(normalized).length;
+  return `${grouped} (${formatCoinsDigitLabel(digits)})`;
+}
+
+function updateCoinsPreview() {
+  if (!el.coinsPreview) return;
+  el.coinsPreview.textContent = buildCoinsPreviewText(el.coins?.value ?? "");
+}
 
 function triggerAutoRecalc() {
   if (el.autoRecalc?.checked) recalcWithSeedRandomization();
@@ -171,6 +213,8 @@ function bindPrimaryActions() {
   el.btnCalc.addEventListener("click", recalcWithSeedRandomization);
   el.seed?.addEventListener("input", () => normalizeSeedInputValue({ allowEmpty: true }));
   el.seed?.addEventListener("change", () => normalizeSeedInputValue({ allowEmpty: false }));
+  el.coins?.addEventListener("input", updateCoinsPreview);
+  el.coins?.addEventListener("change", updateCoinsPreview);
 
   [el.enemyMode, el.enemyWave, el.enemyGroup].filter(Boolean).forEach(target => {
     target.addEventListener("change", syncEnemySelectors);
@@ -221,6 +265,7 @@ async function init() {
 
   recalcWithSeedRandomization();
   translateDomTree(document.body);
+  updateCoinsPreview();
 }
 
 init();

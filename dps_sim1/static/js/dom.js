@@ -14,6 +14,7 @@ export const el = {
   speedBuffPct: document.getElementById("speedBuffPct"),
   defDown: document.getElementById("defDown"),
   coins: document.getElementById("coins"),
+  coinsPreview: document.getElementById("coinsPreview"),
 
   // relic levels
   moneyGunLv: document.getElementById("moneyGunLv"),
