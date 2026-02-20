@@ -23,6 +23,15 @@ function readBuffCharacterSettings() {
   });
 }
 
+function readSeedInt32() {
+  const rawText = String(el.seed?.value ?? "").trim();
+  if (rawText === "") return 1;
+  const raw = Number(rawText);
+  if (!Number.isFinite(raw)) return 1;
+  const truncated = Math.trunc(raw);
+  return Math.max(0, Math.min(2_147_483_647, truncated));
+}
+
 export function collectOptions() {
   const readPet = (nameSel, levelSel) => {
     const id = String(nameSel?.value ?? "");
@@ -38,9 +47,14 @@ export function collectOptions() {
   ].filter(p => p.id !== "");
 
   const firstPet = pets[0] ?? null;
+  const enemyMode = String(el.enemyMode?.value ?? "");
+  const enemyWave = Number(el.enemyWave?.value || 0);
+  const enemyGroup = String(el.enemyGroup?.value ?? "");
 
   return {
-    enemy: String(el.enemy.value),
+    enemyMode,
+    enemyWave,
+    enemyGroup,
 
     allRelicLv: Number(el.allRelicLv.value),
     mythEnhanceLv: Number(el.mythEnhanceLv.value || 0),
@@ -78,7 +92,7 @@ export function collectOptions() {
 
     durationSec: Number(el.durationSec.value),
     trials: Number(el.trials.value),
-    seed: Number(el.seed.value),
+    seed: readSeedInt32(),
     multiplier: Number(el.multiplier.value || 1),
   };
 }

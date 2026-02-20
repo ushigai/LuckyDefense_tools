@@ -18,6 +18,14 @@ import { initBlobFigureUI } from "./blob_figure_ui.js";
 import { initI18n, translateDomTree } from "./i18n.js";
 
 const URL_PERSIST_ELEMENT_IDS = new Set([
+  "enemyMode",
+  "enemyWave",
+  "enemyGroup",
+  "durationSec",
+  "trials",
+  "seed",
+  "seedRandomize",
+  "multiplier",
   "mythEnhanceLv",
   "atkBuffPct",
   "manaRegenBuffPct",
@@ -30,11 +38,49 @@ const URL_PERSIST_ELEMENT_IDS = new Set([
 ]);
 
 function triggerAutoRecalc() {
-  if (el.autoRecalc?.checked) recalc();
+  if (el.autoRecalc?.checked) recalcWithSeedRandomization();
 }
 
 function addPartyMemberRow(options = {}) {
-  addMember(recalc, { ...options, onStateChange: persistStateToUrl });
+  addMember(recalcWithSeedRandomization, { ...options, onStateChange: persistStateToUrl });
+}
+
+function isSeedRandomizationEnabled() {
+  return String(el.seedRandomize?.value ?? "disabled") === "enabled";
+}
+
+function createRandomSeedInt32() {
+  if (window.crypto?.getRandomValues) {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0] & 0x7fff_ffff;
+  }
+  return Math.trunc(Math.random() * 0x8000_0000);
+}
+
+function normalizeSeedInputValue({ allowEmpty = false } = {}) {
+  if (!el.seed) return;
+  const rawText = String(el.seed.value ?? "").trim();
+  if (allowEmpty && rawText === "") return;
+  const raw = Number(rawText);
+  const normalized = Number.isFinite(raw)
+    ? Math.max(0, Math.min(2_147_483_647, Math.trunc(raw)))
+    : 1;
+  el.seed.value = String(normalized);
+}
+
+function randomizeSeedIfEnabled() {
+  if (!el.seed || !isSeedRandomizationEnabled()) return;
+  el.seed.value = String(createRandomSeedInt32());
+}
+
+function recalcWithSeedRandomization() {
+  if (isSeedRandomizationEnabled()) {
+    randomizeSeedIfEnabled();
+  } else {
+    normalizeSeedInputValue({ allowEmpty: false });
+  }
+  recalc();
 }
 
 function resolveCharacterId(rawId) {
@@ -81,7 +127,9 @@ function getBuffCharacterTargets() {
 
 function buildRecalcTargets() {
   return [
-    el.enemy,
+    el.enemyMode,
+    el.enemyWave,
+    el.enemyGroup,
     el.durationSec,
     el.mythEnhanceLv,
     el.atkBuffPct,
@@ -91,6 +139,7 @@ function buildRecalcTargets() {
     el.coins,
     el.trials,
     el.seed,
+    el.seedRandomize,
     el.multiplier,
     ...RELIC_SELECTS,
     ...PET_NAME_SELECTS,
@@ -105,13 +154,27 @@ function buildRecalcTargets() {
 }
 
 function bindPrimaryActions() {
+  const syncEnemySelectors = () => {
+    renderEnemyOptions({
+      mode: String(el.enemyMode?.value ?? ""),
+      wave: Number(el.enemyWave?.value || 0),
+      group: String(el.enemyGroup?.value ?? ""),
+    });
+  };
+
   el.btnAddMember.addEventListener("click", () => {
     addPartyMemberRow({ characterId: state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 1 });
     persistStateToUrl();
     triggerAutoRecalc();
   });
 
-  el.btnCalc.addEventListener("click", recalc);
+  el.btnCalc.addEventListener("click", recalcWithSeedRandomization);
+  el.seed?.addEventListener("input", () => normalizeSeedInputValue({ allowEmpty: true }));
+  el.seed?.addEventListener("change", () => normalizeSeedInputValue({ allowEmpty: false }));
+
+  [el.enemyMode, el.enemyWave, el.enemyGroup].filter(Boolean).forEach(target => {
+    target.addEventListener("change", syncEnemySelectors);
+  });
 
   el.allRelicLv.addEventListener("change", () => {
     syncRelicLevelsFromAllRelic();
@@ -137,13 +200,17 @@ async function init() {
   await loadInitialStateData();
   applyRelicIcons(state.ARTIFACT_MAP);
 
-  initBlobFigureUI(() => recalc());
+  initBlobFigureUI(() => recalcWithSeedRandomization());
   initPetUI();
 
-  const { appliedRelic, partyMembers } = applyStateFromUrl();
+  const { appliedRelic, enemySelection, partyMembers } = applyStateFromUrl();
   if (!appliedRelic) syncRelicLevelsFromAllRelic();
 
-  const initialEnemy = state.ENEMIES[0]?.name ?? "";
+  const initialEnemy = enemySelection ?? {
+    mode: String(state.ENEMIES[0]?.mode ?? ""),
+    wave: Number(state.ENEMIES[0]?.wave ?? 0),
+    group: String(state.ENEMIES[0]?.group ?? ""),
+  };
   renderEnemyOptions(initialEnemy);
 
   if (!addPartyMembersFromUrl(partyMembers)) {
@@ -152,7 +219,7 @@ async function init() {
   bindPrimaryActions();
   bindAutoRecalcTargets();
 
-  recalc();
+  recalcWithSeedRandomization();
   translateDomTree(document.body);
 }
 

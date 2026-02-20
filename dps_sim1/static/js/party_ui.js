@@ -192,8 +192,12 @@ export function addMember(recalcFn, {
     if (!wrap || !sel) return;
 
     if (isMythic) {
-      // 復元（なければ 0=なし）
-      sel.value = row.dataset.savedTreasureLv ?? "0";
+      // 初回は現在値を保持し、2回目以降は保存済み値を復元する
+      if (row.dataset.savedTreasureLv == null) {
+        row.dataset.savedTreasureLv = sel.value || "0";
+      } else {
+        sel.value = row.dataset.savedTreasureLv;
+      }
       wrap.classList.remove("d-none");
       sel.disabled = false;
     } else {

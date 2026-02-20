@@ -135,7 +135,7 @@ export async function recalc() {
     const total = Number(data.totalDps ?? dpsList.reduce((a, b) => a + b, 0));
 
     el.totalValue.textContent = fmtNumber(Math.round(total));
-    updateEnemyHpUI(total, options.enemy);
+    updateEnemyHpUI(total, options);
 
     (data.members ?? []).forEach((r, i) => {
       const dps = Number(r.dps ?? 0);

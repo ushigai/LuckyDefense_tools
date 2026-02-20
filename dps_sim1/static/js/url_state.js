@@ -2,6 +2,7 @@ import { el, RELIC_KEYS } from "./dom.js";
 import { bytesToB64Url, b64UrlToBytes } from "./utils.js";
 import { getExtraFieldsForCharacter } from "./extras.js";
 import { getPartyMembers } from "./party_ui.js";
+import { state } from "./state.js";
 
 export const OTHER_DEFAULTS = {
   guildBlessing: "1",
@@ -18,9 +19,31 @@ export const MAIN_BUFF_DEFAULTS = {
   coins: 300000,
 };
 
+export const DETAIL_DEFAULTS = {
+  durationSec: 60,
+  trials: 3,
+  seed: 1,
+  seedRandomize: "disabled",
+  multiplier: 1,
+};
+
 export const PET_LEVEL_SUM_VALUES = ["hoge", "fuga", "piyo"];
 const MAIN_BUFF_PACK_VERSION = 2;
 const MAIN_BUFF_PACK_VERSION_LEGACY = 1;
+const DETAIL_PACK_VERSION = 1;
+const DETAIL_MASK_DURATION = 1 << 0;
+const DETAIL_MASK_TRIALS = 1 << 1;
+const DETAIL_MASK_SEED = 1 << 2;
+const DETAIL_MASK_SEED_RANDOMIZE = 1 << 3;
+const DETAIL_MASK_MULTIPLIER = 1 << 4;
+const DETAIL_ALL_MASK =
+  DETAIL_MASK_DURATION |
+  DETAIL_MASK_TRIALS |
+  DETAIL_MASK_SEED |
+  DETAIL_MASK_SEED_RANDOMIZE |
+  DETAIL_MASK_MULTIPLIER;
+const DETAIL_MULTIPLIER_SCALE = 100;
+const DETAIL_MAX_MULTIPLIER = 2_147_483_647;
 const PET_PACK_VERSION = 1;
 const PET_ID_BASE = 61000;
 const PET_SLOT_KEYS = [
@@ -31,6 +54,31 @@ const PET_SLOT_KEYS = [
 const PARTY_PACK_VERSION = 1;
 const MAX_PARTY_MEMBERS = 128;
 const MAX_VARINT_BYTES = 10;
+
+function parseEnemyNoFromParam(raw) {
+  const n = parseInt(String(raw ?? "").trim(), 36);
+  if (!Number.isFinite(n)) return null;
+  const no = Math.trunc(n);
+  return no > 0 ? no : null;
+}
+
+function findEnemyByNo(no) {
+  if (!Number.isInteger(no) || no <= 0) return null;
+  const enemies = Array.isArray(state.ENEMIES) ? state.ENEMIES : [];
+  return enemies.find(enemy => Number(enemy?.no ?? 0) === no) ?? null;
+}
+
+function getSelectedEnemyFromUI() {
+  const mode = String(el.enemyMode?.value ?? "");
+  const wave = Number(el.enemyWave?.value || 0);
+  const group = String(el.enemyGroup?.value ?? "");
+  const enemies = Array.isArray(state.ENEMIES) ? state.ENEMIES : [];
+  return enemies.find(enemy =>
+    String(enemy?.mode ?? "") === mode &&
+    Number(enemy?.wave ?? 0) === wave &&
+    String(enemy?.group ?? "") === group
+  ) ?? null;
+}
 
 // --- relic pack/unpack (12 values, each 1..11 => 4bit store level-1) ---
 function clampRelicLv(v) {
@@ -182,6 +230,147 @@ function setMainBuffsToUI(main) {
   if (el.speedBuffPct) el.speedBuffPct.value = String(main.speedBuffPct);
   if (el.defDown) el.defDown.value = String(main.defDown);
   if (el.coins) el.coins.value = String(main.coins);
+}
+
+function normalizeDetailSettings(raw = {}) {
+  const normalizedMultiplier = Math.round(
+    clampFloat(raw.multiplier, 0, DETAIL_MAX_MULTIPLIER, DETAIL_DEFAULTS.multiplier) * DETAIL_MULTIPLIER_SCALE
+  ) / DETAIL_MULTIPLIER_SCALE;
+
+  return {
+    durationSec: clampInt(raw.durationSec, 60, 24 * 3600, DETAIL_DEFAULTS.durationSec),
+    trials: clampInt(raw.trials, 1, 100, DETAIL_DEFAULTS.trials),
+    seed: clampInt(raw.seed, 0, 2_147_483_647, DETAIL_DEFAULTS.seed),
+    seedRandomize: String(raw.seedRandomize ?? DETAIL_DEFAULTS.seedRandomize) === "enabled"
+      ? "enabled"
+      : "disabled",
+    multiplier: normalizedMultiplier,
+  };
+}
+
+function getDetailSettingsFromUI() {
+  return normalizeDetailSettings({
+    durationSec: el.durationSec?.value,
+    trials: el.trials?.value,
+    seed: el.seed?.value,
+    seedRandomize: el.seedRandomize?.value,
+    multiplier: el.multiplier?.value,
+  });
+}
+
+function setDetailSettingsToUI(detail) {
+  if (!detail) return;
+  if (el.durationSec) el.durationSec.value = String(detail.durationSec);
+  if (el.trials) el.trials.value = String(detail.trials);
+  if (el.seed) el.seed.value = String(detail.seed);
+  if (el.seedRandomize) el.seedRandomize.value = detail.seedRandomize;
+  if (el.multiplier) el.multiplier.value = String(detail.multiplier);
+}
+
+function packDetailSettings(detail) {
+  const st = normalizeDetailSettings(detail);
+  let mask = 0;
+  if (st.durationSec !== DETAIL_DEFAULTS.durationSec) mask |= DETAIL_MASK_DURATION;
+  if (st.trials !== DETAIL_DEFAULTS.trials) mask |= DETAIL_MASK_TRIALS;
+  if (st.seed !== DETAIL_DEFAULTS.seed) mask |= DETAIL_MASK_SEED;
+  if (st.seedRandomize !== DETAIL_DEFAULTS.seedRandomize) mask |= DETAIL_MASK_SEED_RANDOMIZE;
+  if (st.multiplier !== DETAIL_DEFAULTS.multiplier) mask |= DETAIL_MASK_MULTIPLIER;
+  if (mask === 0) return "";
+
+  const out = [];
+  const defaultMultiplierScaled = Math.round(DETAIL_DEFAULTS.multiplier * DETAIL_MULTIPLIER_SCALE);
+  const multiplierScaled = Math.round(st.multiplier * DETAIL_MULTIPLIER_SCALE);
+
+  writeVarUint(out, DETAIL_PACK_VERSION);
+  writeVarUint(out, mask);
+
+  if (mask & DETAIL_MASK_DURATION) {
+    writeVarUint(out, encodeZigZag(st.durationSec - DETAIL_DEFAULTS.durationSec));
+  }
+  if (mask & DETAIL_MASK_TRIALS) {
+    writeVarUint(out, encodeZigZag(st.trials - DETAIL_DEFAULTS.trials));
+  }
+  if (mask & DETAIL_MASK_SEED) {
+    writeVarUint(out, encodeZigZag(st.seed - DETAIL_DEFAULTS.seed));
+  }
+  if (mask & DETAIL_MASK_SEED_RANDOMIZE) {
+    writeVarUint(out, st.seedRandomize === "enabled" ? 1 : 0);
+  }
+  if (mask & DETAIL_MASK_MULTIPLIER) {
+    writeVarUint(out, encodeZigZag(multiplierScaled - defaultMultiplierScaled));
+  }
+
+  return bytesToB64Url(new Uint8Array(out));
+}
+
+function unpackDetailSettings(dStr) {
+  try {
+    const bytes = b64UrlToBytes(String(dStr ?? ""));
+    const cursor = { i: 0 };
+
+    const versionRaw = readVarUint(bytes, cursor);
+    const version = toSafeNumber(versionRaw, -1);
+    if (version !== DETAIL_PACK_VERSION) return null;
+
+    const maskRaw = readVarUint(bytes, cursor);
+    const mask = toSafeNumber(maskRaw, -1);
+    if (!Number.isInteger(mask) || mask < 0 || (mask & ~DETAIL_ALL_MASK) !== 0) return null;
+
+    const out = { ...DETAIL_DEFAULTS };
+    const defaultMultiplierScaled = Math.round(DETAIL_DEFAULTS.multiplier * DETAIL_MULTIPLIER_SCALE);
+
+    if (mask & DETAIL_MASK_DURATION) {
+      const deltaRaw = readVarUint(bytes, cursor);
+      if (deltaRaw === null) return null;
+      out.durationSec = clampInt(
+        DETAIL_DEFAULTS.durationSec + toSafeNumber(decodeZigZag(deltaRaw), 0),
+        60,
+        24 * 3600,
+        DETAIL_DEFAULTS.durationSec
+      );
+    }
+
+    if (mask & DETAIL_MASK_TRIALS) {
+      const deltaRaw = readVarUint(bytes, cursor);
+      if (deltaRaw === null) return null;
+      out.trials = clampInt(
+        DETAIL_DEFAULTS.trials + toSafeNumber(decodeZigZag(deltaRaw), 0),
+        1,
+        100,
+        DETAIL_DEFAULTS.trials
+      );
+    }
+
+    if (mask & DETAIL_MASK_SEED) {
+      const deltaRaw = readVarUint(bytes, cursor);
+      if (deltaRaw === null) return null;
+      out.seed = clampInt(
+        DETAIL_DEFAULTS.seed + toSafeNumber(decodeZigZag(deltaRaw), 0),
+        0,
+        2_147_483_647,
+        DETAIL_DEFAULTS.seed
+      );
+    }
+
+    if (mask & DETAIL_MASK_SEED_RANDOMIZE) {
+      const randomizeRaw = readVarUint(bytes, cursor);
+      if (randomizeRaw === null) return null;
+      out.seedRandomize = toSafeNumber(randomizeRaw, 0) === 1 ? "enabled" : "disabled";
+    }
+
+    if (mask & DETAIL_MASK_MULTIPLIER) {
+      const deltaRaw = readVarUint(bytes, cursor);
+      if (deltaRaw === null) return null;
+      const scaled = defaultMultiplierScaled + toSafeNumber(decodeZigZag(deltaRaw), 0);
+      const normalized = Math.max(0, Math.min(DETAIL_MAX_MULTIPLIER, scaled / DETAIL_MULTIPLIER_SCALE));
+      out.multiplier = Math.round(normalized * DETAIL_MULTIPLIER_SCALE) / DETAIL_MULTIPLIER_SCALE;
+    }
+
+    if (cursor.i !== bytes.length) return null;
+    return normalizeDetailSettings(out);
+  } catch {
+    return null;
+  }
 }
 
 function packMainBuffsLegacy(main) {
@@ -632,14 +821,26 @@ function parsePartyParam(p) {
   }
 }
 
+function parseDetailParam(d) {
+  if (!d) return null;
+  try {
+    return unpackDetailSettings(d);
+  } catch {
+    return null;
+  }
+}
+
 // --- apply from URL ---
 export function applyStateFromUrl() {
   const params = new URLSearchParams(location.search);
   let appliedRelic = false;
   let appliedMain = false;
+  let appliedDetail = false;
   let appliedPets = false;
   let appliedOther = false;
+  let appliedEnemy = false;
   let appliedParty = false;
+  let enemySelection = null;
   let partyMembers = [];
 
   const r = params.get("r");
@@ -681,6 +882,29 @@ export function applyStateFromUrl() {
     }
   }
 
+  const d = params.get("d");
+  if (d) {
+    const st = parseDetailParam(d);
+    if (st) {
+      setDetailSettingsToUI(st);
+      appliedDetail = true;
+    }
+  }
+
+  const e = params.get("e");
+  if (e) {
+    const enemyNo = parseEnemyNoFromParam(e);
+    const enemy = findEnemyByNo(enemyNo);
+    if (enemy) {
+      enemySelection = {
+        mode: String(enemy.mode ?? ""),
+        wave: Number(enemy.wave ?? 0),
+        group: String(enemy.group ?? ""),
+      };
+      appliedEnemy = true;
+    }
+  }
+
   const p = params.get("p");
   const parsedParty = parsePartyParam(p);
   if (Array.isArray(parsedParty)) {
@@ -688,7 +912,17 @@ export function applyStateFromUrl() {
     appliedParty = true;
   }
 
-  return { appliedRelic, appliedMain, appliedPets, appliedOther, appliedParty, partyMembers };
+  return {
+    appliedRelic,
+    appliedMain,
+    appliedDetail,
+    appliedPets,
+    appliedOther,
+    appliedEnemy,
+    appliedParty,
+    enemySelection,
+    partyMembers,
+  };
 }
 
 export function persistStateToUrl() {
@@ -741,6 +975,26 @@ export function persistStateToUrl() {
     params.delete("o");
   } else {
     params.set("o", packOtherBuffs(other));
+  }
+
+  // detail settings
+  const dVal = packDetailSettings(getDetailSettingsFromUI());
+  if (dVal) {
+    params.set("d", dVal);
+  } else {
+    params.delete("d");
+  }
+
+  // selected enemy
+  const selectedEnemy = getSelectedEnemyFromUI();
+  const defaultEnemy = Array.isArray(state.ENEMIES) ? (state.ENEMIES[0] ?? null) : null;
+  const selectedEnemyNo = Math.trunc(Number(selectedEnemy?.no ?? 0));
+  const defaultEnemyNo = Math.trunc(Number(defaultEnemy?.no ?? 0));
+
+  if (selectedEnemyNo > 0 && selectedEnemyNo !== defaultEnemyNo) {
+    params.set("e", selectedEnemyNo.toString(36));
+  } else {
+    params.delete("e");
   }
 
   // party members (without rune fields)

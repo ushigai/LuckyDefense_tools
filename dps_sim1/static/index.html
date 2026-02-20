@@ -202,7 +202,7 @@
     <div class="container py-1 d-flex align-items-center justify-content-between gap-3">
       <a class="navbar-brand fw-semibold" href="#">
         <i class="bi bi-speedometer2 me-1"></i>DPS Calculator
-        <span class="ms-2 small text-muted fw-normal">v1.2.1</span>
+        <span class="ms-2 small text-muted fw-normal">v1.2.2</span>
       </a>
       <div class="d-flex align-items-center gap-2" data-i18n-skip>
         <label class="small text-secondary mb-0" for="langSelect">Lang</label>
@@ -342,10 +342,26 @@
             </div>
 
             <div class="mt-3">
-              <label class="form-label text-secondary small mb-1" for="enemy">仮想敵</label>
-              <select id="enemy" class="form-select rounded-3">
-                <option value="" selected>読み込み中…</option>
-              </select>
+              <div class="row g-2">
+                <div class="col-12 col-md-4">
+                  <label class="form-label text-secondary small mb-1" for="enemyMode">難易度</label>
+                  <select id="enemyMode" class="form-select rounded-3">
+                    <option value="" selected>読み込み中…</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label text-secondary small mb-1" for="enemyWave">ウェーブ</label>
+                  <select id="enemyWave" class="form-select rounded-3">
+                    <option value="" selected>読み込み中…</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label text-secondary small mb-1" for="enemyGroup">ボス種別</label>
+                  <select id="enemyGroup" class="form-select rounded-3">
+                    <option value="" selected>読み込み中…</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div class="mt-3">
@@ -997,7 +1013,16 @@
 
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="seed">SEED値</label>
-                    <input id="seed" type="number" class="form-control rounded-3" value="1" step="1">
+                    <input id="seed" type="number" class="form-control rounded-3"
+                          value="1" step="1" min="0" max="2147483647" inputmode="numeric">
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="seedRandomize">SEEDランダム化</label>
+                    <select id="seedRandomize" class="form-select rounded-3">
+                      <option value="enabled">有効化</option>
+                      <option value="disabled" selected>無効化</option>
+                    </select>
                   </div>
 
                   <div class="col-12 col-md-3">
@@ -1049,6 +1074,14 @@
       <details class="release-notes d-inline-block text-start">
         <summary class="small">リリースノート</summary>
         <div class="rn-body small">
+          <div class="mb-2">
+            <div class="rn-ver">v1.2.2 (2026/02/21 1:30)</div>
+            <ul class="mb-0 ps-3">
+              <li>仮想敵の設定を修正および追加</li>
+              <li>SEEDランダム化機能を詳細設定欄に追加（デフォルトでは無効）</li>
+              <li>専用財宝レベルがただしくURLに保存されない問題を修正</li>
+            </ul>
+          </div>
           <div class="mb-2">
             <div class="rn-ver">v1.2.1 (2026/02/19 17:50)</div>
             <ul class="mb-0 ps-3">

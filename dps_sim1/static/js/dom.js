@@ -2,7 +2,9 @@ export const el = {
   partyList: document.getElementById("partyList"),
   btnAddMember: document.getElementById("btnAddMember"),
 
-  enemy: document.getElementById("enemy"),
+  enemyMode: document.getElementById("enemyMode"),
+  enemyWave: document.getElementById("enemyWave"),
+  enemyGroup: document.getElementById("enemyGroup"),
 
   // common (主要バフ)
   allRelicLv: document.getElementById("allRelicLv"),
@@ -56,6 +58,7 @@ export const el = {
   durationSec: document.getElementById("durationSec"),
   trials: document.getElementById("trials"),
   seed: document.getElementById("seed"),
+  seedRandomize: document.getElementById("seedRandomize"),
 
   btnCalc: document.getElementById("btnCalc"),
   autoRecalc: document.getElementById("autoRecalc"),

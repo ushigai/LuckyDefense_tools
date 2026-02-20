@@ -5,6 +5,7 @@ import csv
 import json
 import math
 import os
+import re
 import hashlib
 import random
 import time
@@ -96,13 +97,6 @@ TEXT_CSV_PATHS = [
     os.path.join(DATA_DIR, "Text.csv"),
     os.path.join(DATA_DIR, "Text2.csv"),
 ]
-
-ALLOWED_ENEMIES = {
-    "ノーマル80Wボス",
-    "ハード80Wボス",
-    "地獄80Wボス",
-    "神80Wボス",
-}
 
 app = Flask(__name__)
 
@@ -309,10 +303,94 @@ def load_enemies() -> Dict[str, Dict[str, Any]]:
     path = os.path.join(DATA_DIR, "enemy.json")
     with open(path, "r", encoding="utf-8") as f:
         obj = json.load(f)
-    out = {}
+    out: Dict[str, Dict[str, Any]] = {}
     for e in obj.get("enemies", []):
-        out[str(e["name"])] = e
+        if not isinstance(e, dict):
+            continue
+        normalized = _normalize_enemy_entry(e)
+        key = _enemy_selection_key(normalized.get("mode"), normalized.get("wave"), normalized.get("group"))
+        if key == _enemy_selection_key("", 0, ""):
+            continue
+        out[key] = normalized
     return out
+
+
+def _default_enemy_def() -> float:
+    return 148.0
+
+
+def _parse_enemy_wave(v: Any) -> int:
+    try:
+        x = int(v)
+    except Exception:
+        try:
+            x = int(float(v))
+        except Exception:
+            return 0
+    return x if x > 0 else 0
+
+
+def _parse_enemy_mode(mode: Any, name: Any) -> str:
+    mode_s = str(mode or "").strip()
+    if mode_s:
+        return mode_s
+
+    name_s = str(name or "")
+    for token in ("ノーマル", "ハード", "地獄", "神"):
+        if token in name_s:
+            return token
+    return ""
+
+
+def _normalize_enemy_entry(e: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(e)
+    name = str(out.get("name", "") or "").strip()
+    mode = _parse_enemy_mode(out.get("mode"), name)
+    wave = _parse_enemy_wave(out.get("wave", 0))
+    if wave <= 0:
+        m = re.search(r"(\d+)\s*[Wｗ]", name)
+        if m:
+            wave = _parse_enemy_wave(m.group(1))
+
+    group = str(out.get("group", "") or "").strip()
+    if not group and "ボス" in name:
+        group = "ボス"
+
+    out["name"] = name
+    out["mode"] = mode
+    out["wave"] = wave
+    out["group"] = group
+    out.pop("difficulty", None)
+    out["enemy_def"] = float(out.get("enemy_def", _default_enemy_def()))
+    return out
+
+
+def _enemy_selection_key(mode: Any, wave: Any, group: Any) -> str:
+    return f"{str(mode or '').strip()}|{_parse_enemy_wave(wave)}|{str(group or '').strip()}"
+
+
+def _default_enemy_row() -> Dict[str, Any]:
+    for row in ENEMY_DB.values():
+        return row
+    return {
+        "mode": "ノーマル",
+        "wave": 80,
+        "group": "ボス",
+        "hp": 2_000_000_000,
+        "enemy_def": _default_enemy_def(),
+    }
+
+
+def _resolve_enemy_row(common: Dict[str, Any]) -> Dict[str, Any]:
+    mode = str(common.get("enemyMode", "") or "").strip()
+    wave = _parse_enemy_wave(common.get("enemyWave", 0))
+    group = str(common.get("enemyGroup", "") or "").strip()
+    key = _enemy_selection_key(mode, wave, group)
+    row = ENEMY_DB.get(key)
+    if row:
+        return row
+
+    return _default_enemy_row()
 
 def load_runes() -> Dict[str, Dict[str, Any]]:
     """Load runes.json (list) into name->entry mapping."""
@@ -393,7 +471,6 @@ ENEMY_DB = load_enemies()
 RUNES_DB = load_runes()
 BLOB_FIGURES_DB = load_blob_figures()
 PET_DB_BY_ID, PET_DB_BY_NAME = load_pets()
-ALLOWED_ENEMIES = set(ENEMY_DB.keys())
 PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15001, 15010, 15011, 15020, 15023, 15110, 15210]
 
 
@@ -717,7 +794,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     atkBuffPct = float(common.get("atkBuffPct", 0)) / 100
     speedBuffPct = float(common.get("speedBuffPct", 0)) / 100
     defDown = float(common.get("defDown", 190))
-    enemy = str(common.get("enemy", "ノーマル80Wボス"))
+    enemy_def = float(common.get("enemyDef", _default_enemy_def()))
+    if not math.isfinite(enemy_def):
+        enemy_def = _default_enemy_def()
     mythEnhanceLv = int(common.get("mythEnhanceLv", 1))
 
     # ======= 遺物レベル =======
@@ -865,14 +944,6 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             pass
 
     # ======= 防御から物理バフを計算 =======
-    if enemy == "ノーマル80Wボス":
-        enemy_def = 148
-    if enemy == "ハード80Wボス":
-        enemy_def = 158
-    if enemy == "地獄80Wボス":
-        enemy_def = 158
-    if enemy == "神80Wボス":
-        enemy_def = 175
     def_dec_per = 1 - BlobFigureBuff["軍人"] + pet_buff["DecreaseDefenseValue"] # 専用じゃない遺物どうするか
     enemy_def *= def_dec_per
     def_mult = 1 + sign(defDown - enemy_def)*(1 - 50/(3*abs(defDown - enemy_def) + 50))
@@ -2136,14 +2207,16 @@ def api_calc():
     if not isinstance(common, dict) or not isinstance(party, list) or len(party) == 0:
         return jsonify({"error": "options/party invalid"}), 400
 
-    enemy = str(common.get("enemy", "ノーマル80Wボス"))
-    if enemy not in ALLOWED_ENEMIES:
-        enemy = "ノーマル80Wボス"
+    enemy_row = _resolve_enemy_row(common)
+    enemy_mode = str(enemy_row.get("mode", ""))
+    enemy_wave = _parse_enemy_wave(enemy_row.get("wave", 0))
+    enemy_group = str(enemy_row.get("group", ""))
+    enemy_def = clamp_float(enemy_row.get("enemy_def", _default_enemy_def()), -10_000_000, 10_000_000, _default_enemy_def())
     duration_sec = clamp_float(common.get("durationSec", 60), 60, 24 * 3600, 60)
     all_relic_lv = clamp_int(common.get("allRelicLv", common.get("relicLv", 1)), 1, 11, 1)
     mythEnhanceLv = clamp_int(common.get("mythEnhanceLv", 0), 1, 35, 1)
     trials = clamp_int(common.get("trials", 3), 1, 100, 3)
-    seed = clamp_int(common.get("seed", 1), -2_147_483_648, 2_147_483_647, 1)
+    seed = clamp_int(common.get("seed", 1), 0, 2_147_483_647, 1)
     atk_buff_pct = clamp_float(common.get("atkBuffPct", 0), -1000, 10000, 0)
     speed_buff_pct = clamp_float(common.get("speedBuffPct", 0), -1000, 10000, 0)
     multiplier = clamp_float(common.get("multiplier", 1), -2_147_483_648, 2_147_483_647, 1)
@@ -2179,7 +2252,10 @@ def api_calc():
     magic_gauntlet_lv = clamp_relic_lv("magicGauntletLv")
 
     common_s = {
-        "enemy": enemy,
+        "enemyMode": enemy_mode,
+        "enemyWave": enemy_wave,
+        "enemyGroup": enemy_group,
+        "enemyDef": enemy_def,
         "durationSec": duration_sec,
         "tickSec": tick_sec,
         "trials": trials,
@@ -2218,6 +2294,7 @@ def api_calc():
     dps_ratio_list = []
     DebugMessages = dict()
     char_ids: List[str] = []
+    use_member_cache = (seed == 1)
 
     for m in party:
         if not isinstance(m, dict):
@@ -2272,13 +2349,16 @@ def api_calc():
         member_s["icecount_"] = clamp_int(m.get("icecount_", 6), 1, 15, 1)
         common_m = dict(common_s)
 
-        cache_key = _member_dps_cache_key(cid, common_m, member_s)
-        cached = _member_dps_cache_get(cache_key)
-        if cached is None:
-            dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
-            _member_dps_cache_put(cache_key, (dps, dps_ratio, debug_message))
+        if use_member_cache:
+            cache_key = _member_dps_cache_key(cid, common_m, member_s)
+            cached = _member_dps_cache_get(cache_key)
+            if cached is None:
+                dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
+                _member_dps_cache_put(cache_key, (dps, dps_ratio, debug_message))
+            else:
+                dps, dps_ratio, debug_message = cached
         else:
-            dps, dps_ratio, debug_message = cached
+            dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
 
         dps_list.append(dps)
         dps_ratio_list.append(dps_ratio)
