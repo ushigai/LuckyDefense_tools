@@ -93,6 +93,7 @@ export function collectOptions() {
     durationSec: Number(el.durationSec.value),
     trials: Number(el.trials.value),
     seed: readSeedInt32(),
+    f32lock: String(el.f32lock?.value ?? "disable"),
     multiplier: Number(el.multiplier.value || 1),
   };
 }

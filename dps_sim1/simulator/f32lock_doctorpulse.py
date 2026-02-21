@@ -81,6 +81,7 @@ def _simulate_one_trial(
     buff_ticks = int(round(10.0 * p.attack_speed))
     if buff_ticks < 1:
         buff_ticks = 1
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
 
     basic_sum = 0.0
     skill1_sum = 0.0
@@ -89,15 +90,31 @@ def _simulate_one_trial(
     mana = 0.0
     buff_remaining = 0
     ult_cast_this_tick = False
+    recovery_remaining = 0
 
     for _ in range(ticks):
         ult_cast_this_tick = False
+
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+
+            if buff_remaining > 0:
+                # バフ中はマナ回復なし
+                buff_remaining -= 1
+                if buff_remaining == 0:
+                    explosion = _apply_crit(rng, ult_explosion_base, crit_p, p.crit_dmg)
+                    ult_sum += explosion
+                    mana = 0.0
+            else:
+                mana += mana_gain_skill1
+            continue
 
         if buff_remaining > 0:
             # ===== buff状態 =====
             if rng.random() < skill1_p:
                 d = _apply_crit(rng, skill1_base * 5.0, crit_p, p.crit_dmg)
                 ult_sum += d  # buff中のskill1はult計上
+                recovery_remaining = skill_ult_recovery_ticks
             else:
                 d = _apply_crit(rng, basic_base * 5.0, crit_p, p.crit_dmg)
                 ult_sum += d  # buff中のbasicはult計上
@@ -117,12 +134,14 @@ def _simulate_one_trial(
                 mana = 0.0
                 buff_remaining = buff_ticks
                 ult_cast_this_tick = True
+                recovery_remaining = skill_ult_recovery_ticks
                 # 過熱自体の即時ダメージは仕様未記載のため 0
             else:
                 if rng.random() < skill1_p:
                     d = _apply_crit(rng, skill1_base, crit_p, p.crit_dmg)
                     skill1_sum += d
                     mana += mana_gain_skill1
+                    recovery_remaining = skill_ult_recovery_ticks
                 else:
                     d = _apply_crit(rng, basic_base, crit_p, p.crit_dmg)
                     basic_sum += d

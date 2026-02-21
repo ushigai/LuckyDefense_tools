@@ -47,11 +47,18 @@ def _simulate_one_trial_core(
     """Return (total_damage, dmg_breakdown, counts)."""
     mana = 0.0
     basic_stack = 0
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * params.attack_speed)) - 1)
+    recovery_remaining = 0
 
     dmg_br = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "ult": 0.0}
     counts = {"basic": 0, "skill1": 0, "skill2": 0, "ult": 0}
 
     for _ in range(ticks):
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+            mana += (1.0 / params.attack_speed)
+            continue
+
         if mana >= params.ult_mana:
             action = "ult"
             mult = params.ult_mult
@@ -75,6 +82,9 @@ def _simulate_one_trial_core(
 
         dmg_br[action] += dmg
         counts[action] += 1
+
+        if action in {"skill1", "skill2", "ult"}:
+            recovery_remaining = skill_ult_recovery_ticks
 
         mana += (1.0 / params.attack_speed)
 

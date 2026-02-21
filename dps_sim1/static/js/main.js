@@ -25,6 +25,7 @@ const URL_PERSIST_ELEMENT_IDS = new Set([
   "trials",
   "seed",
   "seedRandomize",
+  "f32lock",
   "multiplier",
   "mythEnhanceLv",
   "atkBuffPct",
@@ -131,8 +132,8 @@ function resolveCharacterId(rawId) {
 }
 
 function addDefaultPartyMembers() {
-  addPartyMemberRow({ characterId: state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 1 });
-  addPartyMemberRow({ characterId: state.CHARACTERS[1]?.id ?? state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 1 });
+  addPartyMemberRow({ characterId: state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 0 });
+  addPartyMemberRow({ characterId: state.CHARACTERS[1]?.id ?? state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 0 });
 }
 
 function addPartyMembersFromUrl(partyMembers) {
@@ -182,6 +183,7 @@ function buildRecalcTargets() {
     el.trials,
     el.seed,
     el.seedRandomize,
+    el.f32lock,
     el.multiplier,
     ...RELIC_SELECTS,
     ...PET_NAME_SELECTS,
@@ -205,7 +207,7 @@ function bindPrimaryActions() {
   };
 
   el.btnAddMember.addEventListener("click", () => {
-    addPartyMemberRow({ characterId: state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 1 });
+    addPartyMemberRow({ characterId: state.CHARACTERS[0]?.id, charLv: 1, treasureLv: 0 });
     persistStateToUrl();
     triggerAutoRecalc();
   });

@@ -113,10 +113,17 @@ def simulate_one_trial_5115(
     mana = 0.0
     basic_stack = 0
     total_damage = 0.0
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
+    recovery_remaining = 0
 
     counts = {ACT_BASIC: 0, ACT_SKILL1: 0, ACT_SKILL2: 0, ACT_ULT: 0} if return_counts else None
 
     for _ in range(ticks):
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+            mana += (1.0 / p.attack_speed)
+            continue
+
         action = _choose_action(mana, basic_stack, p, rng)
 
         # damage
@@ -138,6 +145,9 @@ def simulate_one_trial_5115(
         if action == ACT_ULT:
             mana = 0.0  # ミニチュー発動後マナ0
 
+        if action in {ACT_SKILL1, ACT_SKILL2, ACT_ULT}:
+            recovery_remaining = skill_ult_recovery_ticks
+
         # end-of-tick mana regen
         mana += (1.0 / p.attack_speed)
 
@@ -156,6 +166,8 @@ def simulate_one_trial_breakdown_5115(
     """
     mana = 0.0
     basic_stack = 0
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
+    recovery_remaining = 0
 
     dmg_basic = 0.0
     dmg_skill1 = 0.0
@@ -163,6 +175,11 @@ def simulate_one_trial_breakdown_5115(
     dmg_ult = 0.0
 
     for _ in range(ticks):
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+            mana += (1.0 / p.attack_speed)
+            continue
+
         action = _choose_action(mana, basic_stack, p, rng)
 
         mult = _action_multiplier(action, p)
@@ -183,6 +200,9 @@ def simulate_one_trial_breakdown_5115(
             mana = 0.0
         else:
             raise RuntimeError(f"Unknown action: {action}")
+
+        if action in {ACT_SKILL1, ACT_SKILL2, ACT_ULT}:
+            recovery_remaining = skill_ult_recovery_ticks
 
         # end-of-tick mana regen
         mana += (1.0 / p.attack_speed)

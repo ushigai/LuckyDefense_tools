@@ -24,6 +24,7 @@ export const DETAIL_DEFAULTS = {
   trials: 3,
   seed: 1,
   seedRandomize: "disabled",
+  f32lock: "disable",
   multiplier: 1,
 };
 
@@ -36,12 +37,14 @@ const DETAIL_MASK_TRIALS = 1 << 1;
 const DETAIL_MASK_SEED = 1 << 2;
 const DETAIL_MASK_SEED_RANDOMIZE = 1 << 3;
 const DETAIL_MASK_MULTIPLIER = 1 << 4;
+const DETAIL_MASK_F32LOCK = 1 << 5;
 const DETAIL_ALL_MASK =
   DETAIL_MASK_DURATION |
   DETAIL_MASK_TRIALS |
   DETAIL_MASK_SEED |
   DETAIL_MASK_SEED_RANDOMIZE |
-  DETAIL_MASK_MULTIPLIER;
+  DETAIL_MASK_MULTIPLIER |
+  DETAIL_MASK_F32LOCK;
 const DETAIL_MULTIPLIER_SCALE = 100;
 const DETAIL_MAX_MULTIPLIER = 2_147_483_647;
 const PET_PACK_VERSION = 1;
@@ -244,6 +247,9 @@ function normalizeDetailSettings(raw = {}) {
     seedRandomize: String(raw.seedRandomize ?? DETAIL_DEFAULTS.seedRandomize) === "enabled"
       ? "enabled"
       : "disabled",
+    f32lock: String(raw.f32lock ?? DETAIL_DEFAULTS.f32lock) === "enable"
+      ? "enable"
+      : "disable",
     multiplier: normalizedMultiplier,
   };
 }
@@ -254,6 +260,7 @@ function getDetailSettingsFromUI() {
     trials: el.trials?.value,
     seed: el.seed?.value,
     seedRandomize: el.seedRandomize?.value,
+    f32lock: el.f32lock?.value,
     multiplier: el.multiplier?.value,
   });
 }
@@ -264,6 +271,7 @@ function setDetailSettingsToUI(detail) {
   if (el.trials) el.trials.value = String(detail.trials);
   if (el.seed) el.seed.value = String(detail.seed);
   if (el.seedRandomize) el.seedRandomize.value = detail.seedRandomize;
+  if (el.f32lock) el.f32lock.value = detail.f32lock;
   if (el.multiplier) el.multiplier.value = String(detail.multiplier);
 }
 
@@ -275,6 +283,7 @@ function packDetailSettings(detail) {
   if (st.seed !== DETAIL_DEFAULTS.seed) mask |= DETAIL_MASK_SEED;
   if (st.seedRandomize !== DETAIL_DEFAULTS.seedRandomize) mask |= DETAIL_MASK_SEED_RANDOMIZE;
   if (st.multiplier !== DETAIL_DEFAULTS.multiplier) mask |= DETAIL_MASK_MULTIPLIER;
+  if (st.f32lock !== DETAIL_DEFAULTS.f32lock) mask |= DETAIL_MASK_F32LOCK;
   if (mask === 0) return "";
 
   const out = [];
@@ -298,6 +307,9 @@ function packDetailSettings(detail) {
   }
   if (mask & DETAIL_MASK_MULTIPLIER) {
     writeVarUint(out, encodeZigZag(multiplierScaled - defaultMultiplierScaled));
+  }
+  if (mask & DETAIL_MASK_F32LOCK) {
+    writeVarUint(out, st.f32lock === "enable" ? 1 : 0);
   }
 
   return bytesToB64Url(new Uint8Array(out));
@@ -364,6 +376,12 @@ function unpackDetailSettings(dStr) {
       const scaled = defaultMultiplierScaled + toSafeNumber(decodeZigZag(deltaRaw), 0);
       const normalized = Math.max(0, Math.min(DETAIL_MAX_MULTIPLIER, scaled / DETAIL_MULTIPLIER_SCALE));
       out.multiplier = Math.round(normalized * DETAIL_MULTIPLIER_SCALE) / DETAIL_MULTIPLIER_SCALE;
+    }
+
+    if (mask & DETAIL_MASK_F32LOCK) {
+      const f32lockRaw = readVarUint(bytes, cursor);
+      if (f32lockRaw === null) return null;
+      out.f32lock = toSafeNumber(f32lockRaw, 0) === 1 ? "enable" : "disable";
     }
 
     if (cursor.i !== bytes.length) return null;

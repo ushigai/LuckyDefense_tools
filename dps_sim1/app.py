@@ -40,6 +40,26 @@ from dps_sim1.simulator.top_vein import mean_total_damage_15011
 from dps_sim1.simulator.bamba import mean_total_damage_5001
 from dps_sim1.simulator.queen_coldy import mean_total_damage_15002
 from dps_sim1.simulator.common_sim import mean_total_damage_common
+from dps_sim1.simulator.f32lock_awakened_hayley import mean_total_damage_15021 as mean_total_damage_15021_f32lock
+from dps_sim1.simulator.f32lock_hayley import mean_total_damage_5021 as mean_total_damage_5021_f32lock
+from dps_sim1.simulator.f32lock_rokechuu_oc import mean_total_damage_5115 as mean_total_damage_5115_f32lock
+from dps_sim1.simulator.f32lock_chona import mean_total_damage_5019 as mean_total_damage_5019_f32lock
+from dps_sim1.simulator.f32lock_iam_meow import mean_total_damage_15004 as mean_total_damage_15004_f32lock
+from dps_sim1.simulator.f32lock_boss_senchoushi import mean_total_damage_15024 as mean_total_damage_15024_f32lock
+from dps_sim1.simulator.f32lock_doctorpulse import mean_total_damage_14002 as mean_total_damage_14002_f32lock
+from dps_sim1.simulator.f32lock_captain_roka import mean_total_damage_15023 as mean_total_damage_15023_f32lock
+from dps_sim1.simulator.f32lock_ninja import mean_total_damage_3007 as mean_total_damage_3007_f32lock
+from dps_sim1.simulator.f32lock_masterkun import mean_total_damage_5018 as mean_total_damage_5018_f32lock
+from dps_sim1.simulator.f32lock_roka import mean_total_damage_5023 as mean_total_damage_5023_f32lock
+from dps_sim1.simulator.f32lock_ghost_ninja import mean_total_damage_13007 as mean_total_damage_13007_f32lock
+from dps_sim1.simulator.f32lock_prim_bamba import mean_total_damage_15001 as mean_total_damage_15001_f32lock
+from dps_sim1.simulator.f32lock_darkload_dragon import mean_total_damage_15006 as mean_total_damage_15006_f32lock
+from dps_sim1.simulator.f32lock_ace_batman_ball import mean_total_damage_15110 as mean_total_damage_15110_f32lock
+from dps_sim1.simulator.f32lock_ace_batman_bat import mean_total_damage_15210 as mean_total_damage_15210_f32lock
+from dps_sim1.simulator.f32lock_top_vein import mean_total_damage_15011 as mean_total_damage_15011_f32lock
+from dps_sim1.simulator.f32lock_bamba import mean_total_damage_5001 as mean_total_damage_5001_f32lock
+from dps_sim1.simulator.f32lock_queen_coldy import mean_total_damage_15002 as mean_total_damage_15002_f32lock
+from dps_sim1.simulator.f32lock_common_sim import mean_total_damage_common as mean_total_damage_common_f32lock
 
 
 DamageTuple = Tuple[float, float, float, float, float]
@@ -85,6 +105,47 @@ mean_total_damage_5018 = _wrap_damage_func(mean_total_damage_5018)
 mean_total_damage_5023 = _wrap_damage_func(mean_total_damage_5023)
 mean_total_damage_13007 = _wrap_damage_func(mean_total_damage_13007)
 mean_total_damage_common = _wrap_damage_func(mean_total_damage_common)
+mean_total_damage_15021_f32lock = _wrap_damage_func(mean_total_damage_15021_f32lock)
+mean_total_damage_5021_f32lock = _wrap_damage_func(mean_total_damage_5021_f32lock)
+mean_total_damage_5115_f32lock = _wrap_damage_func(mean_total_damage_5115_f32lock)
+mean_total_damage_5019_f32lock = _wrap_damage_func(mean_total_damage_5019_f32lock)
+mean_total_damage_15004_f32lock = _wrap_damage_func(mean_total_damage_15004_f32lock)
+mean_total_damage_15024_f32lock = _wrap_damage_func(mean_total_damage_15024_f32lock)
+mean_total_damage_14002_f32lock = _wrap_damage_func(mean_total_damage_14002_f32lock)
+mean_total_damage_15023_f32lock = _wrap_damage_func(mean_total_damage_15023_f32lock)
+mean_total_damage_3007_f32lock = _wrap_damage_func(mean_total_damage_3007_f32lock)
+mean_total_damage_5018_f32lock = _wrap_damage_func(mean_total_damage_5018_f32lock)
+mean_total_damage_5023_f32lock = _wrap_damage_func(mean_total_damage_5023_f32lock)
+mean_total_damage_13007_f32lock = _wrap_damage_func(mean_total_damage_13007_f32lock)
+mean_total_damage_15001_f32lock = _wrap_damage_func(mean_total_damage_15001_f32lock)
+mean_total_damage_15006_f32lock = _wrap_damage_func(mean_total_damage_15006_f32lock)
+mean_total_damage_15110_f32lock = _wrap_damage_func(mean_total_damage_15110_f32lock)
+mean_total_damage_15210_f32lock = _wrap_damage_func(mean_total_damage_15210_f32lock)
+mean_total_damage_15011_f32lock = _wrap_damage_func(mean_total_damage_15011_f32lock)
+mean_total_damage_5001_f32lock = _wrap_damage_func(mean_total_damage_5001_f32lock)
+mean_total_damage_15002_f32lock = _wrap_damage_func(mean_total_damage_15002_f32lock)
+mean_total_damage_common_f32lock = _wrap_damage_func(mean_total_damage_common_f32lock)
+
+MEAN_TOTAL_DAMAGE_15021_BASE = mean_total_damage_15021
+MEAN_TOTAL_DAMAGE_5021_BASE = mean_total_damage_5021
+MEAN_TOTAL_DAMAGE_5115_BASE = mean_total_damage_5115
+MEAN_TOTAL_DAMAGE_5019_BASE = mean_total_damage_5019
+MEAN_TOTAL_DAMAGE_15004_BASE = mean_total_damage_15004
+MEAN_TOTAL_DAMAGE_15024_BASE = mean_total_damage_15024
+MEAN_TOTAL_DAMAGE_14002_BASE = mean_total_damage_14002
+MEAN_TOTAL_DAMAGE_15023_BASE = mean_total_damage_15023
+MEAN_TOTAL_DAMAGE_3007_BASE = mean_total_damage_3007
+MEAN_TOTAL_DAMAGE_5018_BASE = mean_total_damage_5018
+MEAN_TOTAL_DAMAGE_5023_BASE = mean_total_damage_5023
+MEAN_TOTAL_DAMAGE_13007_BASE = mean_total_damage_13007
+MEAN_TOTAL_DAMAGE_15001_BASE = mean_total_damage_15001
+MEAN_TOTAL_DAMAGE_15006_BASE = mean_total_damage_15006
+MEAN_TOTAL_DAMAGE_15110_BASE = mean_total_damage_15110
+MEAN_TOTAL_DAMAGE_15210_BASE = mean_total_damage_15210
+MEAN_TOTAL_DAMAGE_15011_BASE = mean_total_damage_15011
+MEAN_TOTAL_DAMAGE_5001_BASE = mean_total_damage_5001
+MEAN_TOTAL_DAMAGE_15002_BASE = mean_total_damage_15002
+MEAN_TOTAL_DAMAGE_COMMON_BASE = mean_total_damage_common
 
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -778,6 +839,28 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     ans = 0
     TICK_COEFF = 1000
     basic, skill1, skill2, skill3, ult = 0,0,0,0,0
+    use_f32lock = str(common.get("f32lock", "disable")).strip().lower() == "enable"
+
+    mean_total_damage_15021 = mean_total_damage_15021_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15021_BASE
+    mean_total_damage_5021 = mean_total_damage_5021_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5021_BASE
+    mean_total_damage_5115 = mean_total_damage_5115_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5115_BASE
+    mean_total_damage_5019 = mean_total_damage_5019_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5019_BASE
+    mean_total_damage_15004 = mean_total_damage_15004_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15004_BASE
+    mean_total_damage_15024 = mean_total_damage_15024_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15024_BASE
+    mean_total_damage_14002 = mean_total_damage_14002_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_14002_BASE
+    mean_total_damage_15023 = mean_total_damage_15023_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15023_BASE
+    mean_total_damage_3007 = mean_total_damage_3007_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_3007_BASE
+    mean_total_damage_5018 = mean_total_damage_5018_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5018_BASE
+    mean_total_damage_5023 = mean_total_damage_5023_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5023_BASE
+    mean_total_damage_13007 = mean_total_damage_13007_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_13007_BASE
+    mean_total_damage_15001 = mean_total_damage_15001_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15001_BASE
+    mean_total_damage_15006 = mean_total_damage_15006_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15006_BASE
+    mean_total_damage_15110 = mean_total_damage_15110_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15110_BASE
+    mean_total_damage_15210 = mean_total_damage_15210_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15210_BASE
+    mean_total_damage_15011 = mean_total_damage_15011_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15011_BASE
+    mean_total_damage_5001 = mean_total_damage_5001_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5001_BASE
+    mean_total_damage_15002 = mean_total_damage_15002_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15002_BASE
+    mean_total_damage_common = mean_total_damage_common_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_COMMON_BASE
 
     # ======= common（共通バフ）取得 =======
     duration_sec = int(common.get("durationSec", 60))
@@ -978,6 +1061,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     atk *= 1 + guildBuff_atk
     atk += base_atk
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow*2 + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
+    speed = min(speed, 8.0)
     # ウチの攻撃速度も変更すること！
 
     # ======= その他数値計算 =======
@@ -1325,6 +1409,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         t_buff1 = 1 + float(TREASURE_DB["ウチ"][treasure_lv][1])
         t_buff2 = float(TREASURE_DB["ウチ"][treasure_lv][2]) / 100
         speed = base_speed*(1 + speedBuffPct + t_buff2)*(1 + FairyBow + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
+        speed = min(speed, 8.0)
         params = {
             "ticks": ticks,
             "trials": trials,
@@ -1892,7 +1977,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill1_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
         skill2_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
         skill1_mult = 180*MagicBuff1
-        skill2_mult = 100*MagicBuff1
+        skill2_mult = 200*MagicBuff1
         ult_mana = 300*UltManaBuff1
         ult_mult = 1000*(MagicBuff1+UltBuff1) if char_lv < 6 else 1500*(MagicBuff1+UltBuff1)
         ult_cooldown = int(speed*3) if char_lv < 6 else int(speed*4.5)
@@ -2220,6 +2305,7 @@ def api_calc():
     atk_buff_pct = clamp_float(common.get("atkBuffPct", 0), -1000, 10000, 0)
     speed_buff_pct = clamp_float(common.get("speedBuffPct", 0), -1000, 10000, 0)
     multiplier = clamp_float(common.get("multiplier", 1), -2_147_483_648, 2_147_483_647, 1)
+    f32lock = "enable" if str(common.get("f32lock", "disable")).strip().lower() == "enable" else "disable"
     mana_regen_buff_pct = clamp_int(common.get("manaRegenBuffPct", 0), 0, 700, 0)
     def_down = clamp_float(common.get("defDown", 190), -10_000_000, 10_000_000, 190)
     coins = clamp_int(common.get("coins", 300000), 0, 2_000_000_000, 300000)
@@ -2260,6 +2346,7 @@ def api_calc():
         "tickSec": tick_sec,
         "trials": trials,
         "seed": seed,
+        "f32lock": f32lock,
         "multiplier": multiplier,
         "allRelicLv": all_relic_lv,
         "mythEnhanceLv": mythEnhanceLv,

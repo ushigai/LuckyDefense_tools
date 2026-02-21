@@ -60,6 +60,7 @@ export const el = {
   trials: document.getElementById("trials"),
   seed: document.getElementById("seed"),
   seedRandomize: document.getElementById("seedRandomize"),
+  f32lock: document.getElementById("f32lock"),
 
   btnCalc: document.getElementById("btnCalc"),
   autoRecalc: document.getElementById("autoRecalc"),

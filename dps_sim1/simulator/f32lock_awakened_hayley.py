@@ -96,6 +96,7 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
     # tick-derived integers (rounded by round() as requested)
     skill2_delay = int(round(10.0 * p.attack_speed))
     ult_channel_ticks = int(round(10.0 * p.attack_speed)) + 1  # include activation tick
+    skill_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
 
     # damage per action (base, before crit)
     dmg_basic = p.attack_power * 1.0
@@ -112,6 +113,7 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
     mana = 0.0
     ult_remaining = 0  # if >0, we are in ult channel
     skill2_energies_expiry: List[int] = []  # list of expiry ticks, max 2 in steady state
+    recovery_remaining = 0
 
     total = 0.0
     breakdown = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "ult": 0.0}
@@ -152,7 +154,13 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
                 mana = 0.0
             continue  # no mana gain during ult
 
-        # 3) not in ult: check ult availability (at tick start)
+        # 3) skill硬直
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+            mana += mana_tick
+            continue
+
+        # 4) not in ult: check ult availability (at tick start)
         if mana >= p.ult_mana:
             # enter ult this tick
             mana = 0.0
@@ -182,7 +190,7 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
                 mana = 0.0
             continue
 
-        # 4) choose action for this tick (skill1 / skill2 / basic)
+        # 5) choose action for this tick (skill1 / skill2 / basic)
         u = r() * 100.0
         did_basic = False
 
@@ -194,6 +202,7 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
 
             # end-of-tick mana gain (tick-only)
             mana += mana_tick
+            recovery_remaining = skill_recovery_ticks
 
         elif u < (p.skill1_rate + p.skill2_rate):
             # skill2: inject energy
@@ -211,6 +220,7 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
 
             # end-of-tick mana gain (tick-only)
             mana += mana_tick
+            recovery_remaining = skill_recovery_ticks
 
         else:
             # basic: immediate damage

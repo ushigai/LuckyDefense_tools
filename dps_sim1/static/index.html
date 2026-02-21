@@ -202,7 +202,7 @@
     <div class="container py-1 d-flex align-items-center justify-content-between gap-3">
       <a class="navbar-brand fw-semibold" href="#">
         <i class="bi bi-speedometer2 me-1"></i>DPS Calculator
-        <span class="ms-2 small text-muted fw-normal">v1.2.2</span>
+        <span class="ms-2 small text-muted fw-normal">v1.3.0</span>
       </a>
       <div class="d-flex align-items-center gap-2" data-i18n-skip>
         <label class="small text-secondary mb-0" for="langSelect">Lang</label>
@@ -1019,11 +1019,20 @@
                   </div>
 
                   <div class="col-12 col-md-3">
-                    <label class="form-label text-secondary small" for="seedRandomize">SEEDランダム化</label>
+                    <label class="form-label text-secondary small" for="seedRandomize">SEEDランダム化（非推奨）</label>
                     <select id="seedRandomize" class="form-select rounded-3">
                       <option value="enabled">有効化</option>
                       <option value="disabled" selected>無効化</option>
                     </select>
+                  </div>
+
+                  <div class="col-12 col-md-3">
+                    <label class="form-label text-secondary small" for="f32lock">スキルモーション硬直</label>
+                    <select id="f32lock" class="form-select rounded-3">
+                      <option value="enable">有効化</option>
+                      <option value="disable" selected>無効化</option>
+                    </select>
+                    <div class="form-text">基本的に固定32F硬直だがトップヴェインやアイアムニャンのサポートビームなどは例外, 丸め込み処理の関係で攻撃速度が遅いと変化しない</div>
                   </div>
 
                   <div class="col-12 col-md-3">
@@ -1067,20 +1076,22 @@
 
     <!-- Release notes -->
     <!-- vX.Y.Z 
-     Xは後方互換がなくかつ全体に影響する変更（e.g. 全体のバフ計算式の変更）
-     Yは後方互換がなくかつ個別に影響する変更or互換があるが全体に影響する変更or互換がある個別の変更だがDPS増減割合が10%を超えるもの
-     Zは互換が保証される個別の変更
+      Xは後方互換がなくかつ全体に影響する変更（e.g. 全体のバフ計算式の変更）
+      Yは後方互換がなくかつ個別に影響する変更or互換があるが全体に影響する変更or互換がある個別の変更だがDPS増減割合が10%を超えるもの
+      Zは互換が保証される個別の変更
     -->
     <div class="mt-3 d-flex flex-wrap justify-content-center align-items-start gap-3">
       <details class="release-notes d-inline-block text-start">
         <summary class="small">リリースノート</summary>
         <div class="rn-body small">
           <div class="mb-2">
-            <div class="rn-ver">v1.2.2 (2026/02/21 1:30)</div>
+            <div class="rn-ver">v1.3.0 (2026/02/22 1:10)</div>
             <ul class="mb-0 ps-3">
+              <li>アイアムニャンのサポートビームダメージが半分だった問題を修正（Lv6で22.4%, Lv12で27.0%のDPS増加）</li>
               <li>仮想敵の設定を修正および追加</li>
               <li>SEEDランダム化機能を詳細設定欄に追加（デフォルトでは無効）</li>
-              <li>専用財宝レベルがただしくURLに保存されない問題を修正</li>
+              <li>スキルモーションの固定32F硬直設定欄を追加（デフォルトでは無効）</li>
+              <li>専用財宝レベルが正しくURLに保存されない問題を修正</li>
             </ul>
           </div>
           <div class="mb-2">

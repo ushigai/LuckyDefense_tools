@@ -124,66 +124,75 @@ def _simulate_one_trial(ticks: int, rng: random.Random, cfg: HayleyConfig) -> Tu
 
     # mana regen base per tick (before mana_buff)
     base_regen = 1.0 / atk_speed
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * atk_speed)) - 1)
+    recovery_remaining = 0
 
     for _t in range(ticks):
         buff_active = (buff_ticks_left > 0)
+        action = "none"
 
         # ---- decide action at tick start
-        # ult check only when NOT already in buff
-        if (not buff_active) and (mana + 1e-12 >= cfg.ult_mana):
-            action = "ult"
-            casts["ult"] += 1
-
-            # buff starts immediately and includes this tick
-            if buff_ticks_total > 0:
-                buff_ticks_left = buff_ticks_total
-                buff_active = True
-            else:
-                buff_ticks_left = 0
-                buff_active = False
-
-            # ult damage: use buffed attack power if buff includes activation tick
-            ap = cfg.attack_power_ult if buff_active else cfg.attack_power
-            # 仕様ミス0倍が正しそう
-            mult = 0.0  # ult multiplier is not provided in spec
-            c = _crit_multiplier(rng, crit_rate, cfg.crit_dmg)
-            dealt = ap * mult * c
-
-            total += dealt
-            dmg["ult"] += dealt
-
-            # mana does not recover during buff; and spec says mana becomes 0 when buff ends.
-            # (We also keep mana as-is here; it will be forced to 0 at buff end.)
-            # If you prefer "ult consumes mana immediately", set mana=0 here.
-            # mana = 0.0
-
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
         else:
-            # normal action selection
-            r = rng.random()
-            if r < p1:
-                action = "skill1"
-                casts["skill1"] += 1
-            elif r < p1 + p2:
-                action = "skill2"
-                casts["skill2"] += 1
+            # ult check only when NOT already in buff
+            if (not buff_active) and (mana + 1e-12 >= cfg.ult_mana):
+                action = "ult"
+                casts["ult"] += 1
+
+                # buff starts immediately and includes this tick
+                if buff_ticks_total > 0:
+                    buff_ticks_left = buff_ticks_total
+                    buff_active = True
+                else:
+                    buff_ticks_left = 0
+                    buff_active = False
+
+                # ult damage: use buffed attack power if buff includes activation tick
+                ap = cfg.attack_power_ult if buff_active else cfg.attack_power
+                # 仕様ミス0倍が正しそう
+                mult = 0.0  # ult multiplier is not provided in spec
+                c = _crit_multiplier(rng, crit_rate, cfg.crit_dmg)
+                dealt = ap * mult * c
+
+                total += dealt
+                dmg["ult"] += dealt
+
+                # mana does not recover during buff; and spec says mana becomes 0 when buff ends.
+                # (We also keep mana as-is here; it will be forced to 0 at buff end.)
+                # If you prefer "ult consumes mana immediately", set mana=0 here.
+                # mana = 0.0
+
             else:
-                action = "basic"
-                casts["basic"] += 1
+                # normal action selection
+                r = rng.random()
+                if r < p1:
+                    action = "skill1"
+                    casts["skill1"] += 1
+                elif r < p1 + p2:
+                    action = "skill2"
+                    casts["skill2"] += 1
+                else:
+                    action = "basic"
+                    casts["basic"] += 1
 
-            # damage calculation
-            ap = cfg.attack_power_ult if buff_active else cfg.attack_power
-            if action == "basic":
-                mult = 1.0
-            elif action == "skill1":
-                mult = cfg.skill1_mult * (cfg.ult_buff_mult if buff_active else 1.0)
-            else:  # skill2
-                mult = cfg.skill2_mult * (cfg.ult_buff_mult if buff_active else 1.0)
+                # damage calculation
+                ap = cfg.attack_power_ult if buff_active else cfg.attack_power
+                if action == "basic":
+                    mult = 1.0
+                elif action == "skill1":
+                    mult = cfg.skill1_mult * (cfg.ult_buff_mult if buff_active else 1.0)
+                else:  # skill2
+                    mult = cfg.skill2_mult * (cfg.ult_buff_mult if buff_active else 1.0)
 
-            c = _crit_multiplier(rng, crit_rate, cfg.crit_dmg)
-            dealt = ap * mult * c
+                c = _crit_multiplier(rng, crit_rate, cfg.crit_dmg)
+                dealt = ap * mult * c
 
-            total += dealt
-            dmg[action] += dealt
+                total += dealt
+                dmg[action] += dealt
+
+            if action in {"skill1", "skill2", "ult"}:
+                recovery_remaining = skill_ult_recovery_ticks
 
         # ---- tick end: mana recovery / buff decrement
         if buff_active:

@@ -79,11 +79,19 @@ def _simulate_one_trial_core_15023(
 
     end_time = float(base_ticks)
     t = 0
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
+    recovery_remaining = 0
 
     dmg_br: Dict[str, float] = {"basic": 0.0, "skill1": 0.0, "skill2": 0.0, "skill3": 0.0, "ult": 0.0}
     counts: Dict[str, int] = {"basic": 0, "skill1": 0, "skill2": 0, "skill3": 0, "ult": 0}
 
     while t < end_time:
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+            mana += 1.0 / p.attack_speed
+            t += 1
+            continue
+
         action = "basic"
         mult = 1.0
 
@@ -116,6 +124,9 @@ def _simulate_one_trial_core_15023(
 
         dmg_br[action] += dealt
         counts[action] += 1
+
+        if action in {"skill1", "skill2", "skill3", "ult"}:
+            recovery_remaining = skill_ult_recovery_ticks
 
         mana += 1.0 / p.attack_speed
         t += 1

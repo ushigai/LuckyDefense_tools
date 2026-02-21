@@ -113,9 +113,18 @@ def simulate_once_bamba(p: BambaParams, num_ticks: int, rng: random.Random) -> D
 
     mana_per_tick = p.attack_mana_recov / p.attack_speed
     duration = _buff_ticks(p)
+    skill_ult_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
+    recovery_remaining = 0
 
     for _t in range(num_ticks):
         in_buff = buff_remain > 0
+
+        if recovery_remaining > 0:
+            recovery_remaining -= 1
+            mana += mana_per_tick
+            if buff_remain > 0:
+                buff_remain -= 1
+            continue
 
         # 1) 行動（ダメージ発生）
         if mana >= p.ult_mana:
@@ -129,6 +138,7 @@ def simulate_once_bamba(p: BambaParams, num_ticks: int, rng: random.Random) -> D
             mana = 0.0
             # バフ開始/更新
             buff_remain = max(duration, 0)
+            recovery_remaining = skill_ult_recovery_ticks
 
         else:
             # skill1 優先（「次の基本攻撃の代わり」）
@@ -141,6 +151,7 @@ def simulate_once_bamba(p: BambaParams, num_ticks: int, rng: random.Random) -> D
                 else:
                     totals["skill1"] += dmg
                 basic_count_since_skill1 = 0
+                recovery_remaining = skill_ult_recovery_ticks
 
             else:
                 # basic のタイミングで skill2_rate でハンマー
@@ -155,6 +166,7 @@ def simulate_once_bamba(p: BambaParams, num_ticks: int, rng: random.Random) -> D
 
                     # ハンマー後「以降3回の基本攻撃ダメージ2倍」
                     hammer_charges = p.hammer_basic_charges
+                    recovery_remaining = skill_ult_recovery_ticks
 
                     # NOTE: ハンマーが「基本攻撃を行った回数」に含まれるかは仕様が曖昧。
                     # ここでは「基本攻撃そのものではない」とみなし、カウントしない（後述）。
