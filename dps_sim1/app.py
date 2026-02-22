@@ -1086,7 +1086,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     atk += base_atk
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow*2 + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
     speed = min(speed, 8.0)
-    # ウチの攻撃速度も変更すること！
+    # NOTE : ウチとワットの攻撃速度も変更すること！
 
     # ======= その他数値計算 =======
     crit_rate = 5 + BambaDoll + BlobFigureBuff["ドラゴン"] + pet_buff["CriticalPercentage"]
@@ -1450,7 +1450,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     elif character_id == "5013":  # ワット（究極発動中）
         buff_mult = 0.03 if char_lv < 6 else 0.05
         ult_mult = 20*(MagicBuff1+UltBuff1)
-        speed *= 2 # 究極バフ
+        speed = min(speed*2, 8.0)
         cirt_dmg = crit_dmg + MagicGauntlet
         DebugMessage["atk"] = atk
         DebugMessage["speed"] = speed
