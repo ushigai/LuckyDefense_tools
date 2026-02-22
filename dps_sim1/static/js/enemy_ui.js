@@ -16,7 +16,7 @@ function setWidth(elm, value) {
 function setSelectOptions(selectEl, values, selectedValue, labeler = value => String(value)) {
   if (!selectEl) return;
   if (!Array.isArray(values) || values.length === 0) {
-    selectEl.innerHTML = `<option value="" selected>${t("enemyDataMissing")}</option>`;
+    selectEl.innerHTML = `<option value="" selected>${t("enemyDataMissing", "敵データなし")}</option>`;
     return;
   }
 
@@ -118,7 +118,7 @@ export function renderEnemyOptions(selectedSource) {
 export function updateEnemyHpUI(totalDamage, selectedSource) {
   const enemy = resolveEnemy(selectedSource);
   if (!enemy || !enemy.hp) {
-    setText(el.enemyHpText, `${t("hpShort")}: —`);
+    setText(el.enemyHpText, `${t("hpShort", "HP")}: —`);
     setText(el.enemyHpPct, "—");
     setText(el.enemyHpDetail, "");
     setWidth(el.enemyHpBar, "0%");
@@ -131,7 +131,7 @@ export function updateEnemyHpUI(totalDamage, selectedSource) {
   const pct = hp > 0 ? (dmg / hp) * 100 : 0;
   const bar = Math.max(0, Math.min(100, pct));
 
-  setText(el.enemyHpText, `${t("hpShort")}: ${fmtInt(hp)}`);
+  setText(el.enemyHpText, `${t("hpShort", "HP")}: ${fmtInt(hp)}`);
   setText(el.enemyHpPct, `${pct.toFixed(2)}%`);
   setText(el.enemyHpDetail, `（${fmtInt(dmg)} / ${fmtInt(hp)}）`);
   setWidth(el.enemyHpBar, `${bar}%`);

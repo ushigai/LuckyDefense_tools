@@ -14,7 +14,7 @@ function charImgUrl(id) {
 
 function treasureLevelOptions(max, selected = 0) {
   const sel = Number(selected ?? 0);
-  let s = `<option value="0" ${sel === 0 ? "selected" : ""}>${t("none")}</option>`;
+  let s = `<option value="0" ${sel === 0 ? "selected" : ""}>${t("none", "なし")}</option>`;
   for (let i = 1; i <= max; i++) {
     s += `<option value="${i}" ${i === sel ? "selected" : ""}>${i}</option>`;
   }
@@ -81,7 +81,7 @@ function getRuneEntryByName(name) {
 
 function makeRuneRarityOptions(runeName, selectedRarity = NONE_VALUE) {
   if (!runeName || runeName === NONE_VALUE) {
-    return `<option value="${NONE_VALUE}" selected>${t("none")}</option>`;
+    return `<option value="${NONE_VALUE}" selected>${t("none", "なし")}</option>`;
   }
   const entry = getRuneEntryByName(runeName);
   const data = entry?.data ?? {};
@@ -92,7 +92,7 @@ function makeRuneRarityOptions(runeName, selectedRarity = NONE_VALUE) {
   });
 
   if (!available.length) {
-    return `<option value="${NONE_VALUE}" selected>${t("none")}</option>`;
+    return `<option value="${NONE_VALUE}" selected>${t("none", "なし")}</option>`;
   }
 
   const opts = [NONE_VALUE, ...available];
@@ -124,21 +124,21 @@ export function addMember(recalcFn, {
       <div class="col-12 col-md-8">
         <div class="row g-2">
           <div class="col-12">
-            <label class="form-label text-secondary small mb-1">${t("character")}</label>
+            <label class="form-label text-secondary small mb-1">${t("character", "キャラ")}</label>
             <div class="input-group">
               ${makeCharDropdown(characterId)}
             </div>
           </div>
 
           <div class="col-6">
-            <label class="form-label text-secondary small mb-1">${t("characterLevel")}</label>
+            <label class="form-label text-secondary small mb-1">${t("characterLevel", "キャラレベル")}</label>
             <select class="form-select member-charlv rounded-3">
               ${levelOptions(15, charLv)}
             </select>
           </div>
 
           <div class="col-6 member-treasure-wrap">
-            <label class="form-label text-secondary small mb-1">${t("treasureLevel")}</label>
+            <label class="form-label text-secondary small mb-1">${t("treasureLevel", "専用財宝レベル")}</label>
             <select class="form-select member-treasurelv rounded-3">
               ${treasureLevelOptions(11, treasureLv)}
             </select>
@@ -147,14 +147,14 @@ export function addMember(recalcFn, {
           <div class="w-100"></div>
 
           <div class="col-6 member-rune-wrap d-none">
-            <label class="form-label text-secondary small mb-1">${t("rune")}</label>
+            <label class="form-label text-secondary small mb-1">${t("rune", "ルーン（未実装）")}</label>
             <select class="form-select member-rune-name rounded-3">
               ${makeRuneNameOptions(runeName)}
             </select>
           </div>
 
           <div class="col-6 member-rune-wrap d-none">
-            <label class="form-label text-secondary small mb-1">${t("runeRarity")}</label>
+            <label class="form-label text-secondary small mb-1">${t("runeRarity", "ルーンレアリティ")}</label>
             <select class="form-select member-rune-rarity rounded-3">
               ${makeRuneRarityOptions(runeName, runeRarity)}
             </select>
@@ -168,10 +168,10 @@ export function addMember(recalcFn, {
 
       <div class="col-12 col-md-4 text-md-end">
         <div class="fw-semibold metric member-dps">—</div>
-        <div class="text-secondary small member-share">${t("share")}: —</div>
+        <div class="text-secondary small member-share">${t("share", "share")}: —</div>
         <div class="mt-2 member-dpsratio"></div>
         <button class="btn btn-outline-secondary btn-sm rounded-3 mt-2 member-remove">
-          <i class="bi bi-x-lg me-1"></i>${t("remove")}
+          <i class="bi bi-x-lg me-1"></i>${t("remove", "削除")}
         </button>
       </div>
     </div>
@@ -237,7 +237,7 @@ export function addMember(recalcFn, {
 
       nameSel.value = NONE_VALUE;
       rarSel.value = NONE_VALUE;
-      rarSel.innerHTML = `<option value="${NONE_VALUE}" selected>${t("none")}</option>`;
+      rarSel.innerHTML = `<option value="${NONE_VALUE}" selected>${t("none", "なし")}</option>`;
 
       nameSel.disabled = true;
       rarSel.disabled = true;
@@ -252,7 +252,7 @@ export function addMember(recalcFn, {
 
     const runeName = nameSel.value || NONE_VALUE;
     if (runeName === NONE_VALUE) {
-      rarSel.innerHTML = `<option value="${NONE_VALUE}" selected>${t("none")}</option>`;
+      rarSel.innerHTML = `<option value="${NONE_VALUE}" selected>${t("none", "なし")}</option>`;
       rarSel.value = NONE_VALUE;
       rarSel.disabled = true;
       return;

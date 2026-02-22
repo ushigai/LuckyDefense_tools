@@ -4,87 +4,6 @@ const LANG_STORAGE_KEY = "dps_sim1.lang";
 
 const SUPPORTED_LANGS = new Set(["ja", "en", "kr"]);
 
-const APP_STRINGS = {
-  ja: {
-    none: "なし",
-    character: "キャラ",
-    characterLevel: "キャラレベル",
-    treasureLevel: "専用財宝レベル",
-    rune: "ルーン（未実装）",
-    runeRarity: "ルーンレアリティ",
-    remove: "削除",
-    share: "share",
-    calculating: "計算中",
-    calculatingStatus: "計算中…",
-    calculate: "計算する",
-    breakdown: "内訳",
-    basicAttack: "基本攻撃",
-    enemyDataMissing: "敵データなし",
-    hpShort: "HP",
-  },
-  en: {
-    none: "None",
-    character: "Character",
-    characterLevel: "Character Level",
-    treasureLevel: "Exclusive Treasure Level",
-    rune: "Rune (Not Implemented)",
-    runeRarity: "Rune Rarity",
-    remove: "Remove",
-    share: "share",
-    calculating: "Calculating",
-    calculatingStatus: "Calculating...",
-    calculate: "Calculate",
-    breakdown: "Breakdown",
-    basicAttack: "Basic Attack",
-    enemyDataMissing: "No enemy data",
-    hpShort: "HP",
-  },
-  kr: {
-    none: "없음",
-    character: "캐릭터",
-    characterLevel: "캐릭터 레벨",
-    treasureLevel: "전용 보물 레벨",
-    rune: "룬 (미구현)",
-    runeRarity: "룬 희귀도",
-    remove: "삭제",
-    share: "share",
-    calculating: "계산 중",
-    calculatingStatus: "계산 중...",
-    calculate: "계산하기",
-    breakdown: "내역",
-    basicAttack: "기본 공격",
-    enemyDataMissing: "적 데이터 없음",
-    hpShort: "HP",
-  },
-};
-
-// App固有の表現で Text.csv に存在しないものだけを明示的に登録する。
-// 未登録語は自動翻訳せず、日本語のまま表示する。
-const APP_TERM_OVERRIDES = {
-  en: new Map([
-    ["敵との距離（マス数）", "Distance to Enemy (Tiles)"],
-    ["異種神話数", "Distinct Mythic Count"],
-    ["摂取値", "Intake Value"],
-    ["火花追加ダメージ", "Spark Bonus Damage"],
-    ["エネルギー個数（究極中）", "Energy Count (During Ultimate)"],
-    ["鍛錬", "Training"],
-    ["動物ユニット数", "Animal Unit Count"],
-    ["ドローン", "Drones"],
-    ["ストライクアウト平均回数", "Average Strike-Out Count"],
-    ["エースバットマン投手", "Ace Bat Man Pitcher"],
-    ["エースバットマン打者", "Ace Bat Man Batter"],
-    ["ロケッチュー（変身後）", "Rocket Chu (Transformed)"],
-    ["送信中…", "Sending..."],
-    ["送信しました。ありがとうございます。", "Sent. Thank you."],
-    ["送信に失敗しました。", "Failed to send."],
-  ]),
-  kr: new Map([
-    ["送信中…", "전송 중..."],
-    ["送信しました。ありがとうございます。", "전송되었습니다. 감사합니다."],
-    ["送信に失敗しました。", "전송에 실패했습니다."],
-  ]),
-};
-
 let currentLang = "ja";
 let initialized = false;
 let textMapLoaded = false;
@@ -171,9 +90,6 @@ function lookupExactText(text) {
   const localeMap = JA_TO_LOCALE_MAPS[currentLang];
   const fromCsv = localeMap?.get(key);
   if (fromCsv) return fromCsv;
-
-  const fromApp = APP_TERM_OVERRIDES[currentLang]?.get(key);
-  if (fromApp) return fromApp;
 
   return "";
 }
@@ -296,10 +212,8 @@ export function translateDomTree(root = document.body) {
 }
 
 export function t(key, fallback = "") {
-  const dict = APP_STRINGS[currentLang] ?? APP_STRINGS.ja;
-  if (Object.prototype.hasOwnProperty.call(dict, key)) return dict[key];
-  if (Object.prototype.hasOwnProperty.call(APP_STRINGS.ja, key)) return APP_STRINGS.ja[key];
-  return fallback || key;
+  const src = String(fallback || key || "");
+  return translateWithSpacing(src);
 }
 
 export function getCurrentLang() {

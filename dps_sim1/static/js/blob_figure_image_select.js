@@ -87,7 +87,7 @@ export function upgradeSelectToImageDropdown(selectEl, config = {}) {
   function syncFromSelect() {
     const opt = selectEl.selectedOptions?.[0];
     icon.src = imgUrlFromOption(opt, idDatasetKey, imgBase, unknownImg);
-    label.textContent = opt?.textContent ?? t("none");
+    label.textContent = opt?.textContent ?? t("none", "なし");
   }
 
   function rebuildMenu() {

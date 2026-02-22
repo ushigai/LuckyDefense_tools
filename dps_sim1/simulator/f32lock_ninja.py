@@ -150,7 +150,7 @@ def simulate_total_damage_once_3007(params: NinjaParams3007, ticks: int, rng: ra
         else:
             in_skill2_chain = False
 
-        if action in {"skill1", "skill2", "ult"}:
+        if action in {"skill1", "ult"}:
             recovery_remaining = skill_ult_recovery_ticks
 
         # end-of-tick mana recovery
@@ -266,7 +266,7 @@ def simulate_damage_breakdown_once_3007(
         else:
             in_skill2_chain = False
 
-        if action in {"skill1", "skill2", "ult"}:
+        if action in {"skill1", "ult"}:
             recovery_remaining = skill_ult_recovery_ticks
 
         mana += mana_per_tick

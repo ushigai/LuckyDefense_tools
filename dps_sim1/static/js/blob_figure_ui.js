@@ -47,7 +47,7 @@ function populateBlobFigureNameSelects() {
 
     const noneOption = document.createElement("option");
     noneOption.value = "";
-    noneOption.textContent = t("none");
+    noneOption.textContent = t("none", "なし");
     select.appendChild(noneOption);
 
     figures.forEach(figure => {
