@@ -1235,7 +1235,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult_mana": ult_mana*UltManaBuff1,
             "ult_mult": 40,
             "crit_rate": crit_rate,
-            "crit_dmg": crit_dmg + MagicGauntlet,
+            "crit_dmg": crit_dmg,
         }
         basic_one = atk * params["base_attack_mult"]
         skill1_one = atk * params["skill1_mult"]
@@ -1408,7 +1408,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_mana_recov": 0,
             "mana_buff": 1,
             "crit_rate": crit_rate + t_buff1,
-            "crit_dmg": crit_dmg + MagicGauntlet,
+            "crit_dmg": crit_dmg,
         }
         basic_one = atk * params["base_attack_mult"]
         skill1_one = atk * params["skill1_mult"]
@@ -2025,7 +2025,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_mana_recov": 1,
             "mana_buff": mana_buff,
             "crit_rate": crit_rate,
-            "crit_dmg": crit_dmg + MagicGauntlet,
+            "crit_dmg": crit_dmg,
         }
         basic_one = atk * params["base_attack_mult"]
         skill1_one = atk * params["skill1_mult"]
@@ -2359,7 +2359,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_mana_recov": 1.0,
             "mana_buff": mana_buff,
             "crit_rate": crit_rate,
-            "crit_dmg": crit_dmg,
+            "crit_dmg": crit_dmg + MagicGauntlet,
             "seed": seed
         }
         basic_one = atk * params["base_attack_mult"]
@@ -2675,7 +2675,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult_mult": ult_mult,
             "ult_ticks": ace_batman_attack_ult_ticks[batEnhance_],
             "crit_rate": crit_rate,
-            "crit_dmg": crit_dmg + MagicGauntlet,
+            "crit_dmg": crit_dmg,
         }
         basic_one = atk * params["base_attack_mult"]
         skill1_one = atk * params["skill1_mult"]
