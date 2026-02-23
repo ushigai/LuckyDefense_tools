@@ -5,7 +5,6 @@ import csv
 import json
 import math
 import os
-import re
 import hashlib
 import random
 import time
@@ -19,6 +18,9 @@ from data.treasure_db import load_treasure_db
 from data.char_params import *
 
 from flask import Flask, jsonify, request, send_from_directory
+from dps_sim1.normalizers import blob as blob_normalizer
+from dps_sim1.normalizers import enemy as enemy_normalizer
+from dps_sim1.normalizers import pet as pet_normalizer
 from dps_sim1.simulator.awakened_hayley import mean_total_damage_15021
 from dps_sim1.simulator.hayley import mean_total_damage_5021
 from dps_sim1.simulator.rokechuu_oc import mean_total_damage_5115
@@ -162,6 +164,10 @@ TEXT_CSV_PATHS = [
 app = Flask(__name__)
 
 _MEMBER_DPS_CACHE_VERSION = 1
+
+
+def _json_error(message: str, status: int):
+    return jsonify({"error": message}), status
 
 
 def _env_int(name: str, default: int) -> int:
@@ -401,77 +407,27 @@ def _default_enemy_def() -> float:
 
 
 def _parse_enemy_wave(v: Any) -> int:
-    try:
-        x = int(v)
-    except Exception:
-        try:
-            x = int(float(v))
-        except Exception:
-            return 0
-    return x if x > 0 else 0
+    return enemy_normalizer.parse_enemy_wave(v)
 
 
 def _parse_enemy_mode(mode: Any, name: Any) -> str:
-    mode_s = str(mode or "").strip()
-    if mode_s:
-        return mode_s
-
-    name_s = str(name or "")
-    for token in ("ノーマル", "ハード", "地獄", "神"):
-        if token in name_s:
-            return token
-    return ""
+    return enemy_normalizer.parse_enemy_mode(mode, name)
 
 
 def _normalize_enemy_entry(e: Dict[str, Any]) -> Dict[str, Any]:
-    out = dict(e)
-    name = str(out.get("name", "") or "").strip()
-    mode = _parse_enemy_mode(out.get("mode"), name)
-    wave = _parse_enemy_wave(out.get("wave", 0))
-    if wave <= 0:
-        m = re.search(r"(\d+)\s*[Wｗ]", name)
-        if m:
-            wave = _parse_enemy_wave(m.group(1))
-
-    group = str(out.get("group", "") or "").strip()
-    if not group and "ボス" in name:
-        group = "ボス"
-
-    out["name"] = name
-    out["mode"] = mode
-    out["wave"] = wave
-    out["group"] = group
-    out.pop("difficulty", None)
-    out["enemy_def"] = float(out.get("enemy_def", _default_enemy_def()))
-    return out
+    return enemy_normalizer.normalize_enemy_entry(e, _default_enemy_def())
 
 
 def _enemy_selection_key(mode: Any, wave: Any, group: Any) -> str:
-    return f"{str(mode or '').strip()}|{_parse_enemy_wave(wave)}|{str(group or '').strip()}"
+    return enemy_normalizer.enemy_selection_key(mode, wave, group)
 
 
 def _default_enemy_row() -> Dict[str, Any]:
-    for row in ENEMY_DB.values():
-        return row
-    return {
-        "mode": "ノーマル",
-        "wave": 80,
-        "group": "ボス",
-        "hp": 2_000_000_000,
-        "enemy_def": _default_enemy_def(),
-    }
+    return enemy_normalizer.default_enemy_row(ENEMY_DB, _default_enemy_def())
 
 
 def _resolve_enemy_row(common: Dict[str, Any]) -> Dict[str, Any]:
-    mode = str(common.get("enemyMode", "") or "").strip()
-    wave = _parse_enemy_wave(common.get("enemyWave", 0))
-    group = str(common.get("enemyGroup", "") or "").strip()
-    key = _enemy_selection_key(mode, wave, group)
-    row = ENEMY_DB.get(key)
-    if row:
-        return row
-
-    return _default_enemy_row()
+    return enemy_normalizer.resolve_enemy_row(common, ENEMY_DB, _default_enemy_def())
 
 def load_runes() -> Dict[str, Dict[str, Any]]:
     """Load runes.json (list) into name->entry mapping."""
@@ -604,218 +560,81 @@ def clamp_float(v: Any, lo: float, hi: float, default: float) -> float:
 
 
 def _decimals_from_step(step: Any) -> int:
-    try:
-        s = str(step)
-    except Exception:
-        return 0
-    if "e-" in s:
-        try:
-            return int(s.split("e-")[1])
-        except Exception:
-            return 0
-    if "." in s:
-        return len(s.split(".")[1])
-    return 0
+    return blob_normalizer.decimals_from_step(step)
 
 
 def _snap_to_step(x: float, lo: float, step: float) -> float:
-    if step <= 0:
-        return x
-    n = round((x - lo) / step)
-    return lo + n * step
+    return blob_normalizer.snap_to_step(x, lo, step)
 
 
 def _normalize_blob_figures(v: Any) -> List[Dict[str, Any]]:
-    """Normalize common['blobFigures'] to a safe list of {name, value}."""
-    if not isinstance(v, list):
-        return []
-    out: List[Dict[str, Any]] = []
-    for item in v:
-        if not isinstance(item, dict):
-            continue
-        name = str(item.get("name", "") or "")
-        if not name:
-            continue
-        spec = BLOB_FIGURES_DB.get(name)
-        if not spec:
-            continue
-        buff = spec.get("buff") if isinstance(spec, dict) else None
-        if not isinstance(buff, dict):
-            continue
-        lo = float(buff.get("min", 0))
-        hi = float(buff.get("max", 0))
-        step = float(buff.get("step", 1))
-        raw = item.get("value", None)
-        x = clamp_float(raw, lo, hi, lo)
-        x = _snap_to_step(x, lo, step)
-        dec = _decimals_from_step(step)
-        if dec > 0:
-            x = round(x, dec)
-        else:
-            # keep ints stable when step is integer
-            x = float(int(round(x)))
-        out.append({"name": name, "value": x})
-        if len(out) >= 5:
-            break
-    return out
+    return blob_normalizer.normalize_blob_figures(v, BLOB_FIGURES_DB)
 
 
 
 def _is_none_token(v: Any) -> bool:
-    s = str(v or "").strip().lower()
-    return s in ("", "なし", "none", "null", "0")
+    return pet_normalizer.is_none_token(v)
 
 
 def _resolve_pet_id_name(pid: Any, pname: Any) -> Tuple[str, str]:
-    pid_s = str(pid or "").strip()
-    if pid_s.lower().endswith(".png"):
-        pid_s = pid_s[:-4].strip()
-
-    if not _is_none_token(pid_s):
-        if pid_s.isdigit():
-            row = PET_DB_BY_ID.get(pid_s, {})
-            return pid_s, str(row.get("name", "") or "")
-        if pid_s in PET_DB_BY_NAME:
-            row = PET_DB_BY_NAME[pid_s]
-            return str(row.get("id", "") or ""), str(row.get("name", "") or pid_s)
-
-    name_s = str(pname or "").strip()
-    if _is_none_token(name_s):
-        return "", ""
-
-    if name_s in PET_DB_BY_NAME:
-        row = PET_DB_BY_NAME[name_s]
-        return str(row.get("id", "") or ""), str(row.get("name", "") or name_s)
-    if name_s.isdigit():
-        row = PET_DB_BY_ID.get(name_s, {})
-        if row:
-            return name_s, str(row.get("name", "") or "")
-    return "", ""
+    return pet_normalizer.resolve_pet_id_name(pid, pname, PET_DB_BY_ID, PET_DB_BY_NAME)
 
 
 def _normalize_pets(options: Any) -> List[Dict[str, Any]]:
-    """Normalize pet options to [{id, name, level, image}] (max 3).
-
-    Accepted forms (mixed input is OK):
-      - options["pets"] = [{id|petId, level|petLv|petLevel, name?}, ...]
-      - options["pet1".."pet3"] + options["pet1Level".."pet3Level"]
-      - options["pet1Id".."pet3Id"] + options["pet1Lv".."pet3Lv"]
-      - options["pet"] / options["petId"] + options["petLv"|"petLevel"]
-    """
-    if not isinstance(options, dict):
-        return []
-
-    raw_rows: List[Dict[str, Any]] = []
-
-    pets = options.get("pets")
-    if isinstance(pets, list):
-        for p in pets:
-            if not isinstance(p, dict):
-                continue
-            raw_rows.append(
-                {
-                    "id": p.get("id", p.get("petId", p.get("petID", ""))),
-                    "name": p.get("name", p.get("petName", "")),
-                    "level": p.get("level", p.get("lv", p.get("petLv", p.get("petLevel", "")))),
-                }
-            )
-
-    if not raw_rows:
-        for i in (1, 2, 3):
-            pid = options.get(
-                f"pet{i}",
-                options.get(f"pet{i}Id", options.get(f"pet{i}ID", "")),
-            )
-            pname = options.get(f"pet{i}Name", "")
-            lv = options.get(
-                f"pet{i}Level",
-                options.get(f"pet{i}Lv", options.get(f"pet{i}level", "")),
-            )
-            raw_rows.append({"id": pid, "name": pname, "level": lv})
-
-    if not raw_rows:
-        pet_obj = options.get("pet")
-        if isinstance(pet_obj, dict):
-            raw_rows.append(
-                {
-                    "id": pet_obj.get("id", pet_obj.get("petId", "")),
-                    "name": pet_obj.get("name", pet_obj.get("petName", "")),
-                    "level": pet_obj.get("level", pet_obj.get("lv", pet_obj.get("petLv", ""))),
-                }
-            )
-        else:
-            raw_rows.append(
-                {
-                    "id": options.get("petId", options.get("petID", "")),
-                    "name": options.get("petName", ""),
-                    "level": options.get("petLv", options.get("petLevel", options.get("pet_level", ""))),
-                }
-            )
-
-    out: List[Dict[str, Any]] = []
-    for row in raw_rows:
-        pid, pname = _resolve_pet_id_name(row.get("id"), row.get("name"))
-        if not pid:
-            continue
-        level = clamp_int(row.get("level"), 1, 50, 1)
-        out.append(
-            {
-                "id": pid,
-                "petId": pid,  # alias for consumers expecting petId
-                "name": pname or pid,
-                "level": level,
-                "petLv": level,  # alias for consumers expecting petLv
-                "image": f"/data/img/pet/{pid}.png",
-            }
-        )
-        if len(out) >= 3:
-            break
-    return out
+    return pet_normalizer.normalize_pets(options, PET_DB_BY_ID, PET_DB_BY_NAME)
 
 
 def _normalize_pet(options: Any) -> Dict[str, Any] | None:
-    """Normalize a single pet object for backward compatibility."""
-    pets = _normalize_pets(options)
-    return pets[0] if pets else None
+    return pet_normalizer.normalize_pet(options, PET_DB_BY_ID, PET_DB_BY_NAME)
 
 
 def _to_pet_slots(pets: List[Dict[str, Any]]) -> Tuple[Dict[str, Any] | None, Dict[str, Any] | None, Dict[str, Any] | None]:
-    pet1 = pets[0] if len(pets) >= 1 else None
-    pet2 = pets[1] if len(pets) >= 2 else None
-    pet3 = pets[2] if len(pets) >= 3 else None
-    return pet1, pet2, pet3
+    return pet_normalizer.to_pet_slots(pets)
 
 
 def _pet_param_at_lv(pet_id: str, pet_lv: int, param_no: int, skill_idx: int = 0) -> float | None:
-    """Read pet skill parameter at level. Returns None when not available.
+    return pet_normalizer.pet_param_at_lv(pet_id, pet_lv, param_no, PET_DB_BY_ID, skill_idx=skill_idx)
 
-    - pets.json uses 'Paramter_*' keys (note the typo in source data).
-    - Some pets have empty Paramter_2 / Paramter_3 arrays.
-    """
-    if not pet_id:
-        return None
-    row = PET_DB_BY_ID.get(str(pet_id), {})
-    raw = row.get("raw") if isinstance(row, dict) else None
-    if not isinstance(raw, dict):
-        return None
 
-    skills = raw.get("skills", [])
-    if not isinstance(skills, list) or not (0 <= skill_idx < len(skills)):
-        return None
-    skill = skills[skill_idx]
-    if not isinstance(skill, dict):
-        return None
-
-    # data key is usually "Paramter_N", but allow "Parameter_N" just in case
-    arr = skill.get(f"Paramter_{param_no}", skill.get(f"Parameter_{param_no}", []))
-    if not isinstance(arr, list) or len(arr) == 0:
-        return None
-
-    idx = max(0, min(len(arr) - 1, int(pet_lv) - 1))
-    try:
-        return float(arr[idx])
-    except Exception:
-        return None
+def _build_member_debug_tail(
+    *,
+    base_atk: float,
+    atk: float,
+    ticks: int,
+    base_speed: float,
+    speed: float,
+    ult_mana: float,
+    t_buff1: float | int,
+    t_buff2: float | int,
+    t_buff3: float | int,
+    is_phisics: bool,
+    strongest_creature: float | int,
+    basic_one: float | int,
+    skill1_one: float | int,
+    skill2_one: float | int,
+    skill3_one: float | int,
+    ult_one: float | int,
+    mult_parts: Dict[str, Dict[str, List[Any]]],
+) -> Dict[str, Any]:
+    return {
+        "base_atk": base_atk,
+        "atk": atk,
+        "ticks": ticks,
+        "base_speed": base_speed,
+        "speed": speed,
+        "ult_mana": ult_mana,
+        "t_buff1": t_buff1,
+        "t_buff2": t_buff2,
+        "t_buff3": t_buff3,
+        "isPhisics": is_phisics,
+        "StrongestCreature": strongest_creature,
+        "basic_one": basic_one,
+        "skill1_one": skill1_one,
+        "skill2_one": skill2_one,
+        "skill3_one": skill3_one,
+        "ult_one": ult_one,
+        "mult_parts": copy.deepcopy(mult_parts),
+    }
 
 
 def sign(n):
@@ -2133,7 +1952,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "crit_rate": crit_rate if char_lv < 12 else crit_rate + 15,
             "crit_dmg": crit_dmg,
-            "ult_mult": 350*(PhysicBuff1+UltBuff1),
+            "ult_mult": 425*(PhysicBuff1+UltBuff1),
             "ult_mana": ult_mana*CooltimeBuff1,
             "mana_buff": 1,
         }
@@ -2698,23 +2517,27 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans *= def_mult
         if character_id == "15001":
             ans = def_mult*(basic + skill1 + skill2) + def_mult_prim_bamba * ult
-    DebugMessage["base_atk"] = base_atk
-    DebugMessage["atk"] = atk
-    DebugMessage["ticks"] = ticks
-    DebugMessage["base_speed"] = base_speed
-    DebugMessage["speed"] = speed
-    DebugMessage["ult_mana"] = ult_mana
-    DebugMessage["t_buff1"] = t_buff1
-    DebugMessage["t_buff2"] = t_buff2
-    DebugMessage["t_buff3"] = t_buff3
-    DebugMessage["isPhisics"] = isPhisics
-    DebugMessage["StrongestCreature"] = StrongestCreature
-    DebugMessage["basic_one"] = basic_one
-    DebugMessage["skill1_one"] = skill1_one
-    DebugMessage["skill2_one"] = skill2_one
-    DebugMessage["skill3_one"] = skill3_one
-    DebugMessage["ult_one"] = ult_one
-    DebugMessage["mult_parts"] = copy.deepcopy(mult_parts)
+    DebugMessage.update(
+        _build_member_debug_tail(
+            base_atk=base_atk,
+            atk=atk,
+            ticks=ticks,
+            base_speed=base_speed,
+            speed=speed,
+            ult_mana=ult_mana,
+            t_buff1=t_buff1,
+            t_buff2=t_buff2,
+            t_buff3=t_buff3,
+            is_phisics=isPhisics,
+            strongest_creature=StrongestCreature,
+            basic_one=basic_one,
+            skill1_one=skill1_one,
+            skill2_one=skill2_one,
+            skill3_one=skill3_one,
+            ult_one=ult_one,
+            mult_parts=mult_parts,
+        )
+    )
     dps_ratio = {"basic": basic, "skill1": skill1, "skill2": skill2, "skill3": skill3, "ult": ult}
     return (
         (ans / TICK_COEFF) * float(common.get("multiplier", 1)) * BossBuff1 * StunBuff1 * PartyCat,
@@ -2726,13 +2549,13 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
 def api_calc():
     data = request.get_json(force=True, silent=False)
     if not isinstance(data, dict):
-        return jsonify({"error": "invalid json"}), 400
+        return _json_error("invalid json", 400)
     _maybe_clear_member_dps_cache()
 
     common = data.get("options", {})
     party = data.get("party", [])
     if not isinstance(common, dict) or not isinstance(party, list) or len(party) == 0:
-        return jsonify({"error": "options/party invalid"}), 400
+        return _json_error("options/party invalid", 400)
 
     enemy_row = _resolve_enemy_row(common)
     enemy_mode = str(enemy_row.get("mode", ""))
@@ -2827,11 +2650,11 @@ def api_calc():
 
     for m in party:
         if not isinstance(m, dict):
-            return jsonify({"error": "party must be list of objects"}), 400
+            return _json_error("party must be list of objects", 400)
 
         cid = str(m.get("character", ""))
         if cid not in CHAR_DB:
-            return jsonify({"error": f"unknown character: {cid}"}), 400
+            return _json_error(f"unknown character: {cid}", 400)
 
         char_lv = clamp_int(m.get("charLv", 1), 1, 15, 1)
         treasure_lv = clamp_int(m.get("treasureLv", 0), 0, 15, 0)
@@ -3060,7 +2883,7 @@ def _read_survey_rows() -> List[List[Any]]:
 @app.get("/api/survey")
 def api_survey_list():
     if not _survey_enabled():
-        return jsonify({"error": "survey is not configured"}), 503
+        return _json_error("survey is not configured", 503)
 
     limit = clamp_int(request.args.get("limit"), 1, 100, 30)
     page_filter = str(request.args.get("page", "") or "").strip()
@@ -3069,7 +2892,7 @@ def api_survey_list():
         rows = _read_survey_rows()
     except Exception as e:
         print(f"[survey] read failed: {e}")
-        return jsonify({"error": "failed to load survey"}), 503
+        return _json_error("failed to load survey", 503)
 
     items = []
     for row in rows:
@@ -3102,11 +2925,11 @@ def api_survey():
       - SURVEY_IP_SALT: optional (if set, hashed IP will be stored)
     """
     if not _survey_enabled():
-        return jsonify({"error": "survey is not configured"}), 503
+        return _json_error("survey is not configured", 503)
 
     data = request.get_json(force=True, silent=False)
     if not isinstance(data, dict):
-        return jsonify({"error": "invalid json"}), 400
+        return _json_error("invalid json", 400)
 
     # required
     #if "rating" not in data:
@@ -3154,6 +2977,6 @@ def api_survey():
         _append_survey_row(row)
     except Exception as e:
         print(f"[survey] append failed: {e}")
-        return jsonify({"error": "failed to save survey"}), 503
+        return _json_error("failed to save survey", 503)
 
     return jsonify({"ok": True})
