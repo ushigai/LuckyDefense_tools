@@ -67,6 +67,7 @@ export const el = {
 
   totalValue: document.getElementById("totalValue"),
   calcStatus: document.getElementById("calcStatus"),
+  logFormula: document.getElementById("logFormula"),
   log: document.getElementById("log"),
   multiplier: document.getElementById("multiplier"),
 

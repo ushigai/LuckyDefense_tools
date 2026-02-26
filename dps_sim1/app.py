@@ -190,23 +190,8 @@ _MEMBER_DPS_CACHE_NEXT_CLEAR_TS = (
 
 
 _MULT_SLOT_KEYS = ("basic", "skill1", "skill2", "skill3", "ult")
-def _empty_mult_parts() -> Dict[str, Dict[str, List[Any]]]:
-    return {slot: {"numbers": [], "buffs": []} for slot in _MULT_SLOT_KEYS}
-
-
-def _mp(numbers: List[float | int], buffs: List[str]) -> Dict[str, List[Any]]:
-    return {
-        "numbers": [float(x) if isinstance(x, float) else x for x in numbers],
-        "buffs": list(buffs),
-    }
-
-
-def _mparts(**kwargs: Dict[str, List[Any]]) -> Dict[str, Dict[str, List[Any]]]:
-    base = _empty_mult_parts()
-    for k, v in kwargs.items():
-        if k in base:
-            base[k] = {"numbers": list(v.get("numbers", [])), "buffs": list(v.get("buffs", []))}
-    return base
+def _empty_mult_parts() -> Dict[str, Dict[str, Any]]:
+    return {slot: {"numbers": [], "buffs": {}} for slot in _MULT_SLOT_KEYS}
 
 
 def _member_dps_cache_key(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> str:
@@ -614,7 +599,7 @@ def _build_member_debug_tail(
     skill2_one: float | int,
     skill3_one: float | int,
     ult_one: float | int,
-    mult_parts: Dict[str, Dict[str, List[Any]]],
+    mult_parts: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
     return {
         "base_atk": base_atk,
@@ -910,6 +895,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     # ======= その他数値計算 =======
     crit_rate = 5 + BambaDoll + BlobFigureBuff["ドラゴン"] + pet_buff["CriticalPercentage"]
     crit_dmg = 2.5 + BlobFigureBuff["魔法使い"] + pet_buff["CriticalDamage"]
+    base_crit_dmg = crit_dmg
     mana_buff += BlobFigureBuff["ハロウィン"] + pet_buff["SpRegen"]
     mana_buff = 1 if mana_buff == 0 else mana_buff // 100 + 1
     MagicBuff1 = 1 + SecretBook + WizardHat + BlobFigureBuff["溶岩"] + BlobFigureBuff["スカル"] + pet_buff["MagicalDamage"]
@@ -996,12 +982,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_3007(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([40], ["PhysicBuff1"]),
-            skill2=_mp([50], ["PhysicBuff1", "t_buff2"]),
-            ult=_mp([180], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [40], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [50], "buffs": {"PhysicBuff1": PhysicBuff1, "t_buff2": t_buff2}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [180], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "4001":  # オークシャーマン
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -1062,12 +1051,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill3_one = 0
         ult_one = atk * params["ult_mult"]
         ans = mean_total_damage_5001(params, ticks, trials, seed)
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([30], ["MagicBuff1"]),
-            skill2=_mp([20], ["MagicBuff1"]),
-            ult=_mp([40], []),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [30], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [20], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [40], "buffs": {}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "5002":  # コルディ
         params = {
             "ticks": ticks,
@@ -1097,13 +1089,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([20], ["MagicBuff1"]),
-            skill2=_mp([20], ["MagicBuff1"]),
-            skill3=_mp([0], []),
-            ult=_mp([15], ["icecount", "icerate", "MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [20], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [20], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [15], "buffs": {"icecount": icecount, "icerate": icerate, "MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5003":  # ランスロット
         ans = 28000
     elif character_id == "5004":  # アイアンニャン
@@ -1137,13 +1131,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([5.0], []),
-            skill1=_mp([40, 60], ["t_buff1", "MagicBuff1"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([180, 270], ["t_buff1", "MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [5.0], "buffs": {}},
+            "skill1": {"numbers": [40, 60], "buffs": {"t_buff1": t_buff1, "MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [180, 270], "buffs": {"t_buff1": t_buff1, "MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate, "t_buff2": t_buff2}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5005":  # ブロッブ
         ans = sp * 1000
     elif character_id == "5006":  # ドラゴン(変身前)
@@ -1188,13 +1184,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([5.0], []),
-            skill1=_mp([15, 30], ["MagicBuff1", "t_buff1"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([20, 40], ["MagicBuff1", "t_buff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [5.0], "buffs": {}},
+            "skill1": {"numbers": [15, 30], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [20, 40], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5009":  # カエルの王様
         
         
@@ -1237,13 +1235,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([40], ["PhysicBuff1"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([70], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [40], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [70], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate, "t_buff1": t_buff1}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "5011":  # ヴェイン
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -1296,9 +1296,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill3 *= TICK_COEFF
         ult *= TICK_COEFF
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            ult=_mp([20], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [], "buffs": {}},
+            "skill1": {"numbers": [], "buffs": {}},
+            "skill2": {"numbers": [], "buffs": {}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [20], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
         ult_one = atk * (20 * (MagicBuff1 + UltBuff1))
     elif character_id == "5014":  # タール小
         
@@ -1356,13 +1362,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
         ans *= uchiCells * 1.41421356 + 1 if 6 <= char_lv else 1
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([75], ["t_buff1", "MagicBuff1"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([398], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [75], "buffs": {"t_buff1": t_buff1, "MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [398], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5017":  # ビリ
         
         
@@ -1403,11 +1411,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5018(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([5.5, 0.5], ["MagicBuff1", "t_buff1"]),
-            skill2=_mp([50, 0.5, 1.5], ["MagicBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [5.5, 0.5], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1}},
+            "skill2": {"numbers": [50, 0.5, 1.5], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [], "buffs": {}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5019":  # チョナ
         t_buff1 = float(TREASURE_DB["チョナ"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["チョナ"][treasure_lv][2])
@@ -1436,12 +1448,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5019(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([60], ["PhysicBuff1"]),
-            skill2=_mp([70], ["PhysicBuff1"]),
-            ult=_mp([750, 30, 65, 25, 0.12, 100], ["PhysicBuff1", "UltBuff1", "t_buff2"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [60], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [70], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [750, 30, 65, 25, 0.12, 100], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1, "t_buff2": t_buff2}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "5020":  # ペンギン楽師
         t_buff1 = float(TREASURE_DB["ペンギン楽師"][treasure_lv][2])
         params = {
@@ -1472,13 +1487,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([0], []),
-            skill2=_mp([60], ["PhysicBuff1"]),
-            skill3=_mp([0], []),
-            ult=_mp([1], ["UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [0], "buffs": {}},
+            "skill2": {"numbers": [60], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [1], "buffs": {"UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "5021":  # ヘイリー
         t_buff1 = float(TREASURE_DB["ヘイリー"][treasure_lv][2]) / 100
         skill1_rate = 10 + RateBuff1
@@ -1526,11 +1543,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([50], ["MagicBuff1"]),
-            skill2=_mp([50], ["MagicBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [50], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [50], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [], "buffs": {}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": base_crit_dmg, "MagicGauntlet": MagicGauntlet, "t_buff1": t_buff1}},
+        }
     elif character_id == "5022":  # アト
         
         
@@ -1570,13 +1591,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5023(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([20, 40], ["PhysicBuff1"]),
-            skill2=_mp([6, 10], []),
-            skill3=_mp([65], ["PhysicBuff1"]),
-            ult=_mp([200], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [20, 40], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [6, 10], "buffs": {}},
+            "skill3": {"numbers": [65], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "ult": {"numbers": [200], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate, "roka_crit": roka_crit}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "t_buff2": t_buff2}},
+        }
     elif character_id == "5024":  # 選鳥師
         t_buff2 = float(TREASURE_DB["選鳥師"][treasure_lv][2])
         MagicBuff1 += score if char_lv < 6 else score*2
@@ -1608,13 +1631,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([35, 105], ["MagicBuff1"]),
-            skill2=_mp([24, 40], ["MagicBuff1"]),
-            skill3=_mp([0], []),
-            ult=_mp([0, 1], ["UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [35, 105], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [24, 40], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [0, 1], "buffs": {"UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5104":  # アイアンニャン
         t_buff1 = float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
@@ -1646,13 +1671,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([5.0], []),
-            skill1=_mp([40, 60], ["t_buff1", "MagicBuff1"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([180, 270], ["t_buff1", "MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [5.0], "buffs": {}},
+            "skill1": {"numbers": [40, 60], "buffs": {"t_buff1": t_buff1, "MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [180, 270], "buffs": {"t_buff1": t_buff1, "MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate, "t_buff2": t_buff2}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5106":  # ドラゴン(変身後)
         t_buff1 = float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100
         t_buff2 = float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100
@@ -1684,13 +1711,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([50], ["MagicBuff1", "t_buff2"]),
-            skill2=_mp([60], ["MagicBuff1", "t_buff2"]),
-            skill3=_mp([0], []),
-            ult=_mp([180], ["MagicBuff1", "t_buff2", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [50], "buffs": {"MagicBuff1": MagicBuff1, "t_buff2": t_buff2}},
+            "skill2": {"numbers": [60], "buffs": {"MagicBuff1": MagicBuff1, "t_buff2": t_buff2}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [180], "buffs": {"MagicBuff1": MagicBuff1, "t_buff2": t_buff2, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5108":  # インプ
         
         
@@ -1733,13 +1762,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([7.5], []),
-            skill1=_mp([0], []),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([1000], ["MagicBuff1", "t_buff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [7.5], "buffs": {}},
+            "skill1": {"numbers": [0], "buffs": {}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [1000], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5114":  # タール中
         
         
@@ -1778,12 +1809,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
         ans *= 1.5
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([60], ["PhysicBuff1"]),
-            skill2=_mp([160], ["PhysicBuff1"]),
-            ult=_mp([700], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [60], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [160], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [700], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "5204":  # アイアンニャンv2
         t_buff1 = float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
@@ -1815,13 +1849,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([5.0], []),
-            skill1=_mp([50, 75], ["MagicBuff1", "t_buff1", "techEnhance"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([360, 540], ["MagicBuff1", "t_buff1", "techEnhance", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [5.0], "buffs": {}},
+            "skill1": {"numbers": [50, 75], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1, "techEnhance": techEnhance}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [360, 540], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1, "techEnhance": techEnhance, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate, "t_buff2": t_buff2}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "5206":  # 偉大な卵
         ans = 0
     elif character_id == "5214":  # タール大
@@ -1854,13 +1890,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([200], ["PhysicBuff1"]),
-            skill2=_mp([50], ["PhysicBuff1"]),
-            skill3=_mp([0], []),
-            ult=_mp([150, 1.3], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [200], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [50], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [150, 1.3], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "5306":  # ドレイン
         t_buff1 = float(TREASURE_DB["ドラゴン"][treasure_lv][2]) / 100 # 火花
         t_buff2 = float(TREASURE_DB["ドラゴン"][treasure_lv][3]) / 100 # スキル
@@ -1894,13 +1932,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([50, 25], ["MagicBuff1", "MagicBuff2"]),
-            skill2=_mp([60, 25], ["MagicBuff1", "MagicBuff2"]),
-            skill3=_mp([0], []),
-            ult=_mp([180, 75], ["MagicBuff1", "MagicBuff2", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [50, 25], "buffs": {"MagicBuff1": MagicBuff1, "MagicBuff2": MagicBuff2}},
+            "skill2": {"numbers": [60, 25], "buffs": {"MagicBuff1": MagicBuff1, "MagicBuff2": MagicBuff2}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [180, 75], "buffs": {"MagicBuff1": MagicBuff1, "MagicBuff2": MagicBuff2, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "13004":  # スーパー重力弾
         params = {
             "ticks": ticks,
@@ -1930,13 +1970,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.5], []),
-            skill1=_mp([50], ["MagicBuff1"]),
-            skill2=_mp([40], ["MagicBuff1"]),
-            skill3=_mp([0], []),
-            ult=_mp([90], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.5], "buffs": {}},
+            "skill1": {"numbers": [50], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [40], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [90], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "13007":  # 鬼神忍者
         params = {
             "tick": ticks,
@@ -1964,12 +2006,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_13007(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([200], ["PhysicBuff1"]),
-            skill2=_mp([40], ["PhysicBuff1"]),
-            ult=_mp([350], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [200], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [40], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [350], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [15] if 12 <= char_lv else [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "14002":  # ドクターパルス
         skill1_rate = 10 + RateBuff1
         skill1_mult = 70*MagicBuff1
@@ -2004,11 +2049,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             skill3 *= mult
             ult *= mult
             ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([70], ["MagicBuff1"]),
-            ult=_mp([120], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [70], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [], "buffs": {}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [120], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": base_crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15001":  # 原始バンバ
         params = {
             "tick": ticks,
@@ -2033,11 +2082,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15001(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([7.5], []),
-            skill1=_mp([200], ["PhysicBuff1"]),
-            skill2=_mp([80], ["PhysicBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [7.5], "buffs": {}},
+            "skill1": {"numbers": [200], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [80], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [], "buffs": {}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "15002":  # 女王コルディ
         params = {
             "base_attack_mult": 1,
@@ -2066,13 +2119,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15002(params, ticks, trials, seed)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([25], ["MagicBuff1"]),
-            skill2=_mp([100], ["MagicBuff1"]),
-            skill3=_mp([60, 120], ["MagicBuff1"]),
-            ult=_mp([35], ["UltBuff1", "MagicBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [25], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [100], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [60, 120], "buffs": {"MagicBuff1": MagicBuff1}},
+            "ult": {"numbers": [35], "buffs": {"UltBuff1": UltBuff1, "MagicBuff1": MagicBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15005":  # ブロッブ団
         # 多分まちがい
         #PassiveBuff = BlobLvSum / 10 if char_lv < 6 else max((BlobLvSum - 3) / 10, 0) 
@@ -2109,13 +2164,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill3 *= def_mult
         ans = basic + skill1 + skill2 + skill3 + ult
         ans *= PassiveBuff
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([30], ["PhysicBuff1"]),
-            skill2=_mp([40, 1, 10], ["redBlob", "MagicBuff1"]),
-            skill3=_mp([40.6], ["PhysicBuff1"]),
-            ult=_mp([110, 1, 0.10], ["BlobLvSum", "MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [30], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [40, 1, 10], "buffs": {"redBlob": redBlob, "MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [40.6], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "ult": {"numbers": [110, 1, 0.1], "buffs": {"BlobLvSum": BlobLvSum, "MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "15004":  # アイアムニャン
         skill1_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
         skill2_rate = 11 + RateBuff1 if 12 <= char_lv else 7 + RateBuff1
@@ -2155,12 +2212,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill3 *= mult
         ult *= mult
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([180], ["MagicBuff1"]),
-            skill2=_mp([200], ["MagicBuff1"]),
-            ult=_mp([1000, 1500], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [180], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [200], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [1000, 1500], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": base_crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15006":  # 魔王ドラゴン
         params = {
             "tick": ticks,
@@ -2189,13 +2249,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15006(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([350], ["MagicBuff1"]),
-            skill2=_mp([320], ["MagicBuff1"]),
-            skill3=_mp([25], ["MagicBuff1"]),
-            ult=_mp([550, 650], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [350], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [320], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [25], "buffs": {"MagicBuff1": MagicBuff1}},
+            "ult": {"numbers": [550, 650], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15008":  # グランドママ
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -2235,13 +2297,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([120], ["MagicBuff1"]),
-            skill2=_mp([90], ["MagicBuff1"]),
-            skill3=_mp([0], []),
-            ult=_mp([1], ["UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [120], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [90], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [1], "buffs": {"UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15010":  # エースバットマン
         ans = 0
     elif character_id == "15011":  # トップヴェイン
@@ -2270,11 +2334,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             coeff = 1 + enemy_def / 330
             skill2 *= coeff
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([20, 1], ["PhysicBuff1", "BasicAttackBuff1"]),
-            skill1=_mp([70], ["PhysicBuff1"]),
-            skill2=_mp([330], ["PhysicBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [20, 1], "buffs": {"PhysicBuff1": PhysicBuff1, "BasicAttackBuff1": BasicAttackBuff1}},
+            "skill1": {"numbers": [70], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [330], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [], "buffs": {}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "15020":  # ノイズペンギンキング
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -2323,12 +2391,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         skill3 *= mult
         ult *= mult
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([180], ["MagicBuff1"]),
-            skill2=_mp([100], ["MagicBuff1"]),
-            skill3=_mp([1125], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [180], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [100], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [1125], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "ult": {"numbers": [], "buffs": {}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": base_crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15022":  # 時空アト
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -2363,13 +2434,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15023(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([467.5, 330], ["PhysicBuff1"]),
-            skill2=_mp([40], ["PhysicBuff1"]),
-            skill3=_mp([150], ["PhysicBuff1"]),
-            ult=_mp([350, 233.333], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [467.5, 330], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [40], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill3": {"numbers": [150], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "ult": {"numbers": [350, 233.333], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate, "roka_crit_": roka_crit_}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "15024":  # ボス選鳥師
         params = {
             "attack_power": atk,
@@ -2396,13 +2469,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1], []),
-            skill1=_mp([330], ["MagicBuff1"]),
-            skill2=_mp([160], ["MagicBuff1"]),
-            skill3=_mp([5, 5], ["MagicBuff1"]),
-            ult=_mp([300], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1], "buffs": {}},
+            "skill1": {"numbers": [330], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [160], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [5, 5], "buffs": {"MagicBuff1": MagicBuff1}},
+            "ult": {"numbers": [300], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15109":  # 死神ダイアン
         params = {
             "ticks": ticks,
@@ -2432,13 +2507,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_common(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([20.0], []),
-            skill1=_mp([350], ["MagicBuff1"]),
-            skill2=_mp([0], []),
-            skill3=_mp([0], []),
-            ult=_mp([1200], ["MagicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [20.0], "buffs": {}},
+            "skill1": {"numbers": [350], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill2": {"numbers": [0], "buffs": {}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [1200], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15110":  # バットマン投手
         strikeout = int(strikeout*100)
         skill1_react1 = min(strikeout - 100, 100) if strikeout < 200 else 100
@@ -2468,11 +2545,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15110(params, ticks=ticks, n_trials=trials, seed=seed)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([160], ["PhysicBuff1"]),
-            ult=_mp([400], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [160], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [], "buffs": {}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [400], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     elif character_id == "15210":  # バットマン打者
         # この式（乗算でさらに複利で働く式）は間違い
         #if char_lv < 12: 
@@ -2504,11 +2585,15 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_15210(params, n_iter=trials, seed=seed)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult_parts = _mparts(
-            basic=_mp([1.0], []),
-            skill1=_mp([250], ["PhysicBuff1"]),
-            ult=_mp([120, 0.5, 1.0], ["PhysicBuff1", "UltBuff1"]),
-        )
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [250], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [], "buffs": {}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [120, 0.5, 1.0], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+        }
     else:
         ans = 0
 

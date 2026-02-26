@@ -99,6 +99,191 @@ function _renderDpsRatio(characterId, ratioObj) {
   `;
 }
 
+function _fmtFormulaNum(x, digits = 6) {
+  const n = Number(x);
+  if (!Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat("ja-JP", { maximumFractionDigits: digits }).format(n);
+}
+
+function _fmtFormulaNumRaw(x) {
+  const n = Number(x);
+  if (!Number.isFinite(n)) return "—";
+  const s = n.toFixed(6).replace(/\.?0+$/, "");
+  return s === "-0" ? "0" : s;
+}
+
+function _slotLabel(characterId, slotKey) {
+  const ch = _getCharacterById(characterId) ?? {};
+  if (slotKey === "basic") return t("basicAttack", "基本攻撃");
+  if (slotKey === "ult") return String(ch.ult ?? "").trim() || "ult";
+  if (slotKey === "skill1") return String(ch.skill1 ?? "").trim() || "skill1";
+  if (slotKey === "skill2") return String(ch.skill2 ?? "").trim() || "skill2";
+  if (slotKey === "skill3") return String(ch.skill3 ?? "").trim() || "skill3";
+  return slotKey;
+}
+
+function _shouldShowOneFormula(characterId, slotKey, oneValue) {
+  if (slotKey === "basic") return true;
+  if (Number.isFinite(oneValue) && Math.abs(oneValue) > 0) return true;
+  const ch = _getCharacterById(characterId) ?? {};
+  if (slotKey === "ult") return String(ch.ult ?? "").trim() !== "";
+  const label = _slotLabel(characterId, slotKey);
+  return label !== "" && label !== slotKey;
+}
+
+function _renderFormulaParts(parts) {
+  if (!parts || typeof parts !== "object") return "";
+  const numbers = Array.isArray(parts.numbers) ? parts.numbers.filter(v => Number.isFinite(Number(v))) : [];
+  const buffs = (parts.buffs && typeof parts.buffs === "object") ? parts.buffs : {};
+
+  const numberChips = numbers.map((v, i) => (
+    `<span class="formula-log-chip">numbers[${i}] = ${_escHtml(_fmtFormulaNumRaw(v))}</span>`
+  )).join("");
+
+  const buffChips = Object.entries(buffs).map(([k, v]) => (
+    `<span class="formula-log-chip">${_escHtml(k)} = ${_escHtml(_fmtFormulaNumRaw(v))}</span>`
+  )).join("");
+
+  if (!numberChips && !buffChips) return "";
+
+  return `
+    <div class="formula-log-sub mt-1">
+      <div class="mb-1">${t("formulaCoeffParts", "係数構成 (mult_parts)")}</div>
+      <div>${numberChips || `<span class="text-secondary">${t("none", "なし")}</span>`}</div>
+      <div class="mt-1">${buffChips || `<span class="text-secondary">${t("none", "なし")}</span>`}</div>
+    </div>
+  `;
+}
+
+function _renderOneFormulaRow(characterId, debugEntry, slotKey) {
+  const oneKey = `${slotKey}_one`;
+  const oneValue = Number(debugEntry?.[oneKey] ?? 0);
+  if (!_shouldShowOneFormula(characterId, slotKey, oneValue)) return "";
+
+  const atk = Number(debugEntry?.atk ?? NaN);
+  const coeff = (Number.isFinite(atk) && Math.abs(atk) > 0) ? (oneValue / atk) : NaN;
+  const label = translateGameText(_slotLabel(characterId, slotKey));
+  const parts = debugEntry?.mult_parts?.[slotKey];
+
+  let expr;
+  if (Number.isFinite(atk) && Math.abs(atk) > 0) {
+    expr = `${oneKey} = atk × coeff = ${_fmtFormulaNum(atk)} × ${_fmtFormulaNum(coeff)} = ${_fmtFormulaNum(oneValue)}`;
+  } else {
+    expr = `${oneKey} = ${_fmtFormulaNum(oneValue)}`;
+  }
+
+  return `
+    <div class="mb-2">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="small text-secondary">${_escHtml(label)}</div>
+        <div class="small text-secondary">${_escHtml(oneKey)}</div>
+      </div>
+      <div class="formula-log-line">${_escHtml(expr)}</div>
+      ${_renderFormulaParts(parts)}
+    </div>
+  `;
+}
+
+function _pickDebugEntry(debugObj, resultMember, index) {
+  if (!debugObj || typeof debugObj !== "object") return null;
+  const characterId = String(resultMember?.character ?? "");
+  const ch = _getCharacterById(characterId);
+  const debugKeyByName = String(ch?.name ?? "");
+  if (debugKeyByName && debugObj[debugKeyByName] && typeof debugObj[debugKeyByName] === "object") {
+    return debugObj[debugKeyByName];
+  }
+  const entries = Object.values(debugObj).filter(v => v && typeof v === "object");
+  return entries[index] ?? null;
+}
+
+function _renderOneDamageFormulaLog(data, fallbackMembers) {
+  const debugObj = data?.Debug ?? data?.DebugMessage;
+  if (!debugObj || typeof debugObj !== "object") return "";
+
+  const resultMembers = Array.isArray(data?.members) && data.members.length > 0
+    ? data.members
+    : (Array.isArray(fallbackMembers) ? fallbackMembers : []);
+
+  if (!Array.isArray(resultMembers) || resultMembers.length === 0) return "";
+
+  const blocks = resultMembers.map((r, i) => {
+    const characterId = String(r?.character ?? fallbackMembers?.[i]?.character ?? "");
+    const ch = _getCharacterById(characterId) ?? {};
+    const debugEntry = _pickDebugEntry(debugObj, { character: characterId }, i);
+    if (!debugEntry || typeof debugEntry !== "object") return "";
+
+    const charName = translateGameText(String(ch.name ?? characterId));
+    const headerMeta = [
+      characterId ? `ID ${characterId}` : "",
+      (r?.charLv != null) ? `Lv ${r.charLv}` : "",
+      (r?.treasureLv != null) ? `専用財宝 Lv ${r.treasureLv}` : "",
+    ].filter(Boolean).join(" / ");
+
+    const statChips = [
+      ["base_atk", debugEntry?.base_atk],
+      ["atk", debugEntry?.atk],
+      ["base_speed", debugEntry?.base_speed],
+      ["speed", debugEntry?.speed],
+      ["ult_mana", debugEntry?.ult_mana],
+    ].filter(([, v]) => Number.isFinite(Number(v)))
+      .map(([k, v]) => `<span class="formula-log-chip">${_escHtml(k)} = ${_escHtml(_fmtFormulaNumRaw(v))}</span>`)
+      .join("");
+
+    const rows = ["basic", "skill1", "skill2", "skill3", "ult"]
+      .map(slot => _renderOneFormulaRow(characterId, debugEntry, slot))
+      .join("");
+
+    const critParts = [];
+    const critRateParts = debugEntry?.mult_parts?.crit_rate;
+    const critDmgParts = debugEntry?.mult_parts?.crit_dmg;
+    if (critRateParts && typeof critRateParts === "object") {
+      const chips = _renderFormulaParts(critRateParts);
+      if (chips) {
+        critParts.push(`
+          <div class="mt-2">
+            <div class="small text-secondary mb-1">${t("critRateRef", "会心率の構成値 (参考)")}</div>
+            ${chips}
+          </div>
+        `);
+      }
+    }
+    if (critDmgParts && typeof critDmgParts === "object") {
+      const chips = _renderFormulaParts(critDmgParts);
+      if (chips) {
+        critParts.push(`
+          <div class="mt-2">
+            <div class="small text-secondary mb-1">${t("critDmgRef", "会心ダメの構成値 (参考)")}</div>
+            ${chips}
+          </div>
+        `);
+      }
+    }
+
+    return `
+      <div class="card formula-log-card rounded-3 mb-2">
+        <div class="card-body py-2 px-3">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+            <div class="fw-semibold small">${_escHtml(charName)}</div>
+            <div class="text-secondary small">${_escHtml(headerMeta)}</div>
+          </div>
+          <div class="mb-2">${statChips}</div>
+          ${rows || `<div class="text-secondary small">${t("noFormulaData", "式データなし")}</div>`}
+          ${critParts.join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  if (!blocks) return "";
+  return `
+    <div class="mb-2">
+      <div class="small fw-semibold mb-2">${t("oneDamageFormulaTitle", "1回分ダメージ式 (*_one)")}</div>
+      <div class="small text-secondary mb-2">${t("oneDamageFormulaNote", "※ 行ごとの式は *_one の正確な数値式です。下の chips は backend の mult_parts（キャラ別係数構成値）をそのまま表示しています。")}</div>
+      ${blocks}
+    </div>
+  `;
+}
+
 function readBlobFigures() {
   const out = [];
   for (let i = 1; i <= 5; i++) {
@@ -159,6 +344,9 @@ export async function recalc() {
     });
 
     const debugObj = data?.Debug ?? data?.DebugMessage;
+    if (el.logFormula) {
+      el.logFormula.innerHTML = _renderOneDamageFormulaLog(data, members);
+    }
     if (debugObj && typeof debugObj === "object") {
       el.log.textContent = `Debug:\n${JSON.stringify(debugObj, null, 2)}`;
     } else if (typeof debugObj === "string" && debugObj.trim() !== "") {
@@ -167,6 +355,7 @@ export async function recalc() {
       el.log.textContent = "—";
     }
   } catch (e) {
+    if (el.logFormula) el.logFormula.innerHTML = "";
     el.log.textContent = String(e);
   } finally {
     setBusy(false);
