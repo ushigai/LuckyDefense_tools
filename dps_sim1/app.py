@@ -163,7 +163,7 @@ TEXT_CSV_PATHS = [
 
 app = Flask(__name__)
 
-_MEMBER_DPS_CACHE_VERSION = 1
+_MEMBER_DPS_CACHE_VERSION = 3
 
 
 def _json_error(message: str, status: int):
@@ -703,6 +703,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     guildBuff_boss = 0.05 if 2 <= guildBlessing else 0
     unitLevelSumBuff = float(common.get("unitLevelSumBuff", 0)) / 100
     atkBuffPct = float(common.get("atkBuffPct", 0)) / 100
+    atkBuffPct_input = atkBuffPct
     speedBuffPct = float(common.get("speedBuffPct", 0)) / 100
     defDown = float(common.get("defDown", 190))
     enemy_def = float(common.get("enemyDef", _default_enemy_def()))
@@ -756,6 +757,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     StrongestCreature *= 0.3 if character_id == "5106" else 0.4
     score = int(member.get("score", 0)) / 100
     intake = int(member.get("intake", 0))
+    cannibalCount = float(member.get("cannibalCount", 0))
+    vein_bonus = float(int(member.get("ヴェイン", 0)))
     blueBlob = int(member.get("blueBlob", 0))
     redBlob = int(member.get("redBlob", 0))
     greenBlob = int(member.get("greenBlob", 0))
@@ -877,17 +880,31 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     base_atk *= lv_buff_atk
     base_speed *= lv_buff_speed
     atk = base_atk + intake
-    atk *= 1 + PowerPotion*2 + member.get("cannibalCount", 0) + unitLevelSumBuff + RuneAtkSum + BlobFigureBuff["ダイヤ"] + pet_buff["AttackDamage"]
-    atk *= 1 + (int(common.get("mythEnhanceLv", 1)) - 1)*0.5 + int(member.get("ヴェイン", 0))
+    atk *= 1 + PowerPotion*2 + cannibalCount + unitLevelSumBuff + RuneAtkSum + BlobFigureBuff["ダイヤ"] + pet_buff["AttackDamage"]
+    emotion = emotionControl_db[emotionControl]
+    aceEnh = ace_batman_attack_enhance[batEnhance_] / 100
+    atk *= 1 + (mythEnhanceLv - 1)*0.5 + vein_bonus
     if character_id in ["5023", "15004", "15011", "15024"]:
         atkBuffPct += 10
     if character_id in ["15023"]:
         atkBuffPct += 12
     if character_id in ["15021"]:
         atkBuffPct += 20
-    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + StrongestCreature + batEnhance + emotionControl_db[emotionControl] + ace_batman_attack_enhance[batEnhance_] / 100
+    atkBuffPct_auto_bonus = atkBuffPct - atkBuffPct_input
+    atk *= 1 + coins*MoneyGun/100 + atkBuffPct + StrongestCreature + batEnhance + emotion + aceEnh
     atk *= 1 + guildBuff_atk
     atk += base_atk
+    DebugMessage["atk_formula_meta"] = {
+        "variant": "standard",
+        "PowerPotion": PowerPotion,
+        "MoneyGun": MoneyGun,
+        "RuneAtkSum": RuneAtkSum,
+        "batEnh": batEnhance,
+        "emotion": emotion,
+        "aceEnh": aceEnh,
+        "atkBuffPct_auto_bonus": atkBuffPct_auto_bonus,
+        "veinBonus": vein_bonus,
+    }
     speed = base_speed*(1 + speedBuffPct)*(1 + FairyBow*2 + BlobFigureBuff["ゴールド"] + pet_buff["AttackSpeed"])
     speed = min(speed, 8.0)
     # NOTE : ウチとワットの攻撃速度も変更すること！
@@ -1512,6 +1529,12 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         atk *= 1 + coins*MoneyGun/100 + atkBuffPct + starPower*starPower_mult
         atk *= 1 + guildBuff_atk
         atk += base_atk
+        DebugMessage["atk_formula_meta"] = {
+            "variant": "hayley_5021_star_power",
+            "PowerPotion": PowerPotion,
+            "MoneyGun": MoneyGun,
+            "atkBuffPct_auto_bonus": atkBuffPct_auto_bonus,
+        }
 
         attack_power_ult = base_atk
         attack_power_ult *= 1 + PowerPotion*2 + unitLevelSumBuff
@@ -2985,14 +3008,21 @@ def api_survey_list():
             continue
         ts = str(row[0]) if len(row) > 0 else ""
         page = str(row[1]) if len(row) > 1 else ""
-        version = str(row[2]) if len(row) > 2 else ""
-        message = str(row[3]) if len(row) > 3 else ""
+        query = ""
+        if len(row) > 6:
+            query = str(row[2]) if len(row) > 2 else ""
+            version = str(row[3]) if len(row) > 3 else ""
+            message = str(row[4]) if len(row) > 4 else ""
+        else:
+            # Backward compatibility for old rows: [ts, page, version, message, ua, ip_hash]
+            version = str(row[2]) if len(row) > 2 else ""
+            message = str(row[3]) if len(row) > 3 else ""
         message = message.replace("\x00", "")
         if not message:
             continue
         if page_filter and page_filter not in page:
             continue
-        items.append({"ts": ts, "page": page, "version": version, "message": message})
+        items.append({"ts": ts, "page": page, "query": query, "version": version, "message": message})
 
     if len(items) > limit:
         items = items[-limit:]
@@ -3039,6 +3069,10 @@ def api_survey():
     if len(page) > 300:
         page = page[:300]
 
+    query = str(data.get("query", "") or "").strip()
+    if len(query) > 500:
+        query = query[:500]
+
     #tool = str(data.get("tool", "dps") or "dps").strip()
     #if len(tool) > 50:
         #tool = tool[:50]
@@ -3056,7 +3090,7 @@ def api_survey():
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
     #row = [ts, tool, tool_version, rating, category, message, page, ua, ip_hash]
-    row = [ts, page, version, message, ua, ip_hash]
+    row = [ts, page, query, version, message, ua, ip_hash]
 
     try:
         _append_survey_row(row)

@@ -1210,6 +1210,7 @@
       const maxLen = 500;
       const endpoint = "/api/survey";
       const pagePath = window.location.pathname || "/dps_sim1";
+      const queryText = window.location.search || "";
       const versionText = document.querySelector(".navbar-brand .small")?.textContent?.trim() || "";
       const tr = (text) => {
         const i18n = window.__dpsI18n;
@@ -1264,6 +1265,7 @@
         try {
           const payload = {
             page: pagePath,
+            query: queryText,
             version: versionText,
             message,
           };
