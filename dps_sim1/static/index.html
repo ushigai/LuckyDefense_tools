@@ -1210,7 +1210,6 @@
       const maxLen = 500;
       const endpoint = "/api/survey";
       const pagePath = window.location.pathname || "/dps_sim1";
-      const queryText = window.location.search || "";
       const versionText = document.querySelector(".navbar-brand .small")?.textContent?.trim() || "";
       const tr = (text) => {
         const i18n = window.__dpsI18n;
@@ -1259,6 +1258,7 @@
 
       const handleSubmit = async () => {
         const message = textarea.value.trim();
+        const queryText = window.location.search || "";
         if (!message) return;
         submitBtn.disabled = true;
         setStatus(tr("送信中…"), "info");
