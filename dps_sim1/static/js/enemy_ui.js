@@ -126,13 +126,24 @@ export function updateEnemyHpUI(totalDamage, selectedSource) {
   }
 
   const hp = Number(enemy.hp);
-  const dmg = Number(totalDamage || 0);
+  const pairCount = 2;
 
-  const pct = hp > 0 ? (dmg / hp) * 100 : 0;
+  let dmg = Number(totalDamage || 0);
+  if (totalDamage && typeof totalDamage === "object") {
+    const single = Number(totalDamage.single ?? 0);
+    const aoe = Number(totalDamage.aoe ?? 0);
+    dmg =
+      (Number.isFinite(single) ? single : 0) +
+      (Number.isFinite(aoe) ? aoe * pairCount : 0);
+  }
+
+  const totalHp = hp * pairCount;
+
+  const pct = totalHp > 0 ? (dmg / totalHp) * 100 : 0;
   const bar = Math.max(0, Math.min(100, pct));
 
-  setText(el.enemyHpText, `${t("hpShort", "HP")}: ${fmtInt(hp)}`);
+  setText(el.enemyHpText, `${t("hpShort", "HP")}: ${fmtInt(hp)} ×${pairCount}`);
   setText(el.enemyHpPct, `${pct.toFixed(2)}%`);
-  setText(el.enemyHpDetail, `（${fmtInt(dmg)} / ${fmtInt(hp)}）`);
+  setText(el.enemyHpDetail, `（${fmtInt(dmg)} / ${fmtInt(hp)} ×${pairCount}）`);
   setWidth(el.enemyHpBar, `${bar}%`);
 }

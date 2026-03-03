@@ -7,6 +7,9 @@ from typing import Any, Dict, Optional, Tuple
 from dps_sim1.simulator.f32lock_rounding import round_half_up as round
 
 
+DamageTuple = Tuple[float, float, float, float, float]
+
+
 def round_half_up(x: float) -> int:
     """四捨五入 (0.5 は切り上げ)。"""
     return int(math.floor(x + 0.5))
@@ -192,15 +195,15 @@ def _simulate_once(p: PrimitiveBambaParams, rng: random.Random) -> Tuple[float, 
     return nonbuff_basic, nonbuff_skill1, nonbuff_skill2, buff_all, elapsed_ticks, capped
 
 
-def mean_total_damage_15001(params: Dict[str, Any]) -> Dict[str, Any]:
+def mean_total_damage_15001(params: Dict[str, Any]) -> DamageTuple:
     """
     外部から辞書で呼べる平均ダメージ計算。
     返す値は平均の
       - 非バフ basic 合計
       - 非バフ skill1 合計
       - 非バフ skill2 合計
-      - バフ中（basic+skill1+skill2）合計
-    に加えて、合計/割合/DPS なども返す。
+      - skill3 は常に 0
+      - バフ中（basic+skill1+skill2）合計を ult スロットに集約
     """
     p = PrimitiveBambaParams(
         tick=int(params.get("tick", 0)),
@@ -226,70 +229,28 @@ def mean_total_damage_15001(params: Dict[str, Any]) -> Dict[str, Any]:
     sum_nb_s2 = 0.0
     sum_buff = 0.0
 
-    sum_total_damage = 0.0
-    sum_total_seconds = 0.0
-    sum_elapsed_ticks = 0.0
-
-    capped_trials = 0
-
     for _ in range(p.trials):
-        nb_basic, nb_s1, nb_s2, buff_all, elapsed_ticks, capped = _simulate_once(p, rng)
-        if capped:
-            capped_trials += 1
-
+        nb_basic, nb_s1, nb_s2, buff_all, _, _ = _simulate_once(p, rng)
         sum_nb_basic += nb_basic
         sum_nb_s1 += nb_s1
         sum_nb_s2 += nb_s2
         sum_buff += buff_all
 
-        total = nb_basic + nb_s1 + nb_s2 + buff_all
-        sum_total_damage += total
-
-        seconds = elapsed_ticks / p.attack_speed  # tick=1行動、attack_speed=行動/秒
-        sum_total_seconds += seconds
-        sum_elapsed_ticks += elapsed_ticks
-
     mean_nb_basic = sum_nb_basic / p.trials
     mean_nb_s1 = sum_nb_s1 / p.trials
     mean_nb_s2 = sum_nb_s2 / p.trials
     mean_buff = sum_buff / p.trials
-    mean_total = sum_total_damage / p.trials
 
-    # DPS: 「総ダメ / 経過秒」を期待値として計算（trialごとの秒合計で割る）
-    dps = (sum_total_damage / sum_total_seconds) if sum_total_seconds > 0 else 0.0
+    return mean_nb_basic, mean_nb_s1, mean_nb_s2, 0.0, mean_buff
 
-    def ratio(x: float) -> float:
-        return (x / mean_total) if mean_total > 0 else 0.0
 
-    return mean_nb_basic, mean_nb_s1, mean_nb_s2, 0, mean_buff
-    return {
-        "meta": {
-            "trials": p.trials,
-            "seed": p.seed,
-            "tick_input": p.tick,
-            "mean_elapsed_ticks": sum_elapsed_ticks / p.trials,
-            "mean_elapsed_seconds": (sum_total_seconds / p.trials),
-            "dps": dps,
-            "capped_trials": capped_trials,
-        },
-        "damage": {
-            "nonbuff_basic": mean_nb_basic,
-            "nonbuff_skill1": mean_nb_s1,
-            "nonbuff_skill2": mean_nb_s2,
-            "buff_all": mean_buff,
-            "total": mean_total,
-        },
-        "ratio": {
-            "nonbuff_basic": ratio(mean_nb_basic),
-            "nonbuff_skill1": ratio(mean_nb_s1),
-            "nonbuff_skill2": ratio(mean_nb_s2),
-            "buff_all": ratio(mean_buff),
-        },
-    }
+def mean_total_damage_primitive_bamba(params: Dict[str, Any]) -> DamageTuple:
+    """互換用の英語名。アプリ本体と同じ5スロット返却を返す。"""
+    return mean_total_damage_15001(params)
 
 
 # ユーザー要望の関数名（日本語識別子）も用意
-def mean_total_damage_原始バンバ(params: Dict[str, Any]) -> Dict[str, Any]:
+def mean_total_damage_原始バンバ(params: Dict[str, Any]) -> DamageTuple:
     return mean_total_damage_primitive_bamba(params)
 
 

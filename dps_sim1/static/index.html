@@ -234,7 +234,7 @@
     <div class="container py-1 d-flex align-items-center justify-content-between gap-3">
       <a class="navbar-brand fw-semibold" href="#">
         <i class="bi bi-speedometer2 me-1"></i>DPS Calculator
-        <span class="ms-2 small text-muted fw-normal">v1.3.0</span>
+        <span class="ms-2 small text-muted fw-normal">v1.3.1</span>
       </a>
       <div class="d-flex align-items-center gap-2" data-i18n-skip>
         <label class="small text-secondary mb-0" for="langSelect">Lang</label>
@@ -405,6 +405,7 @@
               <div class="display-5 fw-semibold metric">
                 <span id="totalValue">—</span>
               </div>
+              <div id="totalBreakdown" class="mt-2"></div>
             </div>
             <div class="mt-2">
               <div class="d-flex justify-content-between small text-secondary">
@@ -1122,6 +1123,17 @@
       <details class="release-notes d-inline-block text-start">
         <summary class="small">リリースノート</summary>
         <div class="rn-body small">
+          <div class="mb-2">
+            <div class="rn-ver">v1.3.1 (2026/03/03 16:00)</div>
+            <ul class="mb-0 ps-3">
+              <li>ランスロットの追加</li>
+              <li>仮想敵に太初を追加</li>
+              <li>区分別ダメージ合計（単体/範囲, 魔法/物理）を表示</li>
+              <li>仮想敵HP表示を単体/範囲に対応</li>
+              <li>一部のキャラで遺物マジック籠手が誤って適用/未適用されていた問題を修正</li>
+              <li>グラントと猫魔術師の物理/魔法ダメージ軽減を反映</li>
+            </ul>
+          </div>
           <div class="mb-2">
             <div class="rn-ver">v1.3.0 (2026/02/22 1:10)</div>
             <ul class="mb-0 ps-3">

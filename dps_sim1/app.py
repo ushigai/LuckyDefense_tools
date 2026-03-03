@@ -41,6 +41,7 @@ from dps_sim1.simulator.ace_batman_bat import mean_total_damage_15210
 from dps_sim1.simulator.top_vein import mean_total_damage_15011
 from dps_sim1.simulator.bamba import mean_total_damage_5001
 from dps_sim1.simulator.queen_coldy import mean_total_damage_15002
+from dps_sim1.simulator.lancelot import mean_total_damage_5003
 from dps_sim1.simulator.common_sim import mean_total_damage_common
 from dps_sim1.simulator.f32lock_awakened_hayley import mean_total_damage_15021 as mean_total_damage_15021_f32lock
 from dps_sim1.simulator.f32lock_hayley import mean_total_damage_5021 as mean_total_damage_5021_f32lock
@@ -61,6 +62,7 @@ from dps_sim1.simulator.f32lock_ace_batman_bat import mean_total_damage_15210 as
 from dps_sim1.simulator.f32lock_top_vein import mean_total_damage_15011 as mean_total_damage_15011_f32lock
 from dps_sim1.simulator.f32lock_bamba import mean_total_damage_5001 as mean_total_damage_5001_f32lock
 from dps_sim1.simulator.f32lock_queen_coldy import mean_total_damage_15002 as mean_total_damage_15002_f32lock
+from dps_sim1.simulator.f32lock_lancelot import mean_total_damage_5003 as mean_total_damage_5003_f32lock
 from dps_sim1.simulator.f32lock_common_sim import mean_total_damage_common as mean_total_damage_common_f32lock
 
 
@@ -75,6 +77,8 @@ def _as_damage_tuple(x: Any) -> DamageTuple:
     """
     if isinstance(x, (tuple, list)) and len(x) == 5:
         return (float(x[0]), float(x[1]), float(x[2]), float(x[3]), float(x[4]))
+    if isinstance(x, (tuple, list)) and len(x) == 4:
+        return (float(x[0]), float(x[1]), float(x[2]), 0.0, float(x[3]))
     if isinstance(x, dict):
         keys = ("basic", "skill1", "skill2", "skill3", "ult")
         if all(k in x for k in keys):
@@ -97,6 +101,7 @@ mean_total_damage_15021 = _wrap_damage_func(mean_total_damage_15021)
 mean_total_damage_5021 = _wrap_damage_func(mean_total_damage_5021)
 mean_total_damage_5115 = _wrap_damage_func(mean_total_damage_5115)
 mean_total_damage_5013 = _wrap_damage_func(mean_total_damage_5013)
+mean_total_damage_5003 = _wrap_damage_func(mean_total_damage_5003)
 mean_total_damage_5019 = _wrap_damage_func(mean_total_damage_5019)
 mean_total_damage_15004 = _wrap_damage_func(mean_total_damage_15004)
 mean_total_damage_15024 = _wrap_damage_func(mean_total_damage_15024)
@@ -106,6 +111,13 @@ mean_total_damage_3007 = _wrap_damage_func(mean_total_damage_3007)
 mean_total_damage_5018 = _wrap_damage_func(mean_total_damage_5018)
 mean_total_damage_5023 = _wrap_damage_func(mean_total_damage_5023)
 mean_total_damage_13007 = _wrap_damage_func(mean_total_damage_13007)
+mean_total_damage_15001 = _wrap_damage_func(mean_total_damage_15001)
+mean_total_damage_15006 = _wrap_damage_func(mean_total_damage_15006)
+mean_total_damage_15110 = _wrap_damage_func(mean_total_damage_15110)
+mean_total_damage_15210 = _wrap_damage_func(mean_total_damage_15210)
+mean_total_damage_15011 = _wrap_damage_func(mean_total_damage_15011)
+mean_total_damage_5001 = _wrap_damage_func(mean_total_damage_5001)
+mean_total_damage_15002 = _wrap_damage_func(mean_total_damage_15002)
 mean_total_damage_common = _wrap_damage_func(mean_total_damage_common)
 mean_total_damage_15021_f32lock = _wrap_damage_func(mean_total_damage_15021_f32lock)
 mean_total_damage_5021_f32lock = _wrap_damage_func(mean_total_damage_5021_f32lock)
@@ -126,11 +138,13 @@ mean_total_damage_15210_f32lock = _wrap_damage_func(mean_total_damage_15210_f32l
 mean_total_damage_15011_f32lock = _wrap_damage_func(mean_total_damage_15011_f32lock)
 mean_total_damage_5001_f32lock = _wrap_damage_func(mean_total_damage_5001_f32lock)
 mean_total_damage_15002_f32lock = _wrap_damage_func(mean_total_damage_15002_f32lock)
+mean_total_damage_5003_f32lock = _wrap_damage_func(mean_total_damage_5003_f32lock)
 mean_total_damage_common_f32lock = _wrap_damage_func(mean_total_damage_common_f32lock)
 
 MEAN_TOTAL_DAMAGE_15021_BASE = mean_total_damage_15021
 MEAN_TOTAL_DAMAGE_5021_BASE = mean_total_damage_5021
 MEAN_TOTAL_DAMAGE_5115_BASE = mean_total_damage_5115
+MEAN_TOTAL_DAMAGE_5003_BASE = mean_total_damage_5003
 MEAN_TOTAL_DAMAGE_5019_BASE = mean_total_damage_5019
 MEAN_TOTAL_DAMAGE_15004_BASE = mean_total_damage_15004
 MEAN_TOTAL_DAMAGE_15024_BASE = mean_total_damage_15024
@@ -156,6 +170,7 @@ BASE_DIR = os.path.abspath(os.path.join(APP_DIR, os.pardir))
 
 STATIC_DIR = os.path.join(APP_DIR, "static")
 DATA_DIR = os.path.join(BASE_DIR, "data")
+ENEMY_DAMAGE_REDUCTION_PATH = os.path.join(DATA_DIR, "enemy_damage_reduction.json")
 TEXT_CSV_PATHS = [
     os.path.join(DATA_DIR, "Text.csv"),
     os.path.join(DATA_DIR, "Text2.csv"),
@@ -414,6 +429,126 @@ def _default_enemy_row() -> Dict[str, Any]:
 def _resolve_enemy_row(common: Dict[str, Any]) -> Dict[str, Any]:
     return enemy_normalizer.resolve_enemy_row(common, ENEMY_DB, _default_enemy_def())
 
+
+def _load_enemy_damage_reduction_rules() -> Dict[str, Dict[str, Any]]:
+    if not os.path.exists(ENEMY_DAMAGE_REDUCTION_PATH):
+        return {}
+    try:
+        with open(ENEMY_DAMAGE_REDUCTION_PATH, "r", encoding="utf-8") as f:
+            obj = json.load(f)
+    except Exception:
+        return {}
+    if not isinstance(obj, dict):
+        return {}
+    groups = obj.get("groups", {})
+    if not isinstance(groups, dict):
+        return {}
+    return groups
+
+
+def _resolve_enemy_damage_reduction(enemy_mode: Any, enemy_group: Any, rules: Dict[str, Dict[str, Any]]) -> Dict[str, float]:
+    mode_key = str(enemy_mode or "").strip()
+    group_key = str(enemy_group or "").strip()
+    raw = rules.get(group_key, {})
+    if not isinstance(raw, dict):
+        raw = {}
+
+    modes = raw.get("modes", {})
+    if not isinstance(modes, dict):
+        modes = {}
+    mode_raw = modes.get(mode_key, {})
+    if not isinstance(mode_raw, dict):
+        mode_raw = {}
+
+    physical_pct = clamp_float(
+        mode_raw.get("physicalReductionPct", raw.get("physicalReductionPct", 0)),
+        0.0,
+        100.0,
+        0.0,
+    )
+    magic_pct = clamp_float(
+        mode_raw.get("magicReductionPct", raw.get("magicReductionPct", 0)),
+        0.0,
+        100.0,
+        0.0,
+    )
+    return {
+        "physical": physical_pct / 100.0,
+        "magic": magic_pct / 100.0,
+    }
+
+
+def _get_action_meta_for_slot(character_id: Any, slot_key: str) -> Dict[str, Any] | None:
+    char_row = CHAR_DB.get(str(character_id), {})
+    action_meta = char_row.get("actionMeta", {})
+    if isinstance(action_meta, dict):
+        slot_meta = action_meta.get(slot_key)
+        if isinstance(slot_meta, dict):
+            return slot_meta
+    if slot_key == "basic":
+        return {"damageType": "physical", "targetType": "single"}
+    return None
+
+
+def _apply_enemy_damage_reduction(
+    character_id: Any,
+    dps: float,
+    dps_ratio: Dict[str, Any],
+    damage_reduction: Dict[str, float],
+) -> Tuple[float, Dict[str, float]]:
+    physical_reduction = float(damage_reduction.get("physical", 0.0) or 0.0)
+    magic_reduction = float(damage_reduction.get("magic", 0.0) or 0.0)
+    if physical_reduction <= 0.0 and magic_reduction <= 0.0:
+        return float(dps), dict(dps_ratio or {})
+
+    safe_dps = float(dps)
+    if not math.isfinite(safe_dps) or safe_dps <= 0.0:
+        return 0.0, dict(dps_ratio or {})
+    if not isinstance(dps_ratio, dict):
+        return safe_dps, {}
+
+    ratio_total = 0.0
+    normalized_ratio: Dict[str, float] = {}
+    for slot_key in _MULT_SLOT_KEYS:
+        raw_value = dps_ratio.get(slot_key, 0)
+        try:
+            value = float(raw_value)
+        except Exception:
+            value = 0.0
+        if not math.isfinite(value) or value <= 0.0:
+            value = 0.0
+        normalized_ratio[slot_key] = value
+        ratio_total += value
+
+    if ratio_total <= 0.0:
+        return safe_dps, normalized_ratio
+
+    adjusted_total = 0.0
+    adjusted_ratio: Dict[str, float] = {}
+    for slot_key in _MULT_SLOT_KEYS:
+        raw_value = normalized_ratio.get(slot_key, 0.0)
+        if raw_value <= 0.0:
+            adjusted_ratio[slot_key] = 0.0
+            continue
+
+        slot_meta = _get_action_meta_for_slot(character_id, slot_key)
+        damage_type = ""
+        if isinstance(slot_meta, dict):
+            damage_type = str(slot_meta.get("damageType", "") or "").strip().lower()
+
+        reduction = 0.0
+        if damage_type == "physical":
+            reduction = physical_reduction
+        elif damage_type == "magic":
+            reduction = magic_reduction
+
+        multiplier = max(0.0, 1.0 - reduction)
+        adjusted_value = safe_dps * (raw_value / ratio_total) * multiplier
+        adjusted_ratio[slot_key] = adjusted_value
+        adjusted_total += adjusted_value
+
+    return adjusted_total, adjusted_ratio
+
 def load_runes() -> Dict[str, Dict[str, Any]]:
     """Load runes.json (list) into name->entry mapping."""
     path = os.path.join(DATA_DIR, "runes.json")
@@ -599,6 +734,11 @@ def _build_member_debug_tail(
     skill2_one: float | int,
     skill3_one: float | int,
     ult_one: float | int,
+    basic_actionMeta: Dict[str, Any] | None,
+    skill1_actionMeta: Dict[str, Any] | None,
+    skill2_actionMeta: Dict[str, Any] | None,
+    skill3_actionMeta: Dict[str, Any] | None,
+    ult_actionMeta: Dict[str, Any] | None,
     mult_parts: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
     return {
@@ -618,6 +758,11 @@ def _build_member_debug_tail(
         "skill2_one": skill2_one,
         "skill3_one": skill3_one,
         "ult_one": ult_one,
+        "basic_actionMeta": copy.deepcopy(basic_actionMeta),
+        "skill1_actionMeta": copy.deepcopy(skill1_actionMeta),
+        "skill2_actionMeta": copy.deepcopy(skill2_actionMeta),
+        "skill3_actionMeta": copy.deepcopy(skill3_actionMeta),
+        "ult_actionMeta": copy.deepcopy(ult_actionMeta),
         "mult_parts": copy.deepcopy(mult_parts),
     }
 
@@ -628,6 +773,25 @@ def sign(n):
             return -1
         return 1
     return 0
+
+
+LANCELOT_ADDITIONAL_DMG_MODE_RATE = {
+    "ノーマル": 1.0,  # 100%
+    "ハード": 0.7,    # 70%
+    "地獄": 0.3,      # 30%
+    "神": 0.2,        # 20%
+    "太初": 0.2,      # 20%
+}
+
+
+def _lancelot_additional_dmg_mode_rate(enemy_mode: Any) -> float:
+    mode = str(enemy_mode or "").strip()
+    if mode in LANCELOT_ADDITIONAL_DMG_MODE_RATE:
+        return float(LANCELOT_ADDITIONAL_DMG_MODE_RATE[mode])
+    for token, rate in LANCELOT_ADDITIONAL_DMG_MODE_RATE.items():
+        if token in mode:
+            return float(rate)
+    return 1.0
 
 
 def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[str, Any]) -> Tuple[float, Dict[str, float], Dict[str, Any]]:
@@ -667,11 +831,20 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     basic_one, skill1_one, skill2_one, skill3_one, ult_one = 0,0,0,0,0
     DamageIncreasePassive = 0
     mult_parts = _empty_mult_parts()
+    char_actionMeta = CHAR_DB.get(character_id, {}).get("actionMeta", {})
+    if not isinstance(char_actionMeta, dict):
+        char_actionMeta = {}
+    basic_actionMeta = copy.deepcopy(char_actionMeta.get("basic"))
+    skill1_actionMeta = copy.deepcopy(char_actionMeta.get("skill1"))
+    skill2_actionMeta = copy.deepcopy(char_actionMeta.get("skill2"))
+    skill3_actionMeta = copy.deepcopy(char_actionMeta.get("skill3"))
+    ult_actionMeta = copy.deepcopy(char_actionMeta.get("ult"))
     use_f32lock = str(common.get("f32lock", "disable")).strip().lower() == "enable"
 
     mean_total_damage_15021 = mean_total_damage_15021_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15021_BASE
     mean_total_damage_5021 = mean_total_damage_5021_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5021_BASE
     mean_total_damage_5115 = mean_total_damage_5115_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5115_BASE
+    mean_total_damage_5003 = mean_total_damage_5003_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5003_BASE
     mean_total_damage_5019 = mean_total_damage_5019_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5019_BASE
     mean_total_damage_15004 = mean_total_damage_15004_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15004_BASE
     mean_total_damage_15024 = mean_total_damage_15024_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15024_BASE
@@ -1116,7 +1289,52 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
         }
     elif character_id == "5003":  # ランスロット
-        ans = 28000
+        t_buff1 = float(TREASURE_DB["ランスロット"][treasure_lv][1])
+        t_buff2 = float(TREASURE_DB["ランスロット"][treasure_lv][2]) / 100
+        spark_bonus_pct = float(member.get("spark", 0.0))
+        spark_bonus_pct += 2 if char_lv < 12 else 3
+        enemy_row = _resolve_enemy_row(common)
+        enemy_mode = str(enemy_row.get("mode", ""))
+        enemy_hp = float(enemy_row.get("hp", 0.0))
+        mode_rate = _lancelot_additional_dmg_mode_rate(enemy_mode)
+        additional_dmg = enemy_hp * (spark_bonus_pct / 100.0) * mode_rate
+        params = {
+            "ticks": ticks,
+            "trials": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_rate": 16 + RateBuff1,
+            "skill1_mult": 22 * MagicBuff1,
+            "skill2_rate": 8 + RateBuff1 if 6 <= char_lv else 0,
+            "skill2_mult": 30 * MagicBuff1,
+            "ult_mana": ult_mana * UltManaBuff1,
+            "ult_mult": 36 * (MagicBuff1 + UltBuff1),
+            "attack_mana_recov": 1.0,
+            "mana_buff": mana_buff * (1.0 + t_buff2),
+            "additional_dmg": additional_dmg,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg + MagicGauntlet,
+        }
+        basic_one = atk * params["base_attack_mult"]
+        skill1_one = atk * params["skill1_mult"] + additional_dmg
+        skill2_one = atk * params["skill2_mult"] + additional_dmg
+        skill3_one = 0
+        ult_one = atk * params["ult_mult"] + additional_dmg * 10
+        basic, skill1, skill2, skill3, ult = mean_total_damage_5003(params)
+        basic *= BasicAttackBuff1
+        ans = basic + skill1 + skill2 + skill3 + ult
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [40], "buffs": {"MagicBuff1": MagicBuff1, "additional_dmg": additional_dmg}},
+            "skill2": {"numbers": [60], "buffs": {"MagicBuff1": MagicBuff1, "additional_dmg": additional_dmg}},
+            "skill3": {"numbers": [0], "buffs": {}},
+            "ult": {"numbers": [20], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1, "additional_dmg_x10": additional_dmg * 10}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+            "aux": {"numbers": [], "buffs": {"sparkPct": spark_bonus_pct, "modeRate": mode_rate, "enemyMode": enemy_mode, "treasureFlameStage": t_buff1, "treasureManaRegen": t_buff2}},
+        }
     elif character_id == "5004":  # アイアンニャン
         t_buff1 = float(TREASURE_DB["アイアンニャン"][treasure_lv][1]) / 100
         t_buff2 = float(TREASURE_DB["アイアンニャン"][treasure_lv][2])
@@ -2643,6 +2861,11 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             skill2_one=skill2_one,
             skill3_one=skill3_one,
             ult_one=ult_one,
+            basic_actionMeta=basic_actionMeta,
+            skill1_actionMeta=skill1_actionMeta,
+            skill2_actionMeta=skill2_actionMeta,
+            skill3_actionMeta=skill3_actionMeta,
+            ult_actionMeta=ult_actionMeta,
             mult_parts=mult_parts,
         )
     )
@@ -2670,6 +2893,8 @@ def api_calc():
     enemy_wave = _parse_enemy_wave(enemy_row.get("wave", 0))
     enemy_group = str(enemy_row.get("group", ""))
     enemy_def = clamp_float(enemy_row.get("enemy_def", _default_enemy_def()), -10_000_000, 10_000_000, _default_enemy_def())
+    enemy_damage_reduction_rules = _load_enemy_damage_reduction_rules()
+    enemy_damage_reduction = _resolve_enemy_damage_reduction(enemy_mode, enemy_group, enemy_damage_reduction_rules)
     duration_sec = clamp_float(common.get("durationSec", 60), 60, 24 * 3600, 60)
     all_relic_lv = clamp_int(common.get("allRelicLv", common.get("relicLv", 1)), 1, 11, 1)
     mythEnhanceLv = clamp_int(common.get("mythEnhanceLv", 0), 1, 35, 1)
@@ -2789,7 +3014,7 @@ def api_calc():
         member_s["strikeout"] = clamp_float(m.get("strikeout", 1.0), 1.0, 3.0, 1.0)
         member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
         member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
-        member_s["sparkBonusDmg"] = clamp_float(m.get("sparkBonusDmg", 0.0), 0.0, 3.0, 0.0)
+        member_s["spark"] = clamp_float(m.get("spark", 0.0), 0.0, 3.0, 0.0)
         ec = clamp_int(m.get("energyCount", 0), 0, 2_000_000_000, 0)
         member_s["energyCount"] = ec
         member_s["techEnhance"] = clamp_int(m.get("techEnhance", 0), 0, 10, 0)
@@ -2820,6 +3045,7 @@ def api_calc():
         else:
             dps, dps_ratio, debug_message = compute_member_dps(cid, common_m, member_s)
 
+        dps, dps_ratio = _apply_enemy_damage_reduction(cid, dps, dps_ratio, enemy_damage_reduction)
         dps_list.append(dps)
         dps_ratio_list.append(dps_ratio)
         DebugMessages[cname or cid] = debug_message
@@ -2839,7 +3065,7 @@ def api_calc():
                 "strikeout": member_s.get("strikeout"),
                 "starPower": member_s.get("starPower"),
                 "emotionControl": member_s.get("emotionControl"),
-                "sparkBonusDmg": member_s.get("sparkBonusDmg"),
+                "spark": member_s.get("spark"),
                 "energyCount": member_s.get("energyCount"),
                 "techEnhance": member_s.get("techEnhance"),
                 "score": member_s.get("score"),
@@ -2868,7 +3094,17 @@ def api_calc():
 
     return jsonify(
         {
-            "meta": {"ticks": ticks, "trials": trials, "memberCache": cache_info},  # フロント表示はしないが、残してOK
+            "meta": {
+                "ticks": ticks,
+                "trials": trials,
+                "memberCache": cache_info,
+                "enemyDamageReduction": {
+                    "mode": enemy_mode,
+                    "group": enemy_group,
+                    "physicalReductionPct": enemy_damage_reduction.get("physical", 0.0) * 100.0,
+                    "magicReductionPct": enemy_damage_reduction.get("magic", 0.0) * 100.0,
+                },
+            },  # フロント表示はしないが、残してOK
             "totalDps": total,
             "dpsRatio": dps_ratio_list,
             "members": members_out,

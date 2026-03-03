@@ -21,7 +21,7 @@ def parse_enemy_mode(mode: Any, name: Any) -> str:
         return mode_s
 
     name_s = str(name or "")
-    for token in ("ノーマル", "ハード", "地獄", "神"):
+    for token in ("ノーマル", "ハード", "地獄", "神", "太初"):
         if token in name_s:
             return token
     return ""
@@ -79,4 +79,3 @@ def resolve_enemy_row(
     if row:
         return row
     return default_enemy_row(enemy_db, default_enemy_def)
-

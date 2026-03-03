@@ -13,7 +13,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "榴弾兵",
@@ -28,7 +38,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "野蛮人",
@@ -43,7 +63,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "水の精霊",
@@ -58,7 +88,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "山賊",
@@ -73,7 +113,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "レンジャー",
@@ -88,7 +138,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ショックロボット",
@@ -103,7 +163,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "聖騎士",
@@ -118,7 +188,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "サンドマン",
@@ -133,7 +213,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "悪魔の兵士",
@@ -148,7 +238,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "電気ロボット",
@@ -163,7 +263,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "木",
@@ -178,7 +288,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ハンター",
@@ -193,7 +313,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "重力弾",
@@ -208,7 +338,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "イーグル将軍",
@@ -223,7 +363,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ウルフ戦士",
@@ -238,7 +388,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "忍者",
@@ -254,7 +414,26 @@
       "skill1": "巨大手裏剣",
       "skill2": "暗殺",
       "skill3": "",
-      "ult": "忍法"
+      "ult": "忍法",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "オークシャーマン",
@@ -270,7 +449,23 @@
       "skill1": "呪い",
       "skill2": "",
       "skill3": "",
-      "ult": "感染"
+      "ult": "感染",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "パルス発生器",
@@ -286,7 +481,20 @@
       "skill1": "エネルギー球",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ウォーマシン",
@@ -301,7 +509,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "虎の師父",
@@ -316,7 +534,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "嵐の精霊",
@@ -331,7 +559,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "猫の魔法使い",
@@ -347,7 +585,20 @@
       "skill1": "猫パンチ",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "保安官",
@@ -362,7 +613,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "謎のレジェンド",
@@ -377,7 +638,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "バンバ",
@@ -393,7 +664,26 @@
       "skill1": "本気のパンチ",
       "skill2": "ハンマー",
       "skill3": "起爆",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "ult": null
+      }
     },
     {
       "name": "コルディ",
@@ -409,7 +699,26 @@
       "skill1": "吹雪",
       "skill2": "氷の花",
       "skill3": "",
-      "ult": "氷河の衝突"
+      "ult": "氷河の衝突",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ランスロット",
@@ -425,7 +734,26 @@
       "skill1": "火花の剣気",
       "skill2": "黒点爆発",
       "skill3": "",
-      "ult": "火柱"
+      "ult": "火柱",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "アイアンニャン（変身前）",
@@ -441,7 +769,20 @@
       "skill1": "パルスビーム",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "id": 5005,
@@ -457,7 +798,23 @@
       "skill1": "スライムパンチ",
       "skill2": "",
       "skill3": "",
-      "ult": "スライムトラップ"
+      "ult": "スライムトラップ",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ドラゴン(変身前)",
@@ -473,7 +830,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "モノポリーマン",
@@ -489,7 +856,20 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": "変異"
+      "ult": "変異",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ママ",
@@ -505,7 +885,23 @@
       "skill1": "恐怖",
       "skill2": "",
       "skill3": "",
-      "ult": "死霊術"
+      "ult": "死霊術",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "カエルの王様",
@@ -521,7 +917,23 @@
       "skill1": "切り落とし",
       "skill2": "ベローン",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "バットマン",
@@ -537,7 +949,23 @@
       "skill1": "旋風打撃",
       "skill2": "",
       "skill3": "",
-      "ult": "フルスイング"
+      "ult": "フルスイング",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ヴェイン（最速ダンブル）",
@@ -553,7 +981,26 @@
       "skill1": "ダンブル",
       "skill2": "金の矢",
       "skill3": "",
-      "ult": "最後の決選"
+      "ult": "最後の決選",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ヴェイン",
@@ -569,7 +1016,26 @@
       "skill1": "ダンブル",
       "skill2": "金の矢",
       "skill3": "",
-      "ult": "最後の決選"
+      "ult": "最後の決選",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "インディ",
@@ -585,7 +1051,20 @@
       "skill1": "秘蔵武器",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ワット（究極発動中）",
@@ -601,7 +1080,20 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": "放出モード"
+      "ult": "放出モード",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "タール小",
@@ -617,7 +1109,26 @@
       "skill1": "黒い物質",
       "skill2": "居合斬り",
       "skill3": "",
-      "ult": "貫通"
+      "ult": "貫通",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "id": 5015,
@@ -633,7 +1144,23 @@
       "skill1": "強化ロケット",
       "skill2": "超爆破ロケット",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "id": 5016,
@@ -649,7 +1176,23 @@
       "skill1": "寒風",
       "skill2": "",
       "skill3": "",
-      "ult": "風の精霊"
+      "ult": "風の精霊",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ビリ",
@@ -665,7 +1208,23 @@
       "skill1": "完璧な計算",
       "skill2": "",
       "skill3": "",
-      "ult": "魔力増幅"
+      "ult": "魔力増幅",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "マスタークン",
@@ -681,7 +1240,23 @@
       "skill1": "回転炎",
       "skill2": "火花ひっかき",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "チョナ",
@@ -697,7 +1272,26 @@
       "skill1": "トゲのたね",
       "skill2": "植物のつる",
       "skill3": "",
-      "ult": "怪物樹木"
+      "ult": "怪物樹木",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ペンギン楽師",
@@ -713,7 +1307,20 @@
       "skill1": "アンダンテ",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ヘイリー",
@@ -729,7 +1336,26 @@
       "skill1": "光の光線",
       "skill2": "光の種",
       "skill3": "",
-      "ult": "超新星"
+      "ult": "超新星",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "アト",
@@ -745,7 +1371,20 @@
       "skill1": "時間遅延",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "ロカ",
@@ -761,7 +1400,29 @@
       "skill1": "爆弾",
       "skill2": "連射",
       "skill3": "貫通弾",
-      "ult": "ヘッドショット"
+      "ult": "ヘッドショット",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "選鳥師",
@@ -777,7 +1438,23 @@
       "skill1": "シャッフル",
       "skill2": "マジックサークル",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "アイアンニャン",
@@ -793,7 +1470,23 @@
       "skill1": "レーザーブレード",
       "skill2": "",
       "skill3": "",
-      "ult": "リパルサービーム"
+      "ult": "リパルサービーム",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ドラゴン",
@@ -809,7 +1502,26 @@
       "skill1": "火炎弾",
       "skill2": "地面爆発",
       "skill3": "",
-      "ult": "火炎の息吹"
+      "ult": "火炎の息吹",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "インプ",
@@ -824,7 +1536,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "キングダイアン",
@@ -840,7 +1562,20 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": "稲妻玉"
+      "ult": "稲妻玉",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "タール中",
@@ -856,7 +1591,26 @@
       "skill1": "黒い物質",
       "skill2": "居合斬り",
       "skill3": "",
-      "ult": "貫通"
+      "ult": "貫通",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ロケッチュー（変身後）",
@@ -872,7 +1626,26 @@
       "skill1": "チューチュービーム",
       "skill2": "超爆破ロケット",
       "skill3": "",
-      "ult": "ミニチュー"
+      "ult": "ミニチュー",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "アイアンニャンv2",
@@ -888,7 +1661,23 @@
       "skill1": "ロケットパンチ",
       "skill2": "",
       "skill3": "",
-      "ult": "スーパービーム"
+      "ult": "スーパービーム",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "偉大な卵",
@@ -904,7 +1693,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "タール大",
@@ -920,7 +1719,26 @@
       "skill1": "黒い物質",
       "skill2": "居合斬り",
       "skill3": "",
-      "ult": "貫通"
+      "ult": "貫通",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ドレイン",
@@ -936,7 +1754,26 @@
       "skill1": "火炎弾",
       "skill2": "地面爆発",
       "skill3": "",
-      "ult": "火炎の息吹"
+      "ult": "火炎の息吹",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "スーパー重力弾",
@@ -952,7 +1789,26 @@
       "skill1": "電場",
       "skill2": "重力場",
       "skill3": "",
-      "ult": "ブラックホール生成"
+      "ult": "ブラックホール生成",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "鬼神忍者",
@@ -968,7 +1824,26 @@
       "skill1": "投擲",
       "skill2": "排除",
       "skill3": "",
-      "ult": "斬首"
+      "ult": "斬首",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ドクターパルス",
@@ -984,7 +1859,23 @@
       "skill1": "最大出力",
       "skill2": "",
       "skill3": "",
-      "ult": "過熱"
+      "ult": "過熱",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "原始バンバ",
@@ -1000,7 +1891,26 @@
       "skill1": "乱打",
       "skill2": "アッパーカット",
       "skill3": "",
-      "ult": "力の解放"
+      "ult": "力の解放",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "女王コルディ",
@@ -1016,7 +1926,29 @@
       "skill1": "氷河爆撃",
       "skill2": "急速冷凍",
       "skill3": "冷気",
-      "ult": "極寒期"
+      "ult": "極寒期",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "id": 15004,
@@ -1032,7 +1964,26 @@
       "skill1": "プラズマキャノン",
       "skill2": "サポートビーム",
       "skill3": "",
-      "ult": "オメガブラスター"
+      "ult": "オメガブラスター",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "id": 15005,
@@ -1048,7 +1999,29 @@
       "skill1": "青ブロッブ",
       "skill2": "赤ブロッブ",
       "skill3": "緑ブロッブ",
-      "ult": "三位一体"
+      "ult": "三位一体",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "魔王ドラゴン",
@@ -1064,7 +2037,29 @@
       "skill1": "火炎弾",
       "skill2": "火炎放出",
       "skill3": "火炎の印",
-      "ult": "火炎地獄"
+      "ult": "火炎地獄",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "グランドママ",
@@ -1080,7 +2075,23 @@
       "skill1": "死霊術",
       "skill2": "死霊の印",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "カエルの死神",
@@ -1096,7 +2107,23 @@
       "skill1": "抑制",
       "skill2": "死刑",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "エースバットマン",
@@ -1112,7 +2139,17 @@
       "skill1": "",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": null,
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "トップヴェイン",
@@ -1128,7 +2165,26 @@
       "skill1": "黄金の矢",
       "skill2": "破裂の矢",
       "skill3": "",
-      "ult": "終末の時"
+      "ult": "終末の時",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "ノイズペンギンキング",
@@ -1144,7 +2200,20 @@
       "skill1": "レント",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "id": 15021,
@@ -1160,7 +2229,26 @@
       "skill1": "太陽の光線",
       "skill2": "太古の爆発",
       "skill3": "",
-      "ult": "フレア"
+      "ult": "フレア",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "時空アト",
@@ -1176,7 +2264,20 @@
       "skill1": "時間調整",
       "skill2": "",
       "skill3": "",
-      "ult": ""
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": null
+      }
     },
     {
       "name": "キャプテンロカ",
@@ -1192,7 +2293,29 @@
       "skill1": "バウンスショット",
       "skill2": "バーストショット",
       "skill3": "チャージショット",
-      "ult": "砲撃命令"
+      "ult": "砲撃命令",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "id": 15024,
@@ -1208,7 +2331,29 @@
       "skill1": "ハードシャッフル",
       "skill2": "プライムサークル",
       "skill3": "トリックトークン",
-      "ult": "フィナーレ"
+      "ult": "フィナーレ",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "死神ダイアン",
@@ -1224,7 +2369,23 @@
       "skill1": "稲妻の連鎖",
       "skill2": "",
       "skill3": "",
-      "ult": "死の手"
+      "ult": "死の手",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "エースバットマン投手",
@@ -1240,7 +2401,23 @@
       "skill1": "ストライクアウト",
       "skill2": "",
       "skill3": "",
-      "ult": "フィニッシュピッチ"
+      "ult": "フィニッシュピッチ",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     },
     {
       "name": "エースバットマン打者",
@@ -1256,7 +2433,23 @@
       "skill1": "竜巻スマッシュ",
       "skill2": "",
       "skill3": "",
-      "ult": "ホームラン乱打"
+      "ult": "ホームラン乱打",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": null,
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
     }
   ]
 }

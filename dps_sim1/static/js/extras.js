@@ -13,7 +13,6 @@ export const EXTRA_FIELDS_BY_CHARACTER_ID = {
   ],
   "5021": [{ key: "starPower", label: "星の力", kind: "select-int", min: 0, max: 10, def: 0 }],
   "5018": [{ key: "emotionControl", label: "感情コントロール", kind: "select-int", min: 0, max: 99, def: 0 }],
-  "5003": [{ key: "sparkBonusDmg", label: "火花追加ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 0.0 }],
   "5013": [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }],
   "5204": [{ key: "techEnhance", label: "技術強化", kind: "select-int", min: 0, max: 10, def: 0 }],
   "5024": [{ key: "score", label: "スコア", kind: "select-int", min: 0, max: 100, def: 0 }],
@@ -37,6 +36,7 @@ export const EXTRA_FIELDS_BY_CHARACTER_ID = {
   "15002": [
     { key: "icecount_", label: "氷河爆撃の命中数", kind: "select-int", min: 1, max: 15, step: 1, def: 6 }
   ],
+  "5003": [{ key: "spark", label: "火花追加HP%ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 3.0 }],
 };
 
 export function getExtraFieldsForCharacter(characterId) {

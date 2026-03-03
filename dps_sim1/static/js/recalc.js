@@ -20,6 +20,31 @@ function _getCharacterById(id) {
   return (state.CHARACTERS ?? []).find(c => String(c.id) === String(id)) ?? null;
 }
 
+function _getMemberRatio(data, memberRows, index) {
+  const row = Array.isArray(data?.members) ? data.members[index] : null;
+  if (row && row.dpsRatio && typeof row.dpsRatio === "object") {
+    return row.dpsRatio;
+  }
+  if (Array.isArray(data?.dpsRatio) && data.dpsRatio[index] && typeof data.dpsRatio[index] === "object") {
+    return data.dpsRatio[index];
+  }
+  if (Array.isArray(memberRows) && memberRows.length === 1 && data && !Array.isArray(data.dpsRatio) && typeof data.dpsRatio === "object") {
+    return data.dpsRatio;
+  }
+  return null;
+}
+
+function _getActionMeta(characterId, slotKey) {
+  const ch = _getCharacterById(characterId) ?? {};
+  const meta = (ch.actionMeta && typeof ch.actionMeta === "object") ? ch.actionMeta : {};
+  const slotMeta = meta?.[slotKey];
+  if (slotMeta && typeof slotMeta === "object") return slotMeta;
+  if (slotKey === "basic") {
+    return { damageType: "physical", targetType: "single" };
+  }
+  return null;
+}
+
 function _formatPct(x) {
   if (!isFinite(x) || x <= 0) return "0.0";
   return x.toFixed(1);
@@ -95,6 +120,102 @@ function _renderDpsRatio(characterId, ratioObj) {
   return `
     <div class="mt-2 text-start">
       ${rows}
+    </div>
+  `;
+}
+
+function _computeCategorizedDamage(data, memberRows) {
+  const membersData = Array.isArray(data?.members) ? data.members : [];
+  if (membersData.length === 0) {
+    return {
+      physical: 0,
+      magic: 0,
+      single: 0,
+      aoe: 0,
+    };
+  }
+
+  const slotKeys = ["basic", "skill1", "skill2", "skill3", "ult"];
+  const sums = {
+    physical: 0,
+    magic: 0,
+    single: 0,
+    aoe: 0,
+  };
+
+  membersData.forEach((row, index) => {
+    const memberDps = Number(row?.dps ?? 0);
+    if (!Number.isFinite(memberDps) || memberDps <= 0) return;
+
+    const ratioObj = _getMemberRatio(data, memberRows, index);
+    if (!ratioObj || typeof ratioObj !== "object") return;
+
+    const ratioTotal = slotKeys.reduce((acc, key) => {
+      const value = Number(ratioObj?.[key] ?? 0);
+      return acc + (Number.isFinite(value) ? Math.max(0, value) : 0);
+    }, 0);
+    if (!(ratioTotal > 0)) return;
+
+    const characterId = row?.character ?? memberRows?.[index]?.character;
+    slotKeys.forEach(slotKey => {
+      const rawValue = Number(ratioObj?.[slotKey] ?? 0);
+      if (!Number.isFinite(rawValue) || rawValue <= 0) return;
+
+      const slotMeta = _getActionMeta(characterId, slotKey);
+      if (!slotMeta) return;
+
+      const allocatedDps = memberDps * rawValue / ratioTotal;
+      if (!Number.isFinite(allocatedDps) || allocatedDps <= 0) return;
+
+      if (slotMeta.damageType === "physical") sums.physical += allocatedDps;
+      if (slotMeta.damageType === "magic") sums.magic += allocatedDps;
+      if (slotMeta.targetType === "single") sums.single += allocatedDps;
+      if (slotMeta.targetType === "aoe") sums.aoe += allocatedDps;
+    });
+  });
+
+  return sums;
+}
+
+function _renderTotalBreakdown(data, memberRows) {
+  const membersData = Array.isArray(data?.members) ? data.members : [];
+  const sums = _computeCategorizedDamage(data, memberRows);
+
+  const fallbackTotal = membersData.reduce((acc, row) => {
+    const value = Number(row?.dps ?? 0);
+    return acc + (Number.isFinite(value) ? value : 0);
+  }, 0);
+  const total = Number(data?.totalDps ?? fallbackTotal);
+  const safeTotal = (Number.isFinite(total) && total > 0) ? total : 0;
+  if (!(safeTotal > 0)) {
+    return `<div class="small text-secondary">${t("breakdown", "内訳")}: —</div>`;
+  }
+
+  const items = [
+    { label: t("physicalDamage", "物理"), value: sums.physical },
+    { label: t("magicDamage", "魔法"), value: sums.magic },
+    { label: t("singleDamage", "単体"), value: sums.single },
+    { label: t("aoeDamage", "複数"), value: sums.aoe },
+  ];
+
+  const blocks = items.map(item => {
+    const value = Number.isFinite(item.value) ? item.value : 0;
+    const pct = safeTotal > 0 ? (value / safeTotal) * 100 : 0;
+    return `
+      <div class="col-6">
+        <div class="rounded-3 border px-2 py-2 h-100 bg-white bg-opacity-50">
+          <div class="small text-secondary">${_escHtml(item.label)}</div>
+          <div class="small fw-semibold metric">${_escHtml(fmtNumber(Math.round(value)))}</div>
+          <div class="small text-secondary">${_escHtml(_formatPct(pct))}%</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="small text-secondary mb-1">${t("categorizedDamage", "区分別合計")}</div>
+    <div class="row g-2">
+      ${blocks}
     </div>
   `;
 }
@@ -562,9 +683,13 @@ export async function recalc() {
 
     const dpsList = (data.members ?? []).map(x => Number(x.dps ?? 0));
     const total = Number(data.totalDps ?? dpsList.reduce((a, b) => a + b, 0));
+    const categorizedDamage = _computeCategorizedDamage(data, members);
 
     el.totalValue.textContent = fmtNumber(Math.round(total));
-    updateEnemyHpUI(total, options);
+    if (el.totalBreakdown) {
+      el.totalBreakdown.innerHTML = _renderTotalBreakdown(data, members);
+    }
+    updateEnemyHpUI(categorizedDamage, options);
 
     (data.members ?? []).forEach((r, i) => {
       const dps = Number(r.dps ?? 0);
@@ -574,14 +699,7 @@ export async function recalc() {
       members[i].shareEl.textContent = `${t("share", "share")}: ${share.toFixed(3)}%`;
 
       // DPS 内訳（basic/skill/ult）
-      let ratioObj = null;
-      if (r && r.dpsRatio && typeof r.dpsRatio === "object") {
-        ratioObj = r.dpsRatio;
-      } else if (Array.isArray(data?.dpsRatio) && data.dpsRatio[i] && typeof data.dpsRatio[i] === "object") {
-        ratioObj = data.dpsRatio[i];
-      } else if (members.length === 1 && data && typeof data.dpsRatio === "object") {
-        ratioObj = data.dpsRatio;
-      }
+      const ratioObj = _getMemberRatio(data, members, i);
       if (members[i].ratioEl) {
         members[i].ratioEl.innerHTML = _renderDpsRatio(r.character ?? members[i].character, ratioObj);
       }
@@ -599,6 +717,7 @@ export async function recalc() {
       el.log.textContent = "—";
     }
   } catch (e) {
+    if (el.totalBreakdown) el.totalBreakdown.innerHTML = "";
     if (el.logFormula) el.logFormula.innerHTML = "";
     el.log.textContent = String(e);
   } finally {

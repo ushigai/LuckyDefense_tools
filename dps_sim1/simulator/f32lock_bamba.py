@@ -9,7 +9,7 @@ import random
 from dps_sim1.simulator.f32lock_rounding import round_half_up as round
 
 
-DamageTuple = Tuple[float, float, float, float]  # (basic, skill1, skill2, ult)
+DamageTuple = Tuple[float, float, float, float, float]  # (basic, skill1, skill2, skill3, ult)
 
 
 @dataclass(frozen=True)
@@ -204,12 +204,12 @@ def mean_total_damage_5001(
 ) -> DamageTuple:
     """
     外部から参照する用の関数。
-    返り値: (basic, skill1, skill2, ult)
+    返り値: (basic, skill1, skill2, skill3, ult)
       - ult は「気爆」＋「バフ期間中に出た全ダメージ（基本/スキル含む）」の合算
     """
-    p = parse_bamba_params(params_dict)
     if num_ticks <= 0:
-        return (0.0, 0.0, 0.0, 0.0)
+        return (0.0, 0.0, 0.0, 0.0, 0.0)
+    p = parse_bamba_params(params_dict)
     if trials <= 0:
         raise ValueError("trials must be > 0")
 
@@ -224,7 +224,7 @@ def mean_total_damage_5001(
         acc_ult += totals["ult"]
 
     inv = 1.0 / trials
-    return (acc_basic * inv, acc_skill1 * inv, acc_skill2 * inv, 0, acc_ult * inv)
+    return (acc_basic * inv, acc_skill1 * inv, acc_skill2 * inv, 0.0, acc_ult * inv)
 
 
 def mean_dps_5001(
@@ -236,14 +236,15 @@ def mean_dps_5001(
     """
     平均DPS（tickあたり平均ダメージ）をカテゴリ別に返す。
     """
-    basic, skill1, skill2, ult = mean_total_damage_5001(params_dict, num_ticks, trials=trials, seed=seed)
+    basic, skill1, skill2, skill3, ult = mean_total_damage_5001(params_dict, num_ticks, trials=trials, seed=seed)
     denom = float(num_ticks) if num_ticks > 0 else 1.0
     return {
         "basic": basic / denom,
         "skill1": skill1 / denom,
         "skill2": skill2 / denom,
+        "skill3": skill3 / denom,
         "ult": ult / denom,
-        "total": (basic + skill1 + skill2 + ult) / denom,
+        "total": (basic + skill1 + skill2 + skill3 + ult) / denom,
     }
 
 

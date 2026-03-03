@@ -146,7 +146,11 @@ def simulate_once_15210(p: AceBatmanParams15210, rng: random.Random) -> Dict[str
     }
 
 
-def mean_total_damage_15210(params: Dict[str, Any], n_iter: int = 10000, seed: Optional[int] = 0) -> Dict[str, float]:
+def mean_total_damage_15210(
+    params: Dict[str, Any],
+    n_iter: int = 10000,
+    seed: Optional[int] = 0,
+) -> Tuple[float, float, float, float, float]:
     """
     外部参照用：エースバットマン打者(15210)の平均ダメージを返す。
 
@@ -157,7 +161,7 @@ def mean_total_damage_15210(params: Dict[str, Any], n_iter: int = 10000, seed: O
       seed: 乱数seed（再現性用）
 
     戻り値:
-      {"basic","skill1","skill2","skill3","ult","total"} の平均（期待値）
+      (basic, skill1, skill2, skill3, ult) の平均（期待値）
     """
     if n_iter <= 0:
         raise ValueError("n_iter must be > 0")
@@ -247,4 +251,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

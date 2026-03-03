@@ -66,6 +66,7 @@ export const el = {
   autoRecalc: document.getElementById("autoRecalc"),
 
   totalValue: document.getElementById("totalValue"),
+  totalBreakdown: document.getElementById("totalBreakdown"),
   calcStatus: document.getElementById("calcStatus"),
   logFormula: document.getElementById("logFormula"),
   log: document.getElementById("log"),

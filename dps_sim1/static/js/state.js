@@ -16,6 +16,7 @@ export const state = {
 export const ALLOWED_CHARACTER_IDS = [
   "3007",  // 忍者
   "5002",  // コルディ
+  "5003",  // ランスロット
   "5008",  // ママ
   "5010",  // バットマン
   "5013",  // ワット
