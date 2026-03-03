@@ -426,7 +426,7 @@
         },
         "skill2": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill3": null,
         "ult": {
@@ -512,7 +512,7 @@
       "ult": "",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
+          "damageType": "magic",
           "targetType": "single"
         },
         "skill1": null,
@@ -562,8 +562,8 @@
       "ult": "",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
-          "targetType": "single"
+          "damageType": "magic",
+          "targetType": "aoe"
         },
         "skill1": null,
         "skill2": null,
@@ -668,14 +668,14 @@
       "actionMeta": {
         "basic": {
           "damageType": "physical",
-          "targetType": "single"
+          "targetType": "aoe"
         },
         "skill1": {
-          "damageType": "magic",
+          "damageType": "physical",
           "targetType": "aoe"
         },
         "skill2": {
-          "damageType": "magic",
+          "damageType": "physical",
           "targetType": "aoe"
         },
         "skill3": {
@@ -806,7 +806,7 @@
         },
         "skill1": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill2": null,
         "skill3": null,
@@ -867,7 +867,7 @@
         "skill3": null,
         "ult": {
           "damageType": "magic",
-          "targetType": "aoe"
+          "targetType": "single"
         }
       }
     },
@@ -893,13 +893,13 @@
         },
         "skill1": {
           "damageType": "magic",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill2": null,
         "skill3": null,
         "ult": {
           "damageType": "magic",
-          "targetType": "aoe"
+          "targetType": "single"
         }
       }
     },
@@ -924,11 +924,11 @@
           "targetType": "single"
         },
         "skill1": {
-          "damageType": "magic",
-          "targetType": "aoe"
+          "damageType": "physical",
+          "targetType": "single"
         },
         "skill2": {
-          "damageType": "magic",
+          "damageType": "physical",
           "targetType": "aoe"
         },
         "skill3": null,
@@ -988,17 +988,17 @@
           "targetType": "single"
         },
         "skill1": {
-          "damageType": "magic",
-          "targetType": "aoe"
+          "damageType": "physical",
+          "targetType": "single"
         },
         "skill2": {
-          "damageType": "magic",
-          "targetType": "aoe"
+          "damageType": "physical",
+          "targetType": "single"
         },
         "skill3": null,
         "ult": {
-          "damageType": "magic",
-          "targetType": "aoe"
+          "damageType": "physical",
+          "targetType": "single"
         }
       }
     },
@@ -1024,16 +1024,16 @@
         },
         "skill1": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill2": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill3": null,
         "ult": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         }
       }
     },
@@ -1216,13 +1216,13 @@
         },
         "skill1": {
           "damageType": "magic",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill2": null,
         "skill3": null,
         "ult": {
           "damageType": "magic",
-          "targetType": "aoe"
+          "targetType": "single"
         }
       }
     },
@@ -1378,7 +1378,7 @@
           "targetType": "single"
         },
         "skill1": {
-          "damageType": "magic",
+          "damageType": "physical",
           "targetType": "aoe"
         },
         "skill2": null,
@@ -1473,8 +1473,8 @@
       "ult": "リパルサービーム",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
-          "targetType": "single"
+          "damageType": "magic",
+          "targetType": "aoe"
         },
         "skill1": {
           "damageType": "magic",
@@ -1565,8 +1565,8 @@
       "ult": "稲妻玉",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
-          "targetType": "single"
+          "damageType": "magic",
+          "targetType": "aoe"
         },
         "skill1": null,
         "skill2": null,
@@ -1664,8 +1664,8 @@
       "ult": "スーパービーム",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
-          "targetType": "single"
+          "damageType": "magic",
+          "targetType": "aoe"
         },
         "skill1": {
           "damageType": "magic",
@@ -1792,8 +1792,8 @@
       "ult": "ブラックホール生成",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
-          "targetType": "single"
+          "damageType": "magic",
+          "targetType": "aoe"
         },
         "skill1": {
           "damageType": "magic",
@@ -1862,8 +1862,8 @@
       "ult": "過熱",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
-          "targetType": "single"
+          "damageType": "magic",
+          "targetType": "aoe"
         },
         "skill1": {
           "damageType": "magic",
@@ -2053,7 +2053,7 @@
         },
         "skill3": {
           "damageType": "magic",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "ult": {
           "damageType": "magic",
@@ -2173,16 +2173,16 @@
         },
         "skill1": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill2": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill3": null,
         "ult": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         }
       }
     },
@@ -2271,7 +2271,7 @@
           "targetType": "single"
         },
         "skill1": {
-          "damageType": "magic",
+          "damageType": "physical",
           "targetType": "aoe"
         },
         "skill2": null,
@@ -2441,13 +2441,13 @@
         },
         "skill1": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         },
         "skill2": null,
         "skill3": null,
         "ult": {
           "damageType": "physical",
-          "targetType": "aoe"
+          "targetType": "single"
         }
       }
     }
