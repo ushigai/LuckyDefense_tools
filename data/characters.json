@@ -2372,7 +2372,7 @@
       "ult": "死の手",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
+          "damageType": "magic",
           "targetType": "aoe"
         },
         "skill1": {
