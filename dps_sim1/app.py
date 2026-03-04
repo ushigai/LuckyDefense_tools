@@ -1292,7 +1292,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         t_buff1 = float(TREASURE_DB["ランスロット"][treasure_lv][1])
         t_buff2 = float(TREASURE_DB["ランスロット"][treasure_lv][2]) / 100
         spark_bonus_pct = float(member.get("spark", 0.0))
-        spark_bonus_pct += 2 if char_lv < 12 else 3
+        spark_bonus_pct += 0.2 if char_lv < 12 else 0.3
         enemy_row = _resolve_enemy_row(common)
         enemy_mode = str(enemy_row.get("mode", ""))
         enemy_hp = float(enemy_row.get("hp", 0.0))
