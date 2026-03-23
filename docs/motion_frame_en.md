@@ -1,7 +1,7 @@
 # About Motion Frames in Character Animations
-[Japanese Version](motion_frame.md)
-
 **This article contains unverified sections.**
+
+[Japanese Version](./motion_frame.md)
 
 ## Preface
 ### How time advances in-game
@@ -38,12 +38,13 @@ stateDiagram-v2
 
 ### Motion frames of `BasicAttack`
 $$
-A = \text{white-text ATK SPD} + \text{green-text ATK SPD}
-\qquad
-\left( A:\ \text{number of attacks per second of in-game time} \right) \\
-B = \frac{40}{A} = \text{BasicAttackStartup} + \text{BasicAttackActive} + \text{BasicAttackRecovery}
-\qquad
-\left( B:\ \text{number of motion frames in BasicAttack} \right) \\
+\begin{aligned}
+A &= \text{white-text ATK SPD} + \text{green-text ATK SPD}
+\qquad \left( A:\ \text{number of attacks per second of in-game time} \right) \\
+B &= \frac{40}{A}
+   = \text{BasicAttackStartup} + \text{BasicAttackActive} + \text{BasicAttackRecovery}
+\qquad \left( B:\ \text{number of motion frames in BasicAttack} \right)
+\end{aligned}
 $$
 
 Each character has a motion frame at which BasicAttack damage occurs. Easy-to-see examples are tao's fan, Indy's shell, and ironmeow's beam emission frame. This motion is called `BasicAttackActive`, and the motions before and after it are called `BasicAttackStartup` and `BasicAttackRecovery`, respectively. For every character currently implemented, `BasicAttackActive` is 1F.
@@ -76,15 +77,22 @@ https://www.youtube.com/watch?v=fQHmsbFw1B8
 In the 3127F video above, `BasicAttack` activates 158 times, `skill1` activates 18 times, and `skill2` activates 3 times. `BasicAttackStartup` + `BasicAttackActive` is 10F, `BasicAttackRecovery` is 2F, `skill1` is 52F, and `skill2` is 112F, so the total becomes 3126F.
 
 $$
-\text{Total frames} = (\text{BasicAttackStartup+BasicAttackActive+BasicAttackRecovery}) \times \text{number of BasicAttack activations without skill activation}
-\\ + (\text{BasicAttackStartup+BasicAttackActive}) \times \text{number of BasicAttack activations with skill activation}
-\\ + \text{skill1 motion frames} \times \text{skill1 activations}
-\\ + \text{skill2 motion frames} \times \text{skill2 activations} \\
-\text{Total frames} = 12 \times 137
-\\ + 10 \times 21
-\\ + 52 \times 18
-\\ + 112 \times 3 \\
-\text{Total frames} = 3126
+\begin{aligned}
+\text{Total frames}
+&= (\text{BasicAttackStartup}+\text{BasicAttackActive}+\text{BasicAttackRecovery}) \times \text{number of BasicAttack activations without skill activation} \\
+&\quad + (\text{BasicAttackStartup}+\text{BasicAttackActive}) \times \text{number of BasicAttack activations with skill activation} \\
+&\quad + \text{skill1 motion frames} \times \text{skill1 activations} \\
+&\quad + \text{skill2 motion frames} \times \text{skill2 activations} \\
+\\
+\text{Total frames}
+&= 12 \times 137 \\
+&\quad + 10 \times 21 \\
+&\quad + 52 \times 18 \\
+&\quad + 112 \times 3 \\
+\\
+\text{Total frames}
+&= 3126
+\end{aligned}
 $$
 
 The video shows 3127F, so there is a 1F discrepancy. This is likely caused by frame loss from lag immediately after recording starts and just before it ends.

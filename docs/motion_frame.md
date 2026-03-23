@@ -1,5 +1,6 @@
 # キャラクターのアニメーションのモーションフレームについて
 **本記事は未検証の部分を含みます**
+
 [英語版(English)](./motion_frame_en.md)
 
 ## まえおき
@@ -34,17 +35,19 @@ stateDiagram-v2
 
 ### `basic`のモーションフレーム
 $$
-A = \text{白字攻撃速度} + \text{緑字攻撃速度}
-\qquad
-\left( A:\ \text{ゲーム内1秒間にキャラが攻撃する回数} \right) \\
-B = \frac{40}{A} = \text{basic前隙} + \text{basic持続} + \text{basic後隙}
-\qquad
-\left( B:\ \text{basicのモーションフレーム数} \right) \\
+\begin{aligned}
+A &= \text{白字攻撃速度} + \text{緑字攻撃速度}
+\qquad \left( A:\ \text{ゲーム内1秒間にキャラが攻撃する回数} \right) \\
+B &= \frac{40}{A}
+   = \text{basic前隙} + \text{basic持続} + \text{basic後隙}
+\qquad \left( B:\ \text{basicのモーションフレーム数} \right)
+\end{aligned}
 $$
+
 
 各キャラにはbasicダメージが発生する瞬間のモーションが存在する（わかりやすいものだとウチの扇子、インディの甲羅、アイアンニャンのビーム発生フレームのこと）。そのモーションを`basic持続`とし、それより前/後のモーションをそれぞれ`basic前隙`、`basic後隙`としている。現状実装されているすべてのキャラのbasic持続は1Fである。
 
-Animation`{{キャラID}}_{{キャラ表示名}}_attack`それぞれのAnimation Eventに`Action()`が存在し、この25Fが`basic持続`, 0~24Fが`basic前隙`, 26~41Fが`basic後隙`となる。
+Animation`{{キャラID}}_{{キャラ表示名}}_attack`それぞれのAnimation Eventに`Action()`が存在し、この25Fが`basic持続`, 0～24Fが`basic前隙`, 26～41Fが`basic後隙`となる。
 
 ![](images/20260323_155227.png)
 
@@ -74,15 +77,22 @@ https://www.youtube.com/watch?v=fQHmsbFw1B8
 `basic前隙`+`basic持続`は10F, `basic後隙`は2F, `skill1`は52F, `skill2`は112Fなのでこれらを加算すると3126Fとなる。
 
 $$
-\text{全体フレーム} = (\text{basic前隙+basic持続+basic後隙})\times \text{skill発動なしのbasic発動回数}
-\\ + (\text{basic前隙+basic持続}) \times \text{skill発動時のbasic発動回数}
-\\ + \text{skill1モーションフレーム} \times \text{skill1発動回数}
-\\ + \text{skill2モーションフレーム} \times \text{skill2発動回数} \\
-\text{全体フレーム} = 12 \times 137
-\\ + 10 \times 21
-\\ + 52 \times 18
-\\ + 112 \times 3 \\
-\text{全体フレーム} = 3126
+\begin{aligned}
+\text{全体フレーム}
+&= (\text{basic前隙}+\text{basic持続}+\text{basic後隙}) \times \text{skill発動なしのbasic発動回数} \\
+&\quad + (\text{basic前隙}+\text{basic持続}) \times \text{skill発動時のbasic発動回数} \\
+&\quad + \text{skill1モーションフレーム} \times \text{skill1発動回数} \\
+&\quad + \text{skill2モーションフレーム} \times \text{skill2発動回数} \\
+\\
+\text{全体フレーム}
+&= 12 \times 137 \\
+&\quad + 10 \times 21 \\
+&\quad + 52 \times 18 \\
+&\quad + 112 \times 3 \\
+\\
+\text{全体フレーム}
+&= 3126
+\end{aligned}
 $$
 
 動画内では3127Fなので1Fの誤差があるがこの誤差は録画開始直後と終了直前のラグによるフレーム欠損が原因であると考えられる。
