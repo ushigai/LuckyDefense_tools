@@ -53,7 +53,7 @@ Each `Animation {{CharacterID}}_{{CharacterDisplayName}}_attack` has an `Animati
 
 ![](images/20260323_155227.png)
 
-When BasicAttack is used, this animation is played faster so that its duration matches the frame count determined by attack speed ($B=40/A$). For example, if tao has ATK SPD 3 (= white-text ATK SPD + green-text ATK SPD), then $B=40/3=13.333\cdots$, so `BasicAttackStartup` is $(40/3)/42*25 = 7.937\mathrm{F}$, `BasicAttackActive` is 0.317F, and `BasicAttackRecovery` is 5.079F.
+When BasicAttack is used, this animation is played faster so that its duration matches the frame count determined by attack speed (`B = 40 / A`). For example, if tao has ATK SPD 3 (= white-text ATK SPD + green-text ATK SPD), then `B = 40 / 3 = 13.333...`, so `BasicAttackStartup` is `((40 / 3) / 42) * 25 = 7.937F`, `BasicAttackActive` is `0.317F`, and `BasicAttackRecovery` is `5.079F`.
 
 Based on current observations, this game likely does not use subframes, but it still needs to be verified how the effective values are rounded.
 
