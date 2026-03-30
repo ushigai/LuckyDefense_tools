@@ -2,6 +2,7 @@
   {
     "name": "単細胞",
     "id": "61001",
+    "rarity": "common",
     "skills": [
       {
         "IconName": "",
@@ -38,6 +39,7 @@
   {
     "name": "チリ",
     "id": "61002",
+    "rarity": "common",
     "skills": [
       {
         "IconName": "",
@@ -74,6 +76,7 @@
   {
     "name": "メッシュ",
     "id": "61003",
+    "rarity": "common",
     "skills": [
       {
         "IconName": "",
@@ -110,6 +113,7 @@
   {
     "name": "ハサミ",
     "id": "61004",
+    "rarity": "common",
     "skills": [
       {
         "IconName": "",
@@ -146,6 +150,7 @@
   {
     "name": "タコさん",
     "id": "61005",
+    "rarity": "common",
     "skills": [
       {
         "IconName": "",
@@ -182,6 +187,7 @@
   {
     "name": "ピヨ助",
     "id": "61006",
+    "rarity": "common",
     "skills": [
       {
         "IconName": "",
@@ -218,6 +224,7 @@
   {
     "name": "ゼリー",
     "id": "62001",
+    "rarity": "rare",
     "skills": [
       {
         "IconName": "",
@@ -254,6 +261,7 @@
   {
     "name": "チューブ",
     "id": "62002",
+    "rarity": "rare",
     "skills": [
       {
         "IconName": "",
@@ -290,6 +298,7 @@
   {
     "name": "ダンダン",
     "id": "62003",
+    "rarity": "rare",
     "skills": [
       {
         "IconName": "",
@@ -326,6 +335,7 @@
   {
     "name": "ハンサム",
     "id": "62004",
+    "rarity": "rare",
     "skills": [
       {
         "IconName": "",
@@ -362,6 +372,7 @@
   {
     "name": "ヒエ助",
     "id": "62005",
+    "rarity": "rare",
     "skills": [
       {
         "IconName": "",
@@ -398,6 +409,7 @@
   {
     "name": "ハッシュ",
     "id": "62006",
+    "rarity": "rare",
     "skills": [
       {
         "IconName": "",
@@ -434,6 +446,7 @@
   {
     "name": "スティッキー",
     "id": "63001",
+    "rarity": "epic",
     "skills": [
       {
         "IconName": "",
@@ -470,6 +483,7 @@
   {
     "name": "ツノ",
     "id": "63002",
+    "rarity": "epic",
     "skills": [
       {
         "IconName": "",
@@ -506,6 +520,7 @@
   {
     "name": "モッシュ",
     "id": "63003",
+    "rarity": "epic",
     "skills": [
       {
         "IconName": "",
@@ -542,6 +557,7 @@
   {
     "name": "アントニー",
     "id": "63004",
+    "rarity": "epic",
     "skills": [
       {
         "IconName": "",
@@ -578,6 +594,7 @@
   {
     "name": "ハリセンボン",
     "id": "63005",
+    "rarity": "epic",
     "skills": [
       {
         "IconName": "",
@@ -614,6 +631,7 @@
   {
     "name": "サラマンダー",
     "id": "64001",
+    "rarity": "legend",
     "skills": [
       {
         "IconName": "",
@@ -650,6 +668,7 @@
   {
     "name": "ツノオバケ",
     "id": "64002",
+    "rarity": "legend",
     "skills": [
       {
         "IconName": "",
@@ -686,6 +705,7 @@
   {
     "name": "ツルピカ",
     "id": "64003",
+    "rarity": "legend",
     "skills": [
       {
         "IconName": "",
@@ -722,6 +742,7 @@
   {
     "name": "エビドラ",
     "id": "64004",
+    "rarity": "legend",
     "skills": [
       {
         "IconName": "",
@@ -758,6 +779,7 @@
   {
     "name": "ヤマアヒル",
     "id": "64005",
+    "rarity": "legend",
     "skills": [
       {
         "IconName": "",
@@ -794,6 +816,7 @@
   {
     "name": "クジラ王",
     "id": "65001",
+    "rarity": "mythic",
     "skills": [
       {
         "IconName": "",
@@ -830,6 +853,7 @@
   {
     "name": "ウーパーちゃん",
     "id": "65002",
+    "rarity": "mythic",
     "skills": [
       {
         "IconName": "",
@@ -866,6 +890,7 @@
   {
     "name": "ドラ爺",
     "id": "65003",
+    "rarity": "mythic",
     "skills": [
       {
         "IconName": "",
@@ -902,6 +927,7 @@
   {
     "name": "幽霊カメ",
     "id": "65004",
+    "rarity": "mythic",
     "skills": [
       {
         "IconName": "",
@@ -938,6 +964,7 @@
   {
     "name": "ポセイドン",
     "id": "66001",
+    "rarity": "immortal",
     "skills": [
       {
         "IconName": "",
@@ -989,6 +1016,7 @@
   {
     "name": "パーティー猫",
     "id": "66002",
+    "rarity": "immortal",
     "skills": [
       {
         "IconName": "",
