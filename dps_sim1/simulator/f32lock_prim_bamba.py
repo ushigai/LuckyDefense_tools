@@ -111,8 +111,18 @@ def _simulate_once(p: PrimitiveBambaParams, rng: random.Random) -> Tuple[float, 
 
             if buff_remaining > 0:
                 buff_remaining -= 1
-                if buff_remaining == 0:
-                    mana = 0.0
+
+            if p.ult_mana > 0 and mana >= p.ult_mana:
+                ext_ticks = round_half_up(p.ult_time * p.attack_speed * 0.3)
+                if ext_ticks > 0:
+                    target_end += ext_ticks
+
+                buff_ticks = round_half_up(p.ult_time * p.attack_speed * 1.3)
+                mana = 0.0
+                if buff_ticks > 0:
+                    buff_remaining = buff_ticks
+
+                recovery_remaining = skill_ult_recovery_ticks
 
             t += 1
             continue
@@ -167,12 +177,9 @@ def _simulate_once(p: PrimitiveBambaParams, rng: random.Random) -> Tuple[float, 
         # --- バフ残りtickを減らす（このtickの行動はバフ適用済みなので最後に減らす） ---
         if buff_remaining > 0:
             buff_remaining -= 1
-            # バフ終了後にマナ0
-            if buff_remaining == 0:
-                mana = 0.0
 
-        # --- ult判定（バフ中は発動しない扱い） ---
-        if buff_remaining == 0 and p.ult_mana > 0 and mana >= p.ult_mana:
+        # --- ult判定（バフ中でも再発動可能） ---
+        if p.ult_mana > 0 and mana >= p.ult_mana:
             # 発動時に計測tick延長
             ext_ticks = round_half_up(p.ult_time * p.attack_speed * 0.3)
             if ext_ticks > 0:
@@ -180,11 +187,9 @@ def _simulate_once(p: PrimitiveBambaParams, rng: random.Random) -> Tuple[float, 
 
             # バフtick
             buff_ticks = round_half_up(p.ult_time * p.attack_speed * 1.3)
+            mana = 0.0
             if buff_ticks > 0:
                 buff_remaining = buff_ticks
-            else:
-                # バフが0tickなら「終了後マナ0」を即時扱い
-                mana = 0.0
 
             # 究極自体はダメージ無し（=計上不要）
             recovery_remaining = skill_ult_recovery_ticks

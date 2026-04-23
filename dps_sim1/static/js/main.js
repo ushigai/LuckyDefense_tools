@@ -16,6 +16,7 @@ import { applyRelicIcons, initCommonOptionsUI, syncRelicLevelsFromAllRelic } fro
 import { initPetUI } from "./pet_ui.js";
 import { initBlobFigureUI } from "./blob_figure_ui.js";
 import { getCurrentLang, initI18n, translateDomTree } from "./i18n.js";
+import { initReleaseNotesPopup } from "./release_notes_popup.js";
 
 const URL_PERSIST_ELEMENT_IDS = new Set([
   "enemyMode",
@@ -268,6 +269,7 @@ async function init() {
   recalcWithSeedRandomization();
   translateDomTree(document.body);
   updateCoinsPreview();
+  initReleaseNotesPopup();
 }
 
 init();

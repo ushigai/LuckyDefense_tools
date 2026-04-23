@@ -57,7 +57,7 @@
       "plus_attack_damage_percentage": 1,
       "upgrade_attack_damage": 5,
       "attack_speed": 0.5,
-      "attack_range": 2.1,
+      "attack_range": 4,
       "move_speed": 4,
       "sp": 0,
       "skill1": "",
@@ -82,7 +82,7 @@
       "plus_attack_damage_percentage": 1,
       "upgrade_attack_damage": 3,
       "attack_speed": 1,
-      "attack_range": 4,
+      "attack_range": 2.1,
       "move_speed": 4,
       "sp": 0,
       "skill1": "",
@@ -1457,6 +1457,38 @@
       }
     },
     {
+      "name": "チャド",
+      "rarity": "mythic",
+      "id": 5025,
+      "attack_damage": 13860,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 693,
+      "attack_speed": 1.5,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 0,
+      "skill1": "電流放出",
+      "skill2": "増幅送信",
+      "skill3": "",
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
+      }
+    },
+    {
       "name": "アイアンニャン",
       "rarity": "mythic",
       "id": 5104,
@@ -1878,6 +1910,41 @@
       }
     },
     {
+      "name": "猫の大魔法使い",
+      "rarity": "immortal",
+      "id": 14006,
+      "attack_damage": 20250,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 1012.5,
+      "attack_speed": 1.4,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 250,
+      "skill1": "ゼリーニャン",
+      "skill2": "魔力拡散",
+      "skill3": "",
+      "ult": "魔力暴走",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
+    },
+    {
       "name": "原始バンバ",
       "rarity": "immortal",
       "id": 15001,
@@ -1918,7 +1985,7 @@
       "id": 15002,
       "attack_damage": 59670,
       "plus_attack_damage_percentage": 0.5,
-      "upgrade_attack_damage": 2983,
+      "upgrade_attack_damage": 2983.5,
       "attack_speed": 1.8,
       "attack_range": 4,
       "move_speed": 4,
@@ -1993,7 +2060,7 @@
       "plus_attack_damage_percentage": 0.5,
       "upgrade_attack_damage": 2160,
       "attack_speed": 1.9,
-      "attack_range": 4,
+      "attack_range": 2.1,
       "move_speed": 4,
       "sp": 500,
       "skill1": "青ブロッブ",
@@ -2187,6 +2254,79 @@
       }
     },
     {
+      "name": "天龍ウチ",
+      "rarity": "immortal",
+      "id": 15016,
+      "attack_damage": 50310,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 2515.5,
+      "attack_speed": 0.9,
+      "attack_range": 7,
+      "move_speed": 2,
+      "sp": 250,
+      "skill1": "うねり風",
+      "skill2": "東風",
+      "skill3": "",
+      "ult": "竜巻",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
+    },
+    {
+      "name": "仙人クン",
+      "rarity": "immortal",
+      "id": 15018,
+      "attack_damage": 62010,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 3100.5,
+      "attack_speed": 1.3,
+      "attack_range": 2.1,
+      "move_speed": 4,
+      "sp": 250,
+      "skill1": "火炎加速",
+      "skill2": "火炎発射",
+      "skill3": "火炎球",
+      "ult": "悟り",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "ult": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        }
+      }
+    },
+    {
       "name": "ノイズペンギンキング",
       "rarity": "immortal",
       "id": 15020,
@@ -2353,6 +2493,38 @@
           "damageType": "magic",
           "targetType": "aoe"
         }
+      }
+    },
+    {
+      "name": "ギガチャド",
+      "rarity": "immortal",
+      "id": 15025,
+      "attack_damage": 42120,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 2106,
+      "attack_speed": 1.5,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 0,
+      "skill1": "感染弾",
+      "skill2": "強化送信",
+      "skill3": "",
+      "ult": "",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "magic",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": null
       }
     },
     {

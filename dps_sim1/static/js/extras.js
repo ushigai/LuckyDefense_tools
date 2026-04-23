@@ -37,6 +37,7 @@ export const EXTRA_FIELDS_BY_CHARACTER_ID = {
     { key: "icecount_", label: "氷河爆撃の命中数", kind: "select-int", min: 1, max: 15, step: 1, def: 6 }
   ],
   "5003": [{ key: "spark", label: "火花追加HP%ダメージ", kind: "select-float", min: 0.0, max: 3.0, step: 0.1, def: 3.0 }],
+  "15018": [{ key: "emotionControl_", label: "感情コントロール", kind: "select-int", min: 90, max: 99, step: 1, def: 90 }],
 };
 
 export function getExtraFieldsForCharacter(characterId) {

@@ -39,6 +39,7 @@ from dps_sim1.simulator.darkload_dragon import mean_total_damage_15006
 from dps_sim1.simulator.ace_batman_ball import mean_total_damage_15110
 from dps_sim1.simulator.ace_batman_bat import mean_total_damage_15210
 from dps_sim1.simulator.top_vein import mean_total_damage_15011
+from dps_sim1.simulator.sagekun import mean_total_damage_15018
 from dps_sim1.simulator.bamba import mean_total_damage_5001
 from dps_sim1.simulator.queen_coldy import mean_total_damage_15002
 from dps_sim1.simulator.lancelot import mean_total_damage_5003
@@ -60,6 +61,7 @@ from dps_sim1.simulator.f32lock_darkload_dragon import mean_total_damage_15006 a
 from dps_sim1.simulator.f32lock_ace_batman_ball import mean_total_damage_15110 as mean_total_damage_15110_f32lock
 from dps_sim1.simulator.f32lock_ace_batman_bat import mean_total_damage_15210 as mean_total_damage_15210_f32lock
 from dps_sim1.simulator.f32lock_top_vein import mean_total_damage_15011 as mean_total_damage_15011_f32lock
+from dps_sim1.simulator.f32lock_sagekun import mean_total_damage_15018 as mean_total_damage_15018_f32lock
 from dps_sim1.simulator.f32lock_bamba import mean_total_damage_5001 as mean_total_damage_5001_f32lock
 from dps_sim1.simulator.f32lock_queen_coldy import mean_total_damage_15002 as mean_total_damage_15002_f32lock
 from dps_sim1.simulator.f32lock_lancelot import mean_total_damage_5003 as mean_total_damage_5003_f32lock
@@ -116,6 +118,7 @@ mean_total_damage_15006 = _wrap_damage_func(mean_total_damage_15006)
 mean_total_damage_15110 = _wrap_damage_func(mean_total_damage_15110)
 mean_total_damage_15210 = _wrap_damage_func(mean_total_damage_15210)
 mean_total_damage_15011 = _wrap_damage_func(mean_total_damage_15011)
+mean_total_damage_15018 = _wrap_damage_func(mean_total_damage_15018)
 mean_total_damage_5001 = _wrap_damage_func(mean_total_damage_5001)
 mean_total_damage_15002 = _wrap_damage_func(mean_total_damage_15002)
 mean_total_damage_common = _wrap_damage_func(mean_total_damage_common)
@@ -136,6 +139,7 @@ mean_total_damage_15006_f32lock = _wrap_damage_func(mean_total_damage_15006_f32l
 mean_total_damage_15110_f32lock = _wrap_damage_func(mean_total_damage_15110_f32lock)
 mean_total_damage_15210_f32lock = _wrap_damage_func(mean_total_damage_15210_f32lock)
 mean_total_damage_15011_f32lock = _wrap_damage_func(mean_total_damage_15011_f32lock)
+mean_total_damage_15018_f32lock = _wrap_damage_func(mean_total_damage_15018_f32lock)
 mean_total_damage_5001_f32lock = _wrap_damage_func(mean_total_damage_5001_f32lock)
 mean_total_damage_15002_f32lock = _wrap_damage_func(mean_total_damage_15002_f32lock)
 mean_total_damage_5003_f32lock = _wrap_damage_func(mean_total_damage_5003_f32lock)
@@ -159,6 +163,7 @@ MEAN_TOTAL_DAMAGE_15006_BASE = mean_total_damage_15006
 MEAN_TOTAL_DAMAGE_15110_BASE = mean_total_damage_15110
 MEAN_TOTAL_DAMAGE_15210_BASE = mean_total_damage_15210
 MEAN_TOTAL_DAMAGE_15011_BASE = mean_total_damage_15011
+MEAN_TOTAL_DAMAGE_15018_BASE = mean_total_damage_15018
 MEAN_TOTAL_DAMAGE_5001_BASE = mean_total_damage_5001
 MEAN_TOTAL_DAMAGE_15002_BASE = mean_total_damage_15002
 MEAN_TOTAL_DAMAGE_COMMON_BASE = mean_total_damage_common
@@ -859,6 +864,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     mean_total_damage_15110 = mean_total_damage_15110_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15110_BASE
     mean_total_damage_15210 = mean_total_damage_15210_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15210_BASE
     mean_total_damage_15011 = mean_total_damage_15011_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15011_BASE
+    mean_total_damage_15018 = mean_total_damage_15018_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15018_BASE
     mean_total_damage_5001 = mean_total_damage_5001_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5001_BASE
     mean_total_damage_15002 = mean_total_damage_15002_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15002_BASE
     mean_total_damage_common = mean_total_damage_common_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_COMMON_BASE
@@ -926,6 +932,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     batEnhance_ = int(member.get("batEnhance_", 0))
     strikeout = float(member.get("strikeout", 1.0))
     emotionControl = int(member.get("emotionControl", 0))
+    emotionControl_ = int(member.get("emotionControl_", 0))
     StrongestCreature = int(member.get("StrongestCreature", 0))
     StrongestCreature *= 0.3 if character_id == "5106" else 0.4
     score = int(member.get("score", 0)) / 100
@@ -1055,6 +1062,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     atk = base_atk + intake
     atk *= 1 + PowerPotion*2 + cannibalCount + unitLevelSumBuff + RuneAtkSum + BlobFigureBuff["ダイヤ"] + pet_buff["AttackDamage"]
     emotion = emotionControl_db[emotionControl]
+    if character_id == "15018":
+        emotion = sage_kun_emotionControl[emotionControl_ - 90] / 100
     aceEnh = ace_batman_attack_enhance[batEnhance_] / 100
     atk *= 1 + (mythEnhanceLv - 1)*0.5 + vein_bonus
     if character_id in ["5023", "15004", "15011", "15024"]:
@@ -1576,7 +1585,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_speed": speed,
             "base_attack_mult": 1.0,
             "skill1_rate": 10 + RateBuff1 if char_lv < 12 else 20 + RateBuff1,
-            "skill1_mult": 75*t_buff1*MagicBuff1,
+            "skill1_mult": 55*t_buff1*MagicBuff1,
             "skill2_rate": 0,
             "skill2_mult": 0,
             "skill3_rate": 0,
@@ -1627,8 +1636,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "base_attack_mult": 1.0,
-            "skill1_mult": 5.5*(MagicBuff1)*t_buff1 if char_lv < 12 else 5.5*(MagicBuff1 + 0.5)*t_buff1,
-            "skill2_mult": 50*(MagicBuff1) if char_lv < 12 else 50*(MagicBuff1 + 0.5)*1.5,
+            "skill1_mult": 7.5*(MagicBuff1)*t_buff1 if char_lv < 12 else 7.5*(MagicBuff1 + 0.5)*t_buff1,
+            "skill2_mult": 30*(MagicBuff1) if char_lv < 12 else 30*(MagicBuff1 + 0.5)*1.5,
             "skill1_rate": 6 + RateBuff1 + t_buff2 if 6 <= char_lv else 0,
             "skill2_rate": 8 + RateBuff1 + t_buff2,
             "skill3_rate": 0,
@@ -1648,8 +1657,8 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans = basic + skill1 + skill2 + skill3 + ult
         mult_parts = {
             "basic": {"numbers": [1.0], "buffs": {}},
-            "skill1": {"numbers": [5.5, 0.5], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1}},
-            "skill2": {"numbers": [50, 0.5, 1.5], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill1": {"numbers": [7.5, 0.5], "buffs": {"MagicBuff1": MagicBuff1, "t_buff1": t_buff1}},
+            "skill2": {"numbers": [30, 0.5, 1.5], "buffs": {"MagicBuff1": MagicBuff1}},
             "skill3": {"numbers": [], "buffs": {}},
             "ult": {"numbers": [], "buffs": {}},
             "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
@@ -2033,10 +2042,10 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "skill1_rate": 10 + RateBuff1,
-            "skill1_mult": 60*PhysicBuff1,
-            "skill2_mult": 160*PhysicBuff1,
+            "skill1_mult": 61*PhysicBuff1,
+            "skill2_mult": 161*PhysicBuff1,
             "skill2_stack": t_buff1 if 12 <= char_lv else 10**100,
-            "ult_mult": 700*(PhysicBuff1+UltBuff1),
+            "ult_mult": 701*(PhysicBuff1+UltBuff1),
             "ult_mana": 25*CooltimeBuff1,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg,
@@ -2049,13 +2058,13 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         basic, skill1, skill2, skill3, ult = mean_total_damage_5115(params)
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        ans *= 1.5
+        # ans *= 1.5 最先端ロボットはカス、代わりに各スキルの倍率を1%だけ増加
         mult_parts = {
             "basic": {"numbers": [1], "buffs": {}},
-            "skill1": {"numbers": [60], "buffs": {"PhysicBuff1": PhysicBuff1}},
-            "skill2": {"numbers": [160], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill1": {"numbers": [61], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [161], "buffs": {"PhysicBuff1": PhysicBuff1}},
             "skill3": {"numbers": [], "buffs": {}},
-            "ult": {"numbers": [700], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
+            "ult": {"numbers": [701], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
             "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
             "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
         }
@@ -2584,6 +2593,46 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
             "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
         }
+    elif character_id == "15018":  # 仙人クン
+        skill3_mult = 7 if char_lv < 6 else 10
+        fire_ball = 6 if emotionControl_ == 99 else 5
+        params = {
+            "tick": ticks,
+            "n_iter": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_mult": (1.3/56 - 1/84)*skill3_mult*fire_ball*MagicBuff1,
+            "skill2_mult": 200 * MagicBuff1,
+            "skill3_mult": ((skill3_mult * fire_ball * 40) / 84) * speed * MagicBuff1,
+            "skill1_rate": 8 + RateBuff1,
+            "skill2_rate": 12 + RateBuff1,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg + MagicGauntlet,
+            "ult_mult": 22 * (MagicBuff1 + UltBuff1),
+            "ult_mana": ult_mana * UltManaBuff1,
+            "ult_time": 10 if char_lv < 12 else 15,
+            "attack_mana_recov": 1.0,
+            "mana_buff": mana_buff,
+        }
+        basic_one = atk * params["base_attack_mult"]
+        skill1_one = 0
+        skill2_one = atk * params["skill2_mult"]
+        skill3_one = atk * (params["skill1_mult"] + params["skill3_mult"])
+        ult_one = atk * params["ult_mult"] * 1.5
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15018(params)
+        basic *= BasicAttackBuff1
+        ans = basic + skill1 + skill2 + skill3 + ult
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [0], "buffs": {}},
+            "skill2": {"numbers": [200], "buffs": {"MagicBuff1": MagicBuff1}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [22, 1.5], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
     elif character_id == "15020":  # ノイズペンギンキング
         ans = mean_total_damage_15021(
             ticks=int(speed * duration_sec * TICK_COEFF),
@@ -2659,7 +2708,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "attack_power": atk,
             "attack_speed": speed,
             "skill1_rate": 9 + RateBuff1,
-            "skill1_mult": 467.5*PhysicBuff1 if 12 <= char_lv else 330*PhysicBuff1,
+            "skill1_mult": 220*PhysicBuff1,
             "skill2_mult": 40*PhysicBuff1,
             "skill3_mult": 150*PhysicBuff1,
             "ult_mult": 350*(PhysicBuff1+UltBuff1) if 6 <= char_lv else 233.333*(PhysicBuff1+UltBuff1),
@@ -2677,7 +2726,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         ans = basic + skill1 + skill2 + skill3 + ult
         mult_parts = {
             "basic": {"numbers": [1], "buffs": {}},
-            "skill1": {"numbers": [467.5, 330], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill1": {"numbers": [220], "buffs": {"PhysicBuff1": PhysicBuff1}},
             "skill2": {"numbers": [40], "buffs": {"PhysicBuff1": PhysicBuff1}},
             "skill3": {"numbers": [150], "buffs": {"PhysicBuff1": PhysicBuff1}},
             "ult": {"numbers": [350, 233.333], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1}},
@@ -3014,6 +3063,7 @@ def api_calc():
         member_s["strikeout"] = clamp_float(m.get("strikeout", 1.0), 1.0, 3.0, 1.0)
         member_s["starPower"] = clamp_int(m.get("starPower", 0), 0, 10, 0)
         member_s["emotionControl"] = clamp_int(m.get("emotionControl", 0), 0, 99, 0)
+        member_s["emotionControl_"] = clamp_int(m.get("emotionControl_", 0), 90, 99, 0)
         member_s["spark"] = clamp_float(m.get("spark", 0.0), 0.0, 3.0, 0.0)
         ec = clamp_int(m.get("energyCount", 0), 0, 2_000_000_000, 0)
         member_s["energyCount"] = ec
@@ -3065,6 +3115,7 @@ def api_calc():
                 "strikeout": member_s.get("strikeout"),
                 "starPower": member_s.get("starPower"),
                 "emotionControl": member_s.get("emotionControl"),
+                "emotionControl_": member_s.get("emotionControl_"),
                 "spark": member_s.get("spark"),
                 "energyCount": member_s.get("energyCount"),
                 "techEnhance": member_s.get("techEnhance"),
