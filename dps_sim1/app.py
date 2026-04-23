@@ -181,6 +181,25 @@ TEXT_CSV_PATHS = [
     os.path.join(DATA_DIR, "Text2.csv"),
 ]
 
+SHORT_STATIC_CACHE_SEC = 2 * 60 * 60
+NO_CACHE_EXTENSIONS = {".json", ".csv", ".txt", ".html"}
+SHORT_CACHE_EXTENSIONS = {
+    ".js",
+    ".mjs",
+    ".css",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".svg",
+    ".ico",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".otf",
+}
+
 app = Flask(__name__)
 
 _MEMBER_DPS_CACHE_VERSION = 3
@@ -636,6 +655,12 @@ PET_DB_BY_ID, PET_DB_BY_NAME = load_pets()
 PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15001, 15010, 15011, 15020, 15023, 15110, 15210]
 
 
+def _send_from_directory_with_cache(directory: str, filename: str):
+    ext = os.path.splitext(filename)[1].lower()
+    max_age = None if ext in NO_CACHE_EXTENSIONS else SHORT_STATIC_CACHE_SEC if ext in SHORT_CACHE_EXTENSIONS else None
+    return send_from_directory(directory, filename, max_age=max_age)
+
+
 @app.get("/")
 def index():
     return send_from_directory(STATIC_DIR, "index.html")
@@ -643,12 +668,12 @@ def index():
 
 @app.get("/static/<path:filename>")
 def static_files(filename: str):
-    return send_from_directory(STATIC_DIR, filename)
+    return _send_from_directory_with_cache(STATIC_DIR, filename)
 
 
 @app.get("/data/<path:filename>")
 def data_files(filename: str):
-    return send_from_directory(DATA_DIR, filename)
+    return _send_from_directory_with_cache(DATA_DIR, filename)
 
 
 @app.get("/api/i18n/textmap")
