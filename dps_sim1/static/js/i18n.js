@@ -4,7 +4,7 @@ const LANG_STORAGE_KEY = "dps_sim1.lang";
 
 const SUPPORTED_LANGS = new Set(["ja", "en", "kr"]);
 
-let currentLang = "ja";
+let currentLang = "en";
 let initialized = false;
 let textMapLoaded = false;
 const JA_TO_LOCALE_MAPS = {
@@ -26,14 +26,44 @@ function normalizeLang(raw) {
   return null;
 }
 
-function resolveInitialLang() {
+function getQueryLang() {
   try {
     const qp = new URLSearchParams(window.location.search);
-    const fromQuery = normalizeLang(qp.get(LANG_PARAM));
-    if (fromQuery) return fromQuery;
+    return normalizeLang(qp.get(LANG_PARAM));
   } catch {
     // ignore
   }
+  return null;
+}
+
+function resolveNavigatorLang() {
+  try {
+    const candidates = [];
+    const nav = window.navigator;
+    if (Array.isArray(nav?.languages)) candidates.push(...nav.languages);
+    candidates.push(nav?.language, nav?.userLanguage, nav?.browserLanguage);
+
+    for (const candidate of candidates) {
+      const normalized = normalizeLang(candidate);
+      if (normalized) return normalized;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function persistLang(lang) {
+  try {
+    window.localStorage.setItem(LANG_STORAGE_KEY, lang);
+  } catch {
+    // ignore
+  }
+}
+
+function resolveInitialLang() {
+  const fromQuery = getQueryLang();
+  if (fromQuery) return fromQuery;
 
   try {
     const fromStorage = normalizeLang(window.localStorage.getItem(LANG_STORAGE_KEY));
@@ -41,17 +71,24 @@ function resolveInitialLang() {
   } catch {
     // ignore
   }
-  return "ja";
+
+  const fromNavigator = resolveNavigatorLang();
+  if (fromNavigator) return fromNavigator;
+
+  return "en";
 }
 
 function withLangInUrl(lang) {
   const url = new URL(window.location.href);
-  if (lang === "ja") {
-    url.searchParams.delete(LANG_PARAM);
-  } else {
-    url.searchParams.set(LANG_PARAM, lang);
-  }
+  url.searchParams.set(LANG_PARAM, lang);
   return url.toString();
+}
+
+function redirectToLangUrl(lang) {
+  const nextUrl = withLangInUrl(lang);
+  if (nextUrl === window.location.href) return false;
+  window.location.replace(nextUrl);
+  return true;
 }
 
 function setupLanguageSelector() {
@@ -60,12 +97,8 @@ function setupLanguageSelector() {
 
   select.value = currentLang;
   select.addEventListener("change", () => {
-    const nextLang = normalizeLang(select.value) ?? "ja";
-    try {
-      window.localStorage.setItem(LANG_STORAGE_KEY, nextLang);
-    } catch {
-      // ignore
-    }
+    const nextLang = normalizeLang(select.value) ?? "en";
+    persistLang(nextLang);
     const nextUrl = withLangInUrl(nextLang);
     if (nextUrl !== window.location.href) {
       window.location.assign(nextUrl);
@@ -230,10 +263,13 @@ export function translateGameText(text) {
 }
 
 export async function initI18n() {
-  if (initialized) return;
+  if (initialized) return false;
 
   currentLang = resolveInitialLang();
-  if (!SUPPORTED_LANGS.has(currentLang)) currentLang = "ja";
+  if (!SUPPORTED_LANGS.has(currentLang)) currentLang = "en";
+
+  persistLang(currentLang);
+  if (redirectToLangUrl(currentLang)) return true;
 
   document.documentElement.lang = currentLang;
   setupLanguageSelector();
@@ -249,4 +285,5 @@ export async function initI18n() {
     translateGameText,
   };
   initialized = true;
+  return false;
 }

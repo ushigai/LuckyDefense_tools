@@ -241,7 +241,8 @@ function bindAutoRecalcTargets() {
 }
 
 async function init() {
-  await initI18n();
+  const redirected = await initI18n();
+  if (redirected) return;
   initCommonOptionsUI();
 
   await loadInitialStateData();
