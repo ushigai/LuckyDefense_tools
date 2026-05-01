@@ -40,10 +40,12 @@ from dps_sim1.simulator.ace_batman_ball import mean_total_damage_15110
 from dps_sim1.simulator.ace_batman_bat import mean_total_damage_15210
 from dps_sim1.simulator.top_vein import mean_total_damage_15011
 from dps_sim1.simulator.sagekun import mean_total_damage_15018
+from dps_sim1.simulator.evergreen_chona import mean_total_damage_15019
 from dps_sim1.simulator.bamba import mean_total_damage_5001
 from dps_sim1.simulator.queen_coldy import mean_total_damage_15002
 from dps_sim1.simulator.lancelot import mean_total_damage_5003
 from dps_sim1.simulator.common_sim import mean_total_damage_common
+from dps_sim1.simulator.f32lock_rounding import round_half_up
 from dps_sim1.simulator.f32lock_awakened_hayley import mean_total_damage_15021 as mean_total_damage_15021_f32lock
 from dps_sim1.simulator.f32lock_hayley import mean_total_damage_5021 as mean_total_damage_5021_f32lock
 from dps_sim1.simulator.f32lock_rokechuu_oc import mean_total_damage_5115 as mean_total_damage_5115_f32lock
@@ -62,6 +64,7 @@ from dps_sim1.simulator.f32lock_ace_batman_ball import mean_total_damage_15110 a
 from dps_sim1.simulator.f32lock_ace_batman_bat import mean_total_damage_15210 as mean_total_damage_15210_f32lock
 from dps_sim1.simulator.f32lock_top_vein import mean_total_damage_15011 as mean_total_damage_15011_f32lock
 from dps_sim1.simulator.f32lock_sagekun import mean_total_damage_15018 as mean_total_damage_15018_f32lock
+from dps_sim1.simulator.f32lock_evergreen_chona import mean_total_damage_15019 as mean_total_damage_15019_f32lock
 from dps_sim1.simulator.f32lock_bamba import mean_total_damage_5001 as mean_total_damage_5001_f32lock
 from dps_sim1.simulator.f32lock_queen_coldy import mean_total_damage_15002 as mean_total_damage_15002_f32lock
 from dps_sim1.simulator.f32lock_lancelot import mean_total_damage_5003 as mean_total_damage_5003_f32lock
@@ -119,6 +122,7 @@ mean_total_damage_15110 = _wrap_damage_func(mean_total_damage_15110)
 mean_total_damage_15210 = _wrap_damage_func(mean_total_damage_15210)
 mean_total_damage_15011 = _wrap_damage_func(mean_total_damage_15011)
 mean_total_damage_15018 = _wrap_damage_func(mean_total_damage_15018)
+mean_total_damage_15019 = _wrap_damage_func(mean_total_damage_15019)
 mean_total_damage_5001 = _wrap_damage_func(mean_total_damage_5001)
 mean_total_damage_15002 = _wrap_damage_func(mean_total_damage_15002)
 mean_total_damage_common = _wrap_damage_func(mean_total_damage_common)
@@ -140,6 +144,7 @@ mean_total_damage_15110_f32lock = _wrap_damage_func(mean_total_damage_15110_f32l
 mean_total_damage_15210_f32lock = _wrap_damage_func(mean_total_damage_15210_f32lock)
 mean_total_damage_15011_f32lock = _wrap_damage_func(mean_total_damage_15011_f32lock)
 mean_total_damage_15018_f32lock = _wrap_damage_func(mean_total_damage_15018_f32lock)
+mean_total_damage_15019_f32lock = _wrap_damage_func(mean_total_damage_15019_f32lock)
 mean_total_damage_5001_f32lock = _wrap_damage_func(mean_total_damage_5001_f32lock)
 mean_total_damage_15002_f32lock = _wrap_damage_func(mean_total_damage_15002_f32lock)
 mean_total_damage_5003_f32lock = _wrap_damage_func(mean_total_damage_5003_f32lock)
@@ -164,6 +169,7 @@ MEAN_TOTAL_DAMAGE_15110_BASE = mean_total_damage_15110
 MEAN_TOTAL_DAMAGE_15210_BASE = mean_total_damage_15210
 MEAN_TOTAL_DAMAGE_15011_BASE = mean_total_damage_15011
 MEAN_TOTAL_DAMAGE_15018_BASE = mean_total_damage_15018
+MEAN_TOTAL_DAMAGE_15019_BASE = mean_total_damage_15019
 MEAN_TOTAL_DAMAGE_5001_BASE = mean_total_damage_5001
 MEAN_TOTAL_DAMAGE_15002_BASE = mean_total_damage_15002
 MEAN_TOTAL_DAMAGE_COMMON_BASE = mean_total_damage_common
@@ -652,7 +658,7 @@ ENEMY_DB = load_enemies()
 RUNES_DB = load_runes()
 BLOB_FIGURES_DB = load_blob_figures()
 PET_DB_BY_ID, PET_DB_BY_NAME = load_pets()
-PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15001, 15010, 15011, 15020, 15023, 15110, 15210]
+PHISICS_CHAR = [3007, 5001, 5005, 5010, 5011, 5012, 5014, 5015, 5019, 5020, 5023, 5114, 5115, 5214, 13007, 15001, 15010, 15011, 15019, 15020, 15023, 15110, 15210]
 
 
 def _send_from_directory_with_cache(directory: str, filename: str):
@@ -890,6 +896,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     mean_total_damage_15210 = mean_total_damage_15210_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15210_BASE
     mean_total_damage_15011 = mean_total_damage_15011_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15011_BASE
     mean_total_damage_15018 = mean_total_damage_15018_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15018_BASE
+    mean_total_damage_15019 = mean_total_damage_15019_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15019_BASE
     mean_total_damage_5001 = mean_total_damage_5001_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_5001_BASE
     mean_total_damage_15002 = mean_total_damage_15002_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_15002_BASE
     mean_total_damage_common = mean_total_damage_common_f32lock if use_f32lock else MEAN_TOTAL_DAMAGE_COMMON_BASE
@@ -2657,6 +2664,41 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult": {"numbers": [22, 1.5], "buffs": {"MagicBuff1": MagicBuff1, "UltBuff1": UltBuff1}},
             "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
             "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg, "MagicGauntlet": MagicGauntlet}},
+        }
+    elif character_id == "15019":  # 万年チョナ
+        tree_damage_buff = 1.35 if 12 <= char_lv else 1.0
+        round_fn = round_half_up
+        params = {
+            "tick": ticks,
+            "n_iter": trials,
+            "seed": seed,
+            "attack_power": atk,
+            "attack_speed": speed,
+            "base_attack_mult": 1.0,
+            "skill1_mult": 180.0 * PhysicBuff1,
+            "skill2_mult": (((20 + 0.25*(10+RateBuff1))*20) / round_fn(30*speed))*PhysicBuff1*tree_damage_buff,
+            "skill2_double_rate": 50.0 if 6 <= char_lv else 0.0,
+            "crit_rate": crit_rate,
+            "crit_dmg": crit_dmg,
+            "ult_mult": (70 + 1.5*(15+RateBuff1))*30*(PhysicBuff1 + UltBuff1)*tree_damage_buff,
+        }
+        basic_one = atk * params["base_attack_mult"]
+        skill1_one = atk * params["skill1_mult"]
+        skill2_one = atk * params["skill2_mult"]
+        skill3_one = 0
+        ult_one = atk * params["ult_mult"]
+        basic, skill1, skill2, skill3, ult = mean_total_damage_15019(params)
+        basic *= BasicAttackBuff1
+        ans = basic + skill1 + skill2 + skill3 + ult
+        mult_parts = {
+            "basic": {"numbers": [1.0], "buffs": {}},
+            "skill1": {"numbers": [180], "buffs": {"PhysicBuff1": PhysicBuff1}},
+            "skill2": {"numbers": [2000, 25, 20, 30], "buffs": {"PhysicBuff1": PhysicBuff1, "tree_damage_buff": tree_damage_buff}},
+            "skill3": {"numbers": [], "buffs": {}},
+            "ult": {"numbers": [7000, 150, 30], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1, "tree_damage_buff": tree_damage_buff}},
+            "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
+            "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
+            "aux": {"numbers": [9, 20, 5], "buffs": {"sim_ticks": ticks}},
         }
     elif character_id == "15020":  # ノイズペンギンキング
         ans = mean_total_damage_15021(

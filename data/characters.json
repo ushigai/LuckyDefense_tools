@@ -2327,6 +2327,41 @@
       }
     },
     {
+      "name": "万年チョナ",
+      "rarity": "immortal",
+      "id": 15019,
+      "attack_damage": 58800,
+      "plus_attack_damage_percentage": 0.5,
+      "upgrade_attack_damage": 1008,
+      "attack_speed": 1.4,
+      "attack_range": 4,
+      "move_speed": 4,
+      "sp": 0,
+      "skill1": "発火",
+      "skill2": "ミニ怪物樹木",
+      "skill3": "",
+      "ult": "キング怪物樹木",
+      "actionMeta": {
+        "basic": {
+          "damageType": "physical",
+          "targetType": "single"
+        },
+        "skill1": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill2": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        },
+        "skill3": null,
+        "ult": {
+          "damageType": "physical",
+          "targetType": "aoe"
+        }
+      }
+    },
+    {
       "name": "ノイズペンギンキング",
       "rarity": "immortal",
       "id": 15020,
