@@ -2669,7 +2669,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         tree_damage_buff = 1.35 if 12 <= char_lv else 1.0
         round_fn = round_half_up
         params = {
-            "tick": ticks,
+            "ticks": ticks,
             "n_iter": trials,
             "seed": seed,
             "attack_power": atk,
@@ -2680,7 +2680,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_double_rate": 50.0 if 6 <= char_lv else 0.0,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg,
-            "ult_mult": (70 + 1.5*(15+RateBuff1))*30*(PhysicBuff1 + UltBuff1)*tree_damage_buff,
+            "ult_mult": (70 + 1.5*(15+RateBuff1))*30*PhysicBuff1*UltBuff1*tree_damage_buff,
         }
         basic_one = atk * params["base_attack_mult"]
         skill1_one = atk * params["skill1_mult"]
@@ -2698,7 +2698,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult": {"numbers": [7000, 150, 30], "buffs": {"PhysicBuff1": PhysicBuff1, "UltBuff1": UltBuff1, "tree_damage_buff": tree_damage_buff}},
             "crit_rate": {"numbers": [], "buffs": {"crit_rate": crit_rate}},
             "crit_dmg": {"numbers": [], "buffs": {"crit_dmg": crit_dmg}},
-            "aux": {"numbers": [9, 20, 5], "buffs": {"sim_ticks": ticks}},
+            "aux": {"numbers": [9, 20, 5], "buffs": {"ticks": ticks}},
         }
     elif character_id == "15020":  # ノイズペンギンキング
         ans = mean_total_damage_15021(

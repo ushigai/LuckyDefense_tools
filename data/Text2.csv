@@ -132,6 +132,7 @@
 "option_1","측정 시간을 60초 이상으로 clamp하도록 수정","Fixed measurement time to clamp to 60 seconds or more","計測秒数を60秒以上にclampするように修正","修正為將計測秒數clamp到60秒以上","Correction pour forcer la durée de mesure à un minimum de 60 s (clamp)","Behoben: Messzeit wird auf mindestens 60 Sekunden geclamped","修正为将测量时间clamp到60秒以上","Se corrigió para hacer clamp del tiempo de medición a 60 segundos o más"
 "option_1","요정활 효과 수치를 2배로 수정","Fixed Fairy Bow effect value to 2x","妖精の弓の効果値を2倍に修正","修正妖精弓箭的效果數值為2倍","Correction de la valeur d'effet de l'Arc des Fées à x2","Effektwert des Feenbogens auf 2x korrigiert","修正妖精弓箭的效果数值为2倍","Se corrigió el valor del efecto de Arco de hadas a x2"
 "option_1","릴리스 노트 추가","Added Release Notes","リリースノートの追加","新增版本更新說明","Ajout des notes de version","Versionshinweise hinzugefügt","新增版本更新说明","Se agregaron notas de la versión"
+"release_note_v1_4_1_1","만년 초나 추가","Added Evergreen Verdee","万年チョナの追加","","","","",""
 "release_note_v1_4_0_1","선인 쿤 구현","Implemented Sage Kun","仙人クンの実装","","","","",""
 "release_note_v1_4_0_2","마스터 쿤/우치 수정","Adjusted Master Kun / Lazy Taoist","マスタークン/ウチの修正","","","","",""
 "release_note_v1_4_0_3","원시 밤바의 궁극기 버프 기간 중 쿨타임이 감소하지 않던 문제 수정 (Lv6에서 4.5%, Lv12에서 14.0% DPS 증가)","Fixed an issue where cooldown did not decrease during Primeval Bomba's Ultimate buff duration (DPS +4.5% at Lv6, +14.0% at Lv12)","原始バンバの究極バフ期間中にクールタイムが減少しない問題を修正（Lv6で4.5%, Lv12で14.0%のDPS増加）","","","","",""
