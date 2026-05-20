@@ -966,7 +966,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     emotionControl = int(member.get("emotionControl", 0))
     emotionControl_ = int(member.get("emotionControl_", 0))
     StrongestCreature = int(member.get("StrongestCreature", 0))
-    StrongestCreature *= 0.3 if character_id == "5106" else 0.4
+    StrongestCreature *= 0.4 if character_id == "15006" else 0.3
     score = int(member.get("score", 0)) / 100
     intake = int(member.get("intake", 0))
     cannibalCount = float(member.get("cannibalCount", 0))
@@ -1093,7 +1093,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     base_speed *= lv_buff_speed
     atk = base_atk + intake
     atk *= 1 + PowerPotion*2 + cannibalCount + unitLevelSumBuff + RuneAtkSum + BlobFigureBuff["ダイヤ"] + pet_buff["AttackDamage"]
-    emotion = emotionControl_db[emotionControl]
+    emotion = emotionControl_db[emotionControl] / 100
     if character_id == "15018":
         emotion = sage_kun_emotionControl[emotionControl_ - 90] / 100
     aceEnh = ace_batman_attack_enhance[batEnhance_] / 100

@@ -16,7 +16,7 @@ export const EXTRA_FIELDS_BY_CHARACTER_ID = {
   "5013": [{ key: "energyCount", label: "エネルギー個数（究極中）", kind: "number", min: 1, step: 1, def: 1 }],
   "5204": [{ key: "techEnhance", label: "技術強化", kind: "select-int", min: 0, max: 10, def: 0 }],
   "5024": [{ key: "score", label: "スコア", kind: "select-int", min: 0, max: 100, def: 0 }],
-  "5306": [{ key: "cannibalCount", label: "共食い回数", kind: "number", min: 0, step: 1, def: 0 }],
+  "5306": [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
   "5001": [{ key: "training", label: "鍛錬", kind: "select-int", min: 0, max: 30, def: 0 }],
   "5106": [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
   "15006": [{ key: "StrongestCreature", label: "動物ユニット数", kind: "number", min: 1, step: 1, def: 1 }],
