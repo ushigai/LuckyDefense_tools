@@ -16,9 +16,10 @@ EXPOSE 8000
 
 CMD ["gunicorn", "dps_sim1.app:app", \
      "-w", "2", \
-     "-k", "gthread", "--threads", "2", \
+     "-k", "sync", \
      "--timeout", "120", "--graceful-timeout", "30", \
      "--keep-alive", "5", \
      "--max-requests", "1000", "--max-requests-jitter", "100", \
      "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", \
+     "--access-logformat", "%(h)s %(l)s %(u)s %(t)s \"%(r)s\" %(s)s %(b)s \"%(f)s\" \"%(a)s\" req_us=%(D)s", \
      "--bind", "0.0.0.0:8000"]

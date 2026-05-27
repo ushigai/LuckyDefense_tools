@@ -207,7 +207,7 @@ function normalizeMainBuffs(raw = {}) {
   return {
     mythEnhanceLv: clampInt(raw.mythEnhanceLv, 0, 35, MAIN_BUFF_DEFAULTS.mythEnhanceLv),
     atkBuffPct: clampFloat(raw.atkBuffPct, -1000, 10000, MAIN_BUFF_DEFAULTS.atkBuffPct),
-    manaRegenBuffPct: clampInt(raw.manaRegenBuffPct, 0, 700, MAIN_BUFF_DEFAULTS.manaRegenBuffPct),
+    manaRegenBuffPct: clampInt(raw.manaRegenBuffPct, 0, 1000, MAIN_BUFF_DEFAULTS.manaRegenBuffPct),
     speedBuffPct: clampFloat(raw.speedBuffPct, -1000, 10000, MAIN_BUFF_DEFAULTS.speedBuffPct),
     defDown: clampFloat(raw.defDown, -10_000_000, 10_000_000, MAIN_BUFF_DEFAULTS.defDown),
     coins: clampInt(raw.coins, 0, 2_000_000_000, MAIN_BUFF_DEFAULTS.coins),

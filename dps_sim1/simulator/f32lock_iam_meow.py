@@ -136,7 +136,7 @@ def simulate_one_trial_breakdown_15004(
 
         if action == "basic":
             dmg_basic += dmg
-            mana += 1.0 * p.mana_buff
+            mana += 1.0
         elif action == "skill1":
             dmg_skill1 += dmg
         elif action == "skill2":
@@ -169,7 +169,7 @@ def simulate_one_trial_15004(p: IamNyanParams15004, ticks: int, rng: random.Rand
           4) マナ回復:
                - basic の時だけ +1
                - tick終端で +1/attack_speed
-             ※いずれも mana_buff を乗算
+             ※mana_buff は tick終端の持続回復に乗算し、basic の +1 には乗算しない
       - ult 発動後は「次の tick から」ult_cooldown tick 分 cooldown（その期間は何もできない）
     """
     if ticks <= 0:
@@ -220,7 +220,7 @@ def simulate_one_trial_15004(p: IamNyanParams15004, ticks: int, rng: random.Rand
 
         # mana recovery: basic gives +1, then end-of-tick regen
         if action == "basic":
-            mana += 1.0 * p.mana_buff
+            mana += 1.0
         mana += per_tick_regen
 
     return total

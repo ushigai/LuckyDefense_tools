@@ -6,7 +6,7 @@ Hayley (id: 5021) Monte Carlo DPS Simulator
 
 - 1 tick ごとに行動(基本/スキル/究極)を1回行う
 - 行動決定は tick 開始時、マナ回復は tick 末尾
-- mana_buff は「すべてのマナ回復処理」に乗算（基本+1 と 1/attack_speed の両方）
+- mana_buff は持続回復に乗算し、通常の基本攻撃 +1 には乗算しない。
 - ult 発動でバフ状態へ。バフ中はマナ回復不可。バフ終了時にマナは 0。
 - 会心: 1行動につき1回判定。確率 crit_rate で crit_dmg 倍
 
@@ -204,11 +204,9 @@ def _simulate_one_trial(ticks: int, rng: random.Random, cfg: HayleyConfig) -> Tu
                     mana = 0.0  # buff end -> mana reset to 0
         else:
             # mana recovery applies
-            # all mana recovery is multiplied by mana_buff
-            gain = base_regen
+            gain = base_regen * cfg.mana_buff
             if action == "basic":
                 gain += 1.0
-            gain *= cfg.mana_buff
             mana += gain
 
     return total, dmg, casts

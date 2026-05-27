@@ -244,7 +244,7 @@
     <div class="container py-1 d-flex align-items-center justify-content-between gap-3">
       <a class="navbar-brand fw-semibold" href="#">
         <i class="bi bi-speedometer2 me-1"></i>DPS Calculator
-        <span id="appVersionText" class="ms-2 small text-muted fw-normal">v1.4.1</span>
+        <span id="appVersionText" class="ms-2 small text-muted fw-normal">v1.5.0</span>
       </a>
       <div class="d-flex align-items-center gap-2" data-i18n-skip>
         <label class="small text-secondary mb-0" for="langSelect">Lang</label>
@@ -291,8 +291,8 @@
                   <div class="survey-answer">　A. Thanks for using my DPS calculator!! By "discord calculation", do you mean this <a href="https://discord.com/channels/1248703469846790297/1436803766165704845">Immortal DPS&amp;FAQ</a>? The calculation on Discord does not reflect Bat Man's Bat UP and CRIT. Bat UP becomes 1500% at Bat UP Lv15 (Hailey is 2000%, I Am Meow is 1000%). Also, if Bomba Doll is Lv6, damage is multiplied by 1.12 even with only 5% CRIT Rate. If you take those into account, it matches the Discord calculation result (BatDPS:ninjaDPS = 1:2).</div>
                   <blockquote class="survey-quote">Q. How does tao have higher dps with treasure lvl nine than lvl ten</blockquote>
                   <div class="survey-answer">　A. That's because the SEED value is fixed. Please temporarily set <code>Advanced Settings</code> → <code>SEED Randomization (DEPRECATED)</code> to <code>Enable</code>, and you should see the DPS increase. That said, <code>Lazy Taoist</code>'s Treasure Lv. 9 and Lv. 10 are almost the same in DPS because there is no skill duration increase between those Treasure levels.</div>
-                  <blockquote class="survey-quote">Q. How does mama tecovery speed buff work? Why it doesnt affect anything if its below a hundred? Are buffs from mythics involved in the calculation? I for example dont any changes when adding or removing iron meow so I assume his mana regen buff isnt considered.</blockquote>
-                  <div class="survey-answer">　A. This is because, under the old in-game behavior, mana recovery only took effect in 100% increments. Internally, mana was treated as an integer, so 1-99% was all treated as 0%. This tool still uses that old mana recovery behavior. The exact calculation method for mana recovery in the current version of the game has not been fully figured out yet, so it remains on the old implementation.</div>
+                  <blockquote class="survey-quote"><s>Q. How does mama tecovery speed buff work? Why it doesnt affect anything if its below a hundred? Are buffs from mythics involved in the calculation? I for example dont any changes when adding or removing iron meow so I assume his mana regen buff isnt considered.</s></blockquote>
+                  <div class="survey-answer">　<s>A. This is because, under the old in-game behavior, mana recovery only took effect in 100% increments. Internally, mana was treated as an integer, so 1-99% was all treated as 0%. This tool still uses that old mana recovery behavior. The exact calculation method for mana recovery in the current version of the game has not been fully figured out yet, so it remains on the old implementation.</s><br>　A. Mana recovery speed buff is now calculated in 1% increments. Mythic buffs, blob figures, and pet buffs that increase mana recovery speed are included in the calculation.</div>
                   <blockquote class="survey-quote">Q. 로카의 경우 궁극기 비중이 어떻게 계산되었는지 궁금합니다. 보스몬스터에게 몇발이 적중한다는 가정으로 계산된 데미지 비중인가요??</blockquote>
                   <div class="survey-answer">　A. 보스 2마리 중 한 마리는 확정 치명타, 다른 한 마리는 일반 치명타 확률이 적용되도록 조정해서 계산하고 있습니다.</div>
                   <blockquote class="survey-quote">Q. 불사 투수의 경우 타격보강은 무엇을 의미하나요</blockquote>
@@ -507,7 +507,7 @@
 
                   <div class="col-12 col-md-3">
                     <label class="form-label text-secondary small" for="manaRegenBuffPct">マナ回復速度バフ%</label>
-                    <input id="manaRegenBuffPct" type="number" class="form-control rounded-3" value="0" step="1" min="0" max="700">
+                    <input id="manaRegenBuffPct" type="number" class="form-control rounded-3" value="0" step="1" min="0" max="1000">
                   </div>
 
                   <!-- 既存項目（リストに無かったけど残す） -->
@@ -1150,6 +1150,14 @@
       <details id="releaseNotesHistory" class="release-notes d-inline-block text-start">
         <summary class="small">リリースノート</summary>
         <div class="rn-body small">
+          <div class="mb-2">
+            <div class="rn-ver">v1.5.0 (2026/05/27)</div>
+            <ul class="mb-0 ps-3">
+              <li>ロカの連射によるバフ値を修正</li>
+              <li>マナ回復処理について、基本攻撃にマナ回復バフが乗らないように修正</li>
+              <li>マナ回復バフ%の切り捨て処理を削除</li>
+            </ul>
+          </div>
           <div class="mb-2">
             <div class="rn-ver">v1.4.1 (2026/05/02 02:31)</div>
             <ul class="mb-0 ps-3">

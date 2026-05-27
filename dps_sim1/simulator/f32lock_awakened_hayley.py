@@ -107,7 +107,7 @@ def simulate_once(ticks: int, p: Params, rng: random.Random) -> Tuple[float, Dic
 
     # mana gains (before buff)
     mana_tick = (1.0 / p.attack_speed) * p.mana_buff
-    mana_basic_bonus = 1.0 * p.mana_buff  # only when basic happens
+    mana_basic_bonus = 1.0  # only when basic happens
 
     # state
     mana = 0.0
@@ -451,7 +451,7 @@ def main() -> None:
     print()
     print("Notes:")
     print(" - tick由来の時間(10*attack_speed等)は round() で整数tickに丸めています。")
-    print(" - mana回復は各tickの最後。basicのみ +1 回復が追加され、mana_buff は全回復に乗算。")
+    print(" - mana回復は各tickの最後。mana_buff は持続回復に乗算し、basicの +1 には乗算しません。")
     print(" - ult中は『基本攻撃不可・マナ回復不可』として実装。skill2の遅延爆発はult中でも進行/発生します。")
 
 

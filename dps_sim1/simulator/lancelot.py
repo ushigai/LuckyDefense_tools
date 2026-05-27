@@ -122,7 +122,7 @@ def _simulate_one_trial_core(
     }
 
     passive_mana_per_tick = (1.0 / params.attack_speed) * params.mana_buff
-    basic_bonus_mana = params.attack_mana_recov * params.mana_buff
+    basic_bonus_mana = params.attack_mana_recov
 
     for _ in range(ticks):
         if mana >= params.ult_mana:

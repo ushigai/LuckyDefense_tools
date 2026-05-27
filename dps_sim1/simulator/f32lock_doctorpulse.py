@@ -17,7 +17,7 @@ class DoctorPulseParams14002:
     skill1_mult: float     # multiplier (e.g., 2 => 2x, 150 => 150x)
     ult_mult: float        # multiplier
     ult_mana: float
-    mana_buff: float       # multiplies ALL mana gain
+    mana_buff: float       # multiplies tick mana gain; basic robot gain is fixed
     crit_rate: float       # 0-100
     crit_dmg: float        # multiplier
     robots: float          # robots count (treated as numeric)
@@ -74,8 +74,8 @@ def _simulate_one_trial(
 
     # mana gains per tick end (buff not active)
     regen_per_tick = 1.0 / p.attack_speed
-    mana_gain_basic = (p.robots + regen_per_tick) * p.mana_buff
-    mana_gain_skill1 = (regen_per_tick) * p.mana_buff
+    mana_gain_basic = p.robots + (regen_per_tick * p.mana_buff)
+    mana_gain_skill1 = regen_per_tick * p.mana_buff
 
     # buff ticks (round per requirement)
     buff_ticks = int(round(10.0 * p.attack_speed))

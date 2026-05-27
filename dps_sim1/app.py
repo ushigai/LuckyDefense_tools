@@ -17,7 +17,7 @@ from functools import lru_cache
 from data.treasure_db import load_treasure_db
 from data.char_params import *
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, g, jsonify, request, send_from_directory
 from dps_sim1.normalizers import blob as blob_normalizer
 from dps_sim1.normalizers import enemy as enemy_normalizer
 from dps_sim1.normalizers import pet as pet_normalizer
@@ -208,7 +208,37 @@ SHORT_CACHE_EXTENSIONS = {
 
 app = Flask(__name__)
 
-_MEMBER_DPS_CACHE_VERSION = 3
+_MEMBER_DPS_CACHE_VERSION = 5
+
+
+@app.before_request
+def _mark_request_start() -> None:
+    g.request_start_time = time.monotonic()
+
+
+@app.after_request
+def _log_api_calc_response(response):
+    if request.path != "/api/calc":
+        return response
+
+    started = getattr(g, "request_start_time", None)
+    elapsed_ms = int((time.monotonic() - started) * 1000) if started is not None else -1
+    context = getattr(g, "api_calc_context", {})
+    app.logger.info(
+        "api_calc finish status=%s elapsed_ms=%s party=%s chars=%s durationSec=%s trials=%s seed=%s f32lock=%s ip=%s ua=%r referer=%r",
+        response.status_code,
+        elapsed_ms,
+        context.get("party_len"),
+        context.get("char_ids"),
+        context.get("duration_sec"),
+        context.get("trials"),
+        context.get("seed"),
+        context.get("f32lock"),
+        _client_ip(),
+        request.headers.get("User-Agent", ""),
+        request.headers.get("Referer", ""),
+    )
+    return response
 
 
 def _json_error(message: str, status: int):
@@ -222,6 +252,7 @@ def _env_int(name: str, default: int) -> int:
         return int(default)
 
 
+API_CALC_MAX_MEMBER_TRIALS = max(1, _env_int("API_CALC_MAX_MEMBER_TRIALS", 1600))
 MEMBER_DPS_CACHE_MAXSIZE = max(1, _env_int("MEMBER_DPS_CACHE_MAXSIZE", 10**6))
 MEMBER_DPS_CACHE_CLEAR_SEC = max(0, _env_int("MEMBER_DPS_CACHE_CLEAR_SEC", 1800))
 _MEMBER_DPS_CACHE: OrderedDict[str, Tuple[float, Dict[str, float], Dict[str, Any]]] = OrderedDict()
@@ -936,7 +967,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     old_book_lv = int(common.get("oldBookLv", all_relic_lv))
     sage_yogurt_lv = int(common.get("sageYogurtLv", all_relic_lv))
     magic_gauntlet_lv = int(common.get("magicGauntletLv", all_relic_lv))
-    mana_buff = int(common.get("manaRegenBuffPct", 0))
+    raw_display_mana_recovery_pct = clamp_int(common.get("manaRegenBuffPct", 0), 0, 1000, 0)
     PowerPotion   = float(ARTIFACTS_DB["力のポーション"]["effects"]["lv" + str(power_potion_lv)]) / 100
     MoneyGun      = float(ARTIFACTS_DB["マネーガン"]["effects"]["lv" + str(money_gun_lv)]) / 100
     FairyBow      = float(ARTIFACTS_DB["妖精の弓"]["effects"][f"lv{fairy_bow_lv}"]) / 100
@@ -1127,8 +1158,9 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
     crit_rate = 5 + BambaDoll + BlobFigureBuff["ドラゴン"] + pet_buff["CriticalPercentage"]
     crit_dmg = 2.5 + BlobFigureBuff["魔法使い"] + pet_buff["CriticalDamage"]
     base_crit_dmg = crit_dmg
-    mana_buff += BlobFigureBuff["ハロウィン"] + pet_buff["SpRegen"]
-    mana_buff = 1 if mana_buff == 0 else mana_buff // 100 + 1
+    raw_mana_recovery_pct = raw_display_mana_recovery_pct + BlobFigureBuff["ハロウィン"] + pet_buff["SpRegen"]
+    mana_regen_multiplier = 1 + float(raw_mana_recovery_pct) / 100.0
+    mana_buff = mana_regen_multiplier
     MagicBuff1 = 1 + SecretBook + WizardHat + BlobFigureBuff["溶岩"] + BlobFigureBuff["スカル"] + pet_buff["MagicalDamage"]
     PhysicBuff1 = 1 + SecretBook + Bat + BlobFigureBuff["溶岩"] + BlobFigureBuff["サイボーグ"] + pet_buff["PhysicalDamage"]
     CooltimeBuff1 = 1 - BlobFigureBuff["肉"] - pet_buff["CooltimeRegen"]
@@ -1352,7 +1384,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill2_mult": 30 * MagicBuff1,
             "ult_mana": ult_mana * UltManaBuff1,
             "ult_mult": 36 * (MagicBuff1 + UltBuff1),
-            "attack_mana_recov": 1.0,
+            "attack_mana_recov": 1,
             "mana_buff": mana_buff * (1.0 + t_buff2),
             "additional_dmg": additional_dmg,
             "crit_rate": crit_rate,
@@ -2391,7 +2423,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult_mult": 35*UltBuff1*MagicBuff1,
             "ult_time": 10 if char_lv < 6 else 15,
             "mana_buff": mana_buff, 
-            "attack_mana_recov": 1, 
+            "attack_mana_recov": 1,
         }
         basic_one = atk * params["base_attack_mult"]
         skill1_one = atk * params["skill1_mult"]
@@ -2487,7 +2519,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
         )
         basic *= BasicAttackBuff1
         ans = basic + skill1 + skill2 + skill3 + ult
-        mult = (1 + mana_buff//0.5 * 0.05) # アイアムニャンパッシブ
+        mult = (1 + mana_regen_multiplier // 0.5 * 0.05) # アイアムニャンパッシブ
         basic *= mult
         skill1 *= mult
         skill2 *= mult
@@ -2517,7 +2549,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "skill3_mult": 25*MagicBuff1,
             "ult_mult": 550*(MagicBuff1+UltBuff1) if char_lv < 12 else 650*(MagicBuff1+UltBuff1),
             "ult_mana": ult_mana,
-            "attack_mana_recov": 1.0,
+            "attack_mana_recov": 1,
             "mana_buff": mana_buff,
             "crit_rate": crit_rate,
             "crit_dmg": crit_dmg + MagicGauntlet,
@@ -2645,7 +2677,7 @@ def compute_member_dps(character_id: str, common: Dict[str, Any], member: Dict[s
             "ult_mult": 22 * (MagicBuff1 + UltBuff1),
             "ult_mana": ult_mana * UltManaBuff1,
             "ult_time": 10 if char_lv < 12 else 15,
-            "attack_mana_recov": 1.0,
+            "attack_mana_recov": 1,
             "mana_buff": mana_buff,
         }
         basic_one = atk * params["base_attack_mult"]
@@ -3015,12 +3047,14 @@ def api_calc():
     all_relic_lv = clamp_int(common.get("allRelicLv", common.get("relicLv", 1)), 1, 11, 1)
     mythEnhanceLv = clamp_int(common.get("mythEnhanceLv", 0), 1, 35, 1)
     trials = clamp_int(common.get("trials", 3), 1, 100, 3)
+    if len(party) * trials > API_CALC_MAX_MEMBER_TRIALS:
+        return _json_error(f"calculation too large: party * trials max {API_CALC_MAX_MEMBER_TRIALS}", 400)
     seed = clamp_int(common.get("seed", 1), 0, 2_147_483_647, 1)
     atk_buff_pct = clamp_float(common.get("atkBuffPct", 0), -1000, 10000, 0)
     speed_buff_pct = clamp_float(common.get("speedBuffPct", 0), -1000, 10000, 0)
     multiplier = clamp_float(common.get("multiplier", 1), -2_147_483_648, 2_147_483_647, 1)
     f32lock = "enable" if str(common.get("f32lock", "disable")).strip().lower() == "enable" else "disable"
-    mana_regen_buff_pct = clamp_int(common.get("manaRegenBuffPct", 0), 0, 700, 0)
+    mana_regen_buff_pct = clamp_int(common.get("manaRegenBuffPct", 0), 0, 1000, 0)
     def_down = clamp_float(common.get("defDown", 190), -10_000_000, 10_000_000, 190)
     coins = clamp_int(common.get("coins", 300000), 0, 2_000_000_000, 300000)
     guildBlessing = clamp_int(common.get("guildBlessing", 0), 0, 2, 0)
@@ -3031,6 +3065,27 @@ def api_calc():
     pets = _normalize_pets(common)
     pet1, pet2, pet3 = _to_pet_slots(pets)
     pet = pet1  # backward compatible alias
+
+    g.api_calc_context = {
+        "party_len": len(party),
+        "char_ids": [str(m.get("character", "")) if isinstance(m, dict) else "?" for m in party],
+        "duration_sec": duration_sec,
+        "trials": trials,
+        "seed": seed,
+        "f32lock": f32lock,
+    }
+    app.logger.info(
+        "api_calc start party=%s chars=%s durationSec=%s trials=%s seed=%s f32lock=%s ip=%s ua=%r referer=%r",
+        g.api_calc_context["party_len"],
+        g.api_calc_context["char_ids"],
+        duration_sec,
+        trials,
+        seed,
+        f32lock,
+        _client_ip(),
+        request.headers.get("User-Agent", ""),
+        request.headers.get("Referer", ""),
+    )
 
     tick_sec = 1.0
     ticks = int(duration_sec / tick_sec)

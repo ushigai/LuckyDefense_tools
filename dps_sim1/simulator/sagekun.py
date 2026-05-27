@@ -130,7 +130,7 @@ def simulate_damage_breakdown_once_15018(
     ult_total = 0.0
 
     passive_mana_gain = (1.0 / p.attack_speed) * p.mana_buff
-    basic_mana_gain = p.attack_mana_recov * p.mana_buff
+    basic_mana_gain = p.attack_mana_recov
     ult_duration = _ult_duration_ticks(p, round_fn)
 
     for _ in range(p.tick):

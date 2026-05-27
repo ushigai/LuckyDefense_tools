@@ -105,7 +105,7 @@ def _simulate_once(p: DemonDragonParams15006, rng: random.Random) -> DamageTuple
     """
     1 tick = 1回の行動（basic / skill1 / skill2 / ult のいずれか）
     - skill3(火炎の印) は skill1/skill2 を合計5回発動するたびに「追加ダメージ」として即時発生（tick消費なし）
-    - マナ回復は各tickの最後に適用（mana_buff乗算）
+    - マナ回復は各tickの最後に適用（mana_buffは持続回復に乗算）
     - ult は「tick開始時に mana>=ult_mana なら発動」として実装（詳細は末尾の曖昧仕様参照）
     """
     basic_d = 0.0
@@ -170,7 +170,7 @@ def _simulate_once(p: DemonDragonParams15006, rng: random.Random) -> DamageTuple
             basic_d += dmg
 
             # tick最後のマナ回復（basic扱い：attack_mana_recov + base）
-            mana += ((p.attack_mana_recov + base_mana_per_tick) * p.mana_buff)
+            mana += (base_mana_per_tick * p.mana_buff) + p.attack_mana_recov
 
     return (basic_d, s1_d, s2_d, s3_d, ult_d)
 
@@ -254,4 +254,3 @@ if __name__ == "__main__":
     print("mean total =", total)
     if example["tick"] > 0:
         print("mean damage per tick =", total / example["tick"])
-

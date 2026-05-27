@@ -121,7 +121,7 @@ def simulate_once_core(p: CommonParams, ticks: int, rng: random.Random) -> Tuple
     counts = {ACTION_BASIC: 0, ACTION_SKILL1: 0, ACTION_SKILL2: 0, ACTION_SKILL3: 0, ACTION_ULT: 0}
 
     passive_recov = (1.0 / p.attack_speed) * p.mana_buff
-    attack_recov = p.attack_mana_recov * p.mana_buff
+    attack_recov = p.attack_mana_recov
     skill_ult_recovery_ticks = max(0, int(round(0.8 * p.attack_speed)) - 1)
     recovery_remaining = 0
 

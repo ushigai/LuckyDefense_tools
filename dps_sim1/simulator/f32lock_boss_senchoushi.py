@@ -141,7 +141,7 @@ def simulate_once_15024(
     if params.attack_speed <= 0:
         raise ValueError("attack_speed must be > 0")
     base_tick_mana = (1.0 / params.attack_speed) * params.mana_buff
-    basic_extra_mana = 1.0 * params.mana_buff
+    basic_extra_mana = 1.0
 
     # Window sizes / durations (float, no rounding)
     skill3_window = 5.0 * params.attack_speed
@@ -231,7 +231,7 @@ def simulate_once_15024(
             if tf <= buff_expires_at:
                 buff_expires_at += ult_extend
 
-        # End-of-tick mana recovery (all recovery multiplied by mana_buff already)
+        # End-of-tick mana recovery (mana_buff applies to tick recovery only)
         # - basic: +1 + (1/attack_speed)
         # - skill1/skill2/ult: +(1/attack_speed)
         if action == "basic":

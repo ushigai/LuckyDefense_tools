@@ -41,7 +41,7 @@ def _simulate_one_trial_core(
     }
 
     passive_mana_per_tick = (1.0 / params.attack_speed) * params.mana_buff
-    basic_bonus_mana = params.attack_mana_recov * params.mana_buff
+    basic_bonus_mana = params.attack_mana_recov
     skill_ult_recovery_ticks = max(0, int(round(0.8 * params.attack_speed)) - 1)
     recovery_remaining = 0
 

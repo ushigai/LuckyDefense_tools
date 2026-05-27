@@ -298,11 +298,11 @@ def simulate_one_trial(params: CordiParams, num_ticks: int, rng: random.Random) 
 
         # --- 4) tick最後のマナ回復（極寒期中は回復不可） ---
         if not in_ult:
-            gain = (1.0 / params.attack_speed)
+            gain = (1.0 / params.attack_speed) * params.mana_buff
             if action == "basic":
                 gain += params.attack_mana_recov
-            # mana_buff は「すべてのマナ回復処理に乗算」
-            mana += gain * params.mana_buff
+            # mana_buff は持続回復に乗算し、通常の基本攻撃 +1 には乗算しない。
+            mana += gain
 
         # --- 5) 極寒期の残りtick管理＆終了処理 ---
         if in_ult and ult_ticks_left > 0:
