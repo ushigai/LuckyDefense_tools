@@ -16,10 +16,12 @@ AMBIGUITIES = [
     "tick→現実時間(秒)の対応が明示されていない（ここでは DPS=damage/tick として出力）",
     "爆弾装填が最初に発生するタイミング（実装: tick=int(attack_speed*10) で初回装填）",
     "爆弾装填(1tick)中もマナ回復(1/attack_speed)は入るか（実装: 入る）",
-    "「連射(skill2)」はスタック増加/爆弾消費を伴うか（実装: 伴わない、ダメージ0でtick延長のみ）",
+    "「連射(skill2)」はスタック増加/爆弾消費を伴うか（実装: 伴わない、攻撃速度+15%をtick延長に換算）",
     "爆弾付き基本攻撃(skill1)はスタック増加に含むか（実装: 含む）",
     "貫通弾(skill3)発動後のスタック挙動（実装: 0にリセット）",
 ]
+
+RAPID_FIRE_ATTACK_SPEED_BONUS = 0.15
 
 
 @dataclass(frozen=True)
@@ -29,7 +31,7 @@ class RokaParams5023:
 
     # multipliers (2 -> 2x, 150 -> 150x)
     skill1_mult: float  # 爆弾追加分：attack_power*(1 + skill1_mult)
-    skill2_mult: float  # 連射によるtick延長に使用
+    skill2_mult: float  # 連射の持続秒数（既存API名との互換で *_mult のまま）
     skill3_mult: float  # 貫通弾倍率
     ult_mult: float     # ヘッドショット倍率
 
@@ -44,6 +46,24 @@ class RokaParams5023:
 
 def _pct(p: float) -> float:
     return max(0.0, min(1.0, p / 100.0))
+
+
+def _rapid_fire_extension_ticks(params: RokaParams5023) -> float:
+    """
+    Convert Rapid Fire's temporary ATK SPD buff into extra attack ticks.
+
+    Skill_5023_2 is "ATK SPD +15 for Duration".  In this simulator, one loop
+    tick represents one attack opportunity, so the additional opportunities are:
+      current attacks/sec * buff ratio * duration seconds
+    """
+    attack_speed = max(0.0, float(params.attack_speed))
+    duration_sec = max(0.0, float(params.skill2_mult))
+    return attack_speed * RAPID_FIRE_ATTACK_SPEED_BONUS * duration_sec
+
+
+def _refresh_rapid_fire_end_tick(base_end_tick: float, current_tick: int, params: RokaParams5023) -> float:
+    extension = _rapid_fire_extension_ticks(params)
+    return max(base_end_tick, float(current_tick) + extension)
 
 
 def _roll_bomb_load(rng: random.Random, bomb_rate_pct: float) -> int:
@@ -76,7 +96,8 @@ def simulate_total_damage_5023(
     """
     # 状態
     t: int = 0
-    end_tick: float = float(ticks)
+    base_end_tick: float = float(ticks)
+    end_tick: float = base_end_tick
 
     mana: float = 0.0
     stacks: int = 0
@@ -127,9 +148,8 @@ def simulate_total_damage_5023(
                 # skill2 は「基本攻撃時 skill2_rate%」だが、ここでは bombs/ult がない状況で基本攻撃候補になるので判定
                 if rng.random() < _pct(params.skill2_rate):
                     action = "skill2"
-                    # ダメージなし、tick延長のみ（丸めなし）
-                    extension = params.attack_speed * params.skill2_mult * (1.0 - 1.0 / params.attack_speed)
-                    end_tick += extension
+                    # 連射の追加tickはスタックさせず、残り分を捨てて新しい持続分に更新する
+                    end_tick = _refresh_rapid_fire_end_tick(base_end_tick, t, params)
 
                 elif stacks >= 15:
                     action = "skill3"
@@ -170,7 +190,8 @@ def simulate_damage_breakdown_5023(
       - reload(装填) もダメージ0
     """
     t: int = 0
-    end_tick: float = float(ticks)
+    base_end_tick: float = float(ticks)
+    end_tick: float = base_end_tick
 
     mana: float = 0.0
     stacks: int = 0
@@ -218,8 +239,7 @@ def simulate_damage_breakdown_5023(
             else:
                 if rng.random() < _pct(params.skill2_rate):
                     action = "skill2"
-                    extension = params.attack_speed * params.skill2_mult * (1.0 - 1.0 / params.attack_speed)
-                    end_tick += extension
+                    end_tick = _refresh_rapid_fire_end_tick(base_end_tick, t, params)
 
                 elif stacks >= 15:
                     action = "skill3"
