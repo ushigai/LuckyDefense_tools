@@ -1211,7 +1211,7 @@
       "ult": "魔力増幅",
       "actionMeta": {
         "basic": {
-          "damageType": "physical",
+          "damageType": "magic",
           "targetType": "single"
         },
         "skill1": {
